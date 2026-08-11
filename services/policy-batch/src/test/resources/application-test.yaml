@@ -1,0 +1,26 @@
+spring:
+  batch:
+    job:
+      enabled: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  autoconfigure:
+    exclude:
+      - com.pcis.batch.auth.config.BatchAuthAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
+
+pcis:
+  classification:
+    registry-location: classpath:pcis-data-classification-test.yaml
+    drift-detection-enabled: false
+    loader-enabled: false
+  policy:
+    renewal:
+      chunk-size: 1
+      premium-svc-url: http://localhost:${wiremock.server.port:8089}
+      reference-date: 2026-08-11
+  tunables:
+    numeric-defaults:
+      policy.renewalWindowDays: 60
