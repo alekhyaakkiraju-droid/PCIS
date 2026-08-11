@@ -69,12 +69,21 @@ public class OutboxRelay {
     outboxMetrics.ifAvailable(OutboxMetrics::recordRelayError);
     int nextAttempt = event.getAttemptCount() + 1;
     event.setAttemptCount(nextAttempt);
-    event.setLastError(truncate(ex.getMessage(), 500));
+    String errorMessage = truncate(ex.getMessage(), 500);
+    event.setLastError(errorMessage);
     event.setUpdatedBy(properties.getRelayUser());
 
     if (nextAttempt >= properties.getRelayMaxRetries()) {
       event.setStatus(OutboxEventStatus.DEAD_LETTER);
       outboxMetrics.ifAvailable(OutboxMetrics::recordDeadLetter);
+      try {
+        publisher.publishToDeadLetter(event, nextAttempt, errorMessage);
+      } catch (RuntimeException dlqEx) {
+        log.error(
+            "Failed to publish outbox event id={} to DLQ topic: {}",
+            event.getId(),
+            dlqEx.getMessage());
+      }
       log.error(
           "Outbox event id={} idempotencyKey={} moved to DEAD_LETTER after {} attempts: {}",
           event.getId(),

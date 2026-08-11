@@ -1,0 +1,12 @@
+groups:
+  - name: claims-outbox
+    rules:
+      - alert: ClaimsOutboxLagHigh
+        expr: claims_outbox_lag_seconds{service="claims-svc"} > 30
+        for: 1m
+        labels:
+          severity: warning
+          service: claims-svc
+        annotations:
+          summary: Claims outbox lag exceeds 30s SLO
+          description: Oldest unpublished claims outbox event is {{ $value }}s old.

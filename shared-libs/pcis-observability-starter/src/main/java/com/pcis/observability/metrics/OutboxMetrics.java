@@ -29,6 +29,14 @@ public class OutboxMetrics {
   static final String RELAY_ERRORS_METRIC = "pcis_audit_outbox_relay_errors_total";
   static final String PUBLISH_DURATION_METRIC = "pcis_audit_outbox_publish_duration_seconds";
 
+  private final String pendingMetric;
+  private final String lagMetric;
+  private final String publishedMetric;
+  private final String relayedMetric;
+  private final String deadLetterMetric;
+  private final String publishFailuresMetric;
+  private final String publishDurationMetric;
+
   private final OutboxEventMetricsRepository repository;
   private final AtomicReference<Double> pendingCount = new AtomicReference<>(0.0);
   private final AtomicReference<Double> lagSeconds = new AtomicReference<>(0.0);
@@ -40,38 +48,58 @@ public class OutboxMetrics {
 
   public OutboxMetrics(
       MeterRegistry registry, OutboxEventMetricsRepository repository, String serviceName) {
+    this(registry, repository, serviceName, "pcis_audit_outbox");
+  }
+
+  public OutboxMetrics(
+      MeterRegistry registry,
+      OutboxEventMetricsRepository repository,
+      String serviceName,
+      String metricsNamespace) {
     this.repository = repository;
+    String namespace =
+        StringUtils.hasText(metricsNamespace) ? metricsNamespace.trim() : "pcis_audit_outbox";
+    pendingMetric = namespace + "_pending_count";
+    lagMetric = namespace + "_lag_seconds";
+    publishedMetric = namespace + "_published_total";
+    relayedMetric = namespace + "_relayed_total";
+    deadLetterMetric = namespace + "_dead_letter_total";
+    publishFailuresMetric =
+        "claims_outbox".equals(namespace)
+            ? namespace + "_publish_failures_total"
+            : namespace + "_relay_errors_total";
+    publishDurationMetric = namespace + "_publish_duration_seconds";
     String service = StringUtils.hasText(serviceName) ? serviceName : "pcis-service";
-    Gauge.builder(PENDING_METRIC, pendingCount, ref -> ref.get())
+    Gauge.builder(pendingMetric, pendingCount, ref -> ref.get())
         .description("Unpublished outbox events awaiting relay")
         .tag("service", service)
         .register(registry);
-    Gauge.builder(LAG_METRIC, lagSeconds, ref -> ref.get())
+    Gauge.builder(lagMetric, lagSeconds, ref -> ref.get())
         .description("Age in seconds of the oldest unpublished outbox event")
         .tag("service", service)
         .register(registry);
     publishedCounter =
-        Counter.builder(PUBLISHED_METRIC)
+        Counter.builder(publishedMetric)
             .description("Outbox events successfully published to Kafka")
             .tag("service", service)
             .register(registry);
     relayedCounter =
-        Counter.builder(RELAYED_METRIC)
+        Counter.builder(relayedMetric)
             .description("Outbox events relayed to Kafka")
             .tag("service", service)
             .register(registry);
     deadLetterCounter =
-        Counter.builder(DEAD_LETTER_METRIC)
+        Counter.builder(deadLetterMetric)
             .description("Outbox events moved to dead letter after max retries")
             .tag("service", service)
             .register(registry);
     relayErrorsCounter =
-        Counter.builder(RELAY_ERRORS_METRIC)
+        Counter.builder(publishFailuresMetric)
             .description("Outbox relay publish failures")
             .tag("service", service)
             .register(registry);
     publishDuration =
-        Timer.builder(PUBLISH_DURATION_METRIC)
+        Timer.builder(publishDurationMetric)
             .description("Kafka publish latency for outbox relay")
             .tag("service", service)
             .register(registry);

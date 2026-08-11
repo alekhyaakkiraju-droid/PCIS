@@ -40,9 +40,10 @@ public class OutboxAutoConfiguration {
   OutboxMetrics outboxMetrics(
       MeterRegistry registry,
       OutboxEventMetricsRepository repository,
+      OutboxProperties properties,
       org.springframework.core.env.Environment environment) {
     String serviceName = environment.getProperty("spring.application.name", "pcis-service");
-    return new OutboxMetrics(registry, repository, serviceName);
+    return new OutboxMetrics(registry, repository, serviceName, properties.getMetricsNamespace());
   }
 
   @Bean

@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "ClaimCreated",
+  "namespace": "com.pcis.claims.events",
+  "doc": "Claim FNOL registered. Backward-compatible: only add optional fields with defaults.",
+  "fields": [
+    {"name": "claimNbr", "type": "string"},
+    {"name": "policyNbr", "type": ["null", "string"], "default": null},
+    {"name": "lossDate", "type": ["null", "string"], "default": null},
+    {"name": "occurredAt", "type": "string"}
+  ]
+}

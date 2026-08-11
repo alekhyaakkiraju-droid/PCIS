@@ -23,6 +23,12 @@ public class OutboxProperties {
   /** Enables the scheduled relay when true. */
   private boolean relayEnabled = true;
 
+  /** Micrometer metric namespace prefix (e.g. {@code claims_outbox} → {@code claims_outbox_lag_seconds}). */
+  private String metricsNamespace = "pcis_audit_outbox";
+
+  /** Optional Kafka dead-letter topic; when set, events moved to DEAD_LETTER are also published here. */
+  private String dlqKafkaTopic;
+
   public long getRelayIntervalMs() {
     return relayIntervalMs;
   }
@@ -69,5 +75,21 @@ public class OutboxProperties {
 
   public void setRelayEnabled(boolean relayEnabled) {
     this.relayEnabled = relayEnabled;
+  }
+
+  public String getMetricsNamespace() {
+    return metricsNamespace;
+  }
+
+  public void setMetricsNamespace(String metricsNamespace) {
+    this.metricsNamespace = metricsNamespace;
+  }
+
+  public String getDlqKafkaTopic() {
+    return dlqKafkaTopic;
+  }
+
+  public void setDlqKafkaTopic(String dlqKafkaTopic) {
+    this.dlqKafkaTopic = dlqKafkaTopic;
   }
 }

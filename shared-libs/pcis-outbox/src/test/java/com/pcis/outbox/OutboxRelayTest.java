@@ -70,6 +70,23 @@ class OutboxRelayTest {
   }
 
   @Test
+  void relaySingleEvent_movesToDeadLetterAndPublishesDlqAfterMaxRetries() {
+    properties.setDlqKafkaTopic("audit-events-dlq");
+    OutboxEvent event = pendingEvent();
+    event.setAttemptCount(2);
+    doThrow(new KafkaOutboxEventPublisher.OutboxPublishException("kafka down", new RuntimeException()))
+        .when(publisher)
+        .publish(event);
+
+    relay.relaySingleEvent(event);
+
+    assertThat(event.getStatus()).isEqualTo(OutboxEventStatus.DEAD_LETTER);
+    assertThat(event.getAttemptCount()).isEqualTo(3);
+    verify(publisher).publishToDeadLetter(event, 3, event.getLastError());
+    verify(outboxMetrics).recordDeadLetter();
+  }
+
+  @Test
   void relaySingleEvent_schedulesRetryOnPublishFailure() {
     OutboxEvent event = pendingEvent();
     doThrow(new KafkaOutboxEventPublisher.OutboxPublishException("kafka down", new RuntimeException()))

@@ -110,6 +110,12 @@
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
 
+    <!-- Kafka producer for claims domain event outbox relay -->
+    <dependency>
+      <groupId>org.springframework.kafka</groupId>
+      <artifactId>spring-kafka</artifactId>
+    </dependency>
+
     <!-- Structured JSON logging -->
     <dependency>
       <groupId>net.logstash.logback</groupId>
@@ -136,6 +142,11 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.kafka</groupId>
+      <artifactId>spring-kafka-test</artifactId>
       <scope>test</scope>
     </dependency>
     <!-- Nimbus JOSE for TestJwtFactory — RSA-signed JWT generation in tests -->

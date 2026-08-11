@@ -1,0 +1,11 @@
+{
+  "type": "record",
+  "name": "ClaimClosed",
+  "namespace": "com.pcis.claims.events",
+  "doc": "Claim closed with final status.",
+  "fields": [
+    {"name": "claimNbr", "type": "string"},
+    {"name": "closedReason", "type": ["null", "string"], "default": null},
+    {"name": "closedAt", "type": "string"}
+  ]
+}
