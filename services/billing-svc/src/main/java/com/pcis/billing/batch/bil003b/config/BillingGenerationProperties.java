@@ -9,6 +9,8 @@ public class BillingGenerationProperties {
   private int leadDays = 15;
   private String programName = "BIL003B";
   private java.time.LocalDate referenceDate = java.time.LocalDate.parse("2024-06-15");
+  /** Test-only: throw {@code TemporaryException} for this policy number when set. */
+  private String failPolicyForTest;
 
   public int getChunkSize() {
     return chunkSize;
@@ -40,5 +42,13 @@ public class BillingGenerationProperties {
 
   public void setReferenceDate(java.time.LocalDate referenceDate) {
     this.referenceDate = referenceDate;
+  }
+
+  public String getFailPolicyForTest() {
+    return failPolicyForTest;
+  }
+
+  public void setFailPolicyForTest(String failPolicyForTest) {
+    this.failPolicyForTest = failPolicyForTest;
   }
 }

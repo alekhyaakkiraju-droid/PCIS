@@ -45,6 +45,8 @@ pcis:
     loader-enabled: false
   outbox:
     relay-enabled: false
+  batch:
+    skip-threshold: 100
   billing:
     generation:
       reference-date: 2024-06-15
