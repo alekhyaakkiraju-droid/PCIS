@@ -24,6 +24,12 @@ pcis:
     retention-days: 365
     chunk-size: 1000
     program-name: AUD002B
+    purge:
+      enabled: true
+      program-name: AUDPURGE
+      kms-waiting-period-days: 7
+      kms-enabled: false
+      advisory-lock-key: 171001
   tunables:
     numeric-defaults:
       audit.retention.days: 365

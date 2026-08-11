@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class RetentionConfigService {
 
-  static final int POLICY_MINIMUM_RETENTION_DAYS = 365;
+  public static final int POLICY_MINIMUM_RETENTION_DAYS = 365;
 
   private final TunableResolver tunableResolver;
   private final AuditArchiveProperties properties;
