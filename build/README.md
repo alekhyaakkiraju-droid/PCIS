@@ -52,7 +52,11 @@ The Shipping pipeline invokes `build/scripts/build_legacy.sh` as the only sancti
 python3 -m unittest discover -s build/tests -v
 make validate-data-dictionary
 make test-data-dictionary
+make test-monetary-precision
 ```
 
 `validate-data-dictionary` compares `docs/data-dictionary.yaml` against
 `shared-libs/pcis-schema/db/migration/V1__baseline_schema.sql` (WO-150).
+
+`test-monetary-precision` runs the WO-152 monetary column precision and
+`@Entity` BigDecimal CI gates in `shared-libs/pcis-schema`.
