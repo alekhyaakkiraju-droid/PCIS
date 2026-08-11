@@ -1,0 +1,61 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: pii-scanner
+  labels:
+    app: pii-scanner
+    app.kubernetes.io/part-of: pcis
+spec:
+  schedule: "0 3 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      template:
+        metadata:
+          labels:
+            app: pii-scanner
+        spec:
+          serviceAccountName: pii-scanner
+          restartPolicy: OnFailure
+          containers:
+            - name: pii-scanner
+              image: pcis/pii-scanner:latest
+              args:
+                - "--scan-mode=production"
+              env:
+                - name: SPRING_DATASOURCE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: pii-scanner-db
+                      key: read-replica-url
+                - name: SPRING_DATASOURCE_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: pii-scanner-db
+                      key: username
+                - name: SPRING_DATASOURCE_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: pii-scanner-db
+                      key: password
+                - name: ALERTMANAGER_WEBHOOK_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: pii-scanner-alerts
+                      key: webhook-url
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+              livenessProbe:
+                httpGet:
+                  path: /actuator/health
+                  port: 8080
+                initialDelaySeconds: 30
+                periodSeconds: 30

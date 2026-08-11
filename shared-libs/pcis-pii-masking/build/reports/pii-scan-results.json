@@ -1,0 +1,38 @@
+{
+  "scanTimestamp" : "2026-08-11T15:23:01.408229Z",
+  "tablesScanned" : 1,
+  "rowsScanned" : 6,
+  "logLinesScanned" : 0,
+  "detections" : [ {
+    "source" : "AUDIT_LOG_T",
+    "location" : "RECORD_KEY",
+    "rowId" : "7",
+    "patternType" : "VIN",
+    "snippet" : "1H...52"
+  }, {
+    "source" : "AUDIT_LOG_T",
+    "location" : "OLD_VALUE",
+    "rowId" : "8",
+    "patternType" : "SSN_NUMERIC",
+    "snippet" : "12...89"
+  }, {
+    "source" : "AUDIT_LOG_T",
+    "location" : "NEW_VALUE",
+    "rowId" : "8",
+    "patternType" : "SSN_NUMERIC",
+    "snippet" : "12...89"
+  }, {
+    "source" : "AUDIT_LOG_T",
+    "location" : "OLD_VALUE",
+    "rowId" : "9",
+    "patternType" : "SSN_DASHED",
+    "snippet" : "12...89"
+  }, {
+    "source" : "AUDIT_LOG_T",
+    "location" : "NEW_VALUE",
+    "rowId" : "9",
+    "patternType" : "SSN_DASHED",
+    "snippet" : "12...89"
+  } ],
+  "overallStatus" : "FAIL"
+}
