@@ -12,3 +12,10 @@ batch_instance_types       = ["m5.2xlarge"]
 batch_scaling              = { min_size = 0, max_size = 4, desired_size = 0 }
 enable_kubernetes_addons   = false
 argocd_automated_sync      = false
+
+# Aurora PostgreSQL (WO-131) — Multi-AZ writer/reader isolation in prd
+aurora_instance_class          = "db.r6g.xlarge"
+aurora_multi_az                = true
+aurora_engine_version          = "17.4"
+aurora_deletion_protection     = true
+aurora_backup_retention_period = 35

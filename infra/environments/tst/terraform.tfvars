@@ -12,3 +12,10 @@ batch_instance_types       = ["m5.2xlarge"]
 batch_scaling              = { min_size = 0, max_size = 4, desired_size = 0 }
 enable_kubernetes_addons   = false
 argocd_automated_sync      = true
+
+# Aurora PostgreSQL (WO-131) — single-AZ for cost in non-prod
+aurora_instance_class          = "db.r6g.large"
+aurora_multi_az                = false
+aurora_engine_version          = "17.4"
+aurora_deletion_protection     = false
+aurora_backup_retention_period = 35
