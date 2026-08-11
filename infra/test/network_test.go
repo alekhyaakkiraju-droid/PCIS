@@ -143,3 +143,58 @@ func TestModuleTagsDocumented(t *testing.T) {
 	assert.Contains(t, body, "ManagedBy")
 	assert.Contains(t, body, "Environment")
 }
+
+// TestNetworkModuleHasNatIgwAndFlowLogs asserts WO-129 NAT / IGW / flow-log resources.
+func TestNetworkModuleHasNatIgwAndFlowLogs(t *testing.T) {
+	t.Parallel()
+	main := readNetworkMain(t)
+	assert.Contains(t, main, `resource "aws_internet_gateway"`)
+	assert.Contains(t, main, `resource "aws_nat_gateway"`)
+	assert.Contains(t, main, `resource "aws_flow_log"`)
+	assert.Contains(t, main, `resource "aws_s3_bucket" "flow_logs"`)
+	assert.Contains(t, main, "flow_log_retention_days")
+}
+
+// TestNetworkSecurityGroupsDefaultDenyAndExplicitAllows covers SG ACs.
+func TestNetworkSecurityGroupsDefaultDenyAndExplicitAllows(t *testing.T) {
+	t.Parallel()
+	main := readNetworkMain(t)
+	assert.Contains(t, main, `resource "aws_default_security_group"`)
+	assert.Contains(t, main, "deny all inbound")
+	assert.Contains(t, main, `resource "aws_security_group" "alb"`)
+	assert.Contains(t, main, "from_port   = 443")
+	assert.Contains(t, main, `resource "aws_security_group" "mesh"`)
+	assert.Contains(t, main, `resource "aws_security_group" "database"`)
+	assert.Contains(t, main, "from_port   = 5432")
+	assert.Contains(t, main, "private_app_subnet_cidrs")
+}
+
+// TestRemoteBackendConfiguredWithS3AndDynamoDB covers remote-state AC.
+func TestRemoteBackendConfiguredWithS3AndDynamoDB(t *testing.T) {
+	t.Parallel()
+	backend := readFile(t, filepath.Join(repoRoot(t), "backend.tf"))
+	assert.Contains(t, backend, `backend "s3"`)
+	assert.Contains(t, backend, "pcis-terraform-state")
+	assert.Contains(t, backend, "pcis-terraform-locks")
+	assert.Contains(t, backend, "dynamodb_table")
+
+	for _, env := range []string{"dev", "tst", "prd"} {
+		hcl := readFile(t, filepath.Join(repoRoot(t), "environments", env, "backend.hcl"))
+		assert.Contains(t, hcl, "pcis-terraform-state")
+		assert.Contains(t, hcl, "pcis-terraform-locks")
+		assert.Contains(t, hcl, env+"/network/terraform.tfstate")
+	}
+}
+
+// TestSingleNatModeRoutesAllPrivateSubnets documents the cost-optimized edge case.
+func TestSingleNatModeRoutesAllPrivateSubnets(t *testing.T) {
+	t.Parallel()
+	main := readNetworkMain(t)
+	assert.Contains(t, main, "Single-NAT mode still routes ALL private subnets")
+	assert.Contains(t, main, "enable_ha_nat ? count.index : 0")
+}
+
+func readNetworkMain(t *testing.T) string {
+	t.Helper()
+	return readFile(t, filepath.Join(repoRoot(t), "modules", "network", "main.tf"))
+}
