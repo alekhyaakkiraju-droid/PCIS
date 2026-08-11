@@ -1,0 +1,55 @@
+{
+  "completionStatus": "COMPLETED",
+  "displayOutput": "TEST START\nTEST END\n",
+  "formatVersion": "1.0.0",
+  "program": "TESTFIX",
+  "referenceDate": "2024-06-15",
+  "runLog": {
+    "programName": "TESTFIX",
+    "rowsProcessed": 1,
+    "runEnded": "NORMALIZED_TS",
+    "runStarted": "NORMALIZED_TS",
+    "status": "COMPLETED"
+  },
+  "scenario": "pass-case",
+  "tables": [
+    {
+      "businessKeys": ["POLICY_ID", "INSTALLMENT_NO"],
+      "columns": [
+        {"name": "POLICY_ID", "type": "STRING"},
+        {"name": "INSTALLMENT_NO", "type": "INTEGER"},
+        {"name": "AMOUNT", "type": "NUMERIC(11,2)"},
+        {"name": "INSTALLMENT_ID", "type": "SURROGATE"},
+        {"name": "NOTES", "type": "STRING"}
+      ],
+      "rows": [
+        {
+          "AMOUNT": "100.00",
+          "INSTALLMENT_ID": "SEQ_001",
+          "INSTALLMENT_NO": 1,
+          "NOTES": "baseline",
+          "POLICY_ID": "POLTEST001"
+        }
+      ],
+      "tableName": "BILLING_INSTALLMENT_T"
+    },
+    {
+      "businessKeys": ["PROGRAM_NAME", "STATUS"],
+      "columns": [
+        {"name": "PROGRAM_NAME", "type": "STRING"},
+        {"name": "STATUS", "type": "STATUS"},
+        {"name": "ROWS_PROCESSED", "type": "INTEGER"},
+        {"name": "RUN_ID", "type": "SURROGATE"}
+      ],
+      "rows": [
+        {
+          "PROGRAM_NAME": "TESTFIX",
+          "ROWS_PROCESSED": 1,
+          "RUN_ID": "SEQ_001",
+          "STATUS": "COMPLETED"
+        }
+      ],
+      "tableName": "RPT_RUN_LOG_T"
+    }
+  ]
+}
