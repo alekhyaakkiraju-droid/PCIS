@@ -75,7 +75,7 @@ class PolicyDecisionServiceTest {
     var stubResponse =
         new com.pcis.authz.contract.AuthorizationResponse(
             AuthorizationDecision.DENY,
-            ReasonCode.PAYMENT_AUTHORITY_STUB,
+            ReasonCode.APPROVAL_MISSING,
             List.of(),
             CORRELATION_ID);
     when(paymentAuthorityService.evaluate("adjuster-001", request, CORRELATION_ID))
@@ -83,7 +83,7 @@ class PolicyDecisionServiceTest {
 
     var response = policyDecisionService.evaluate("adjuster-001", request, CORRELATION_ID);
 
-    assertThat(response.reasonCode()).isEqualTo(ReasonCode.PAYMENT_AUTHORITY_STUB);
+    assertThat(response.reasonCode()).isEqualTo(ReasonCode.APPROVAL_MISSING);
   }
 
   @Test
@@ -92,7 +92,7 @@ class PolicyDecisionServiceTest {
     var stubResponse =
         new com.pcis.authz.contract.AuthorizationResponse(
             AuthorizationDecision.DENY,
-            ReasonCode.PAYMENT_AUTHORITY_STUB,
+            ReasonCode.APPROVAL_MISSING,
             List.of(),
             CORRELATION_ID);
     when(paymentAuthorityService.evaluate("adjuster-001", request, CORRELATION_ID))
@@ -100,7 +100,7 @@ class PolicyDecisionServiceTest {
 
     var response = policyDecisionService.evaluate("adjuster-001", request, CORRELATION_ID);
 
-    assertThat(response.reasonCode()).isEqualTo(ReasonCode.PAYMENT_AUTHORITY_STUB);
+    assertThat(response.reasonCode()).isEqualTo(ReasonCode.APPROVAL_MISSING);
   }
 
   @Test

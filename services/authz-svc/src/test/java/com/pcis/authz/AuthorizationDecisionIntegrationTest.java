@@ -175,7 +175,7 @@ class AuthorizationDecisionIntegrationTest {
   }
 
   @Test
-  void initiatePaymentRoutesToPaymentAuthorityStub() throws Exception {
+  void initiatePaymentRoutesToPaymentAuthorityCheck() throws Exception {
     mockMvc
         .perform(
             post("/v1/authz/decisions")
@@ -184,11 +184,19 @@ class AuthorizationDecisionIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"resource":"claim","operation":"INITIATE_PAYMENT"}
+                    {
+                      "resource":"claim",
+                      "operation":"INITIATE_PAYMENT",
+                      "context":{
+                        "claimId":"CLM0001001",
+                        "reserveId":1001,
+                        "requestedAmount":10000.00
+                      }
+                    }
                     """))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.decision").value("DENY"))
-        .andExpect(jsonPath("$.reasonCode").value("PAYMENT_AUTHORITY_STUB"));
+        .andExpect(jsonPath("$.reasonCode").value("APPROVAL_MISSING"));
   }
 
   @Test
