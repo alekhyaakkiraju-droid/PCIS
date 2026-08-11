@@ -13,11 +13,21 @@ including the shared design system and accessible component library.
 - Storybook 8 (Vite) + addon-a11y
 - ESLint (typescript-eslint) + Prettier
 
-## Auth note
+## Auth note (WO-224)
 
-JWT access tokens are **not** stored in `localStorage`. The API gateway sets
-`httpOnly`, `Secure`, `SameSite=Strict` cookies. Frontend code must not embed
-secrets or API keys.
+JWT access tokens are **not** stored in `localStorage` or `sessionStorage`. The API
+gateway BFF completes the OIDC Authorization Code + PKCE exchange and sets
+`httpOnly`, `Secure`, `SameSite=Strict` session cookies. The SPA:
+
+- Calls `GET /api/auth/session` with `credentials: 'include'` for session state
+- Starts login via `oidc-client-ts` `signinRedirect` (PKCE state only in sessionStorage)
+- Posts the callback `code` to `POST /api/auth/callback` so the gateway can mint cookies
+- Clears client state on `POST /api/auth/logout`
+
+Configure via `VITE_OIDC_AUTHORITY`, `VITE_OIDC_CLIENT_ID`, `VITE_OIDC_REDIRECT_URI`,
+`VITE_OIDC_POST_LOGOUT_REDIRECT_URI`, and `VITE_OIDC_SCOPE`.
+
+Mock session fixtures for tests live in `fixtures/auth/`.
 
 ## Design system
 
