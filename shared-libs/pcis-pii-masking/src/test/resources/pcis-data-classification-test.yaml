@@ -1,0 +1,67 @@
+registry_version: "test-1.0.0"
+woref: WO-161-TEST
+
+tier_handling:
+  Public:
+    retention_days: 365
+    storage_encryption: false
+    access_control: anonymous
+    log_emission: allowed
+  Internal:
+    retention_days: 2555
+    storage_encryption: at-rest-optional
+    access_control: authenticated
+    log_emission: allowed
+  Confidential:
+    retention_days: 1825
+    storage_encryption: at-rest-required
+    access_control: role-based
+    log_emission: masked
+  Restricted:
+    retention_days: 2555
+    storage_encryption: at-rest-required
+    access_control: need-to-know
+    log_emission: masked-redacted
+
+entities:
+  - entity: CUSTOMER_T
+    domain: CUS
+    tier: Restricted
+    columns:
+      - column: CUST_ID
+        tier: Restricted
+        pii: false
+        mask_strategy: NONE
+      - column: TAX_ID
+        tier: Restricted
+        pii: true
+        mask_strategy: LAST_FOUR
+      - column: EMAIL
+        tier: Restricted
+        pii: true
+        mask_strategy: EMAIL_DOMAIN_ONLY
+      - column: FIRST_NAME
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+  - entity: CUSTOMER_CONTACT_T
+    domain: CUS
+    tier: Restricted
+    columns:
+      - column: CONTACT_VALUE
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        discriminator_column: CONTACT_TYPE
+  - entity: CODE_TABLE_T
+    domain: Shared
+    tier: Public
+    columns:
+      - column: CODE_TYPE
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+      - column: CODE_VALUE
+        tier: Public
+        pii: false
+        mask_strategy: NONE
