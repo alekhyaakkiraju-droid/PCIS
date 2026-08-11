@@ -1,0 +1,5 @@
+-- V1 policy-svc baseline migration placeholder.
+-- Policy domain entity tables (POLICY_T, POLICY_ENDORSEMENT_T, POLICY_RENEWAL_T, etc.)
+-- will be added in subsequent migrations once the policy domain model is finalized.
+-- No floating-point types: all monetary columns use NUMERIC with explicit precision/scale.
+-- This placeholder verifies Flyway migration infrastructure at service startup.

@@ -22,5 +22,6 @@
     <module>audit-batch</module>
     <module>reporting-svc</module>
     <module>customer-svc</module>
+    <module>policy-svc</module>
   </modules>
 </project>
