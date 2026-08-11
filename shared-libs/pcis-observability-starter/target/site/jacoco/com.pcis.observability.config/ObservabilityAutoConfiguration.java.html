@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ObservabilityAutoConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">PCIS Observability Starter</a> &gt; <a href="index.source.html" class="el_package">com.pcis.observability.config</a> &gt; <span class="el_source">ObservabilityAutoConfiguration.java</span></div><h1>ObservabilityAutoConfiguration.java</h1><pre class="source lang-java linenums">package com.pcis.observability.config;
+
+import com.pcis.observability.filter.CorrelationIdFilter;
+import com.pcis.observability.propagation.CorrelationIdRestTemplateCustomizer;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.config.MeterFilter;
+import jakarta.servlet.DispatcherType;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryCustomizer;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.client.RestTemplateCustomizer;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.core.Ordered;
+import org.springframework.core.env.Environment;
+import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
+
+/**
+ * Auto-configuration for correlation MDC, Micrometer common tags, and correlation propagation.
+ */
+@AutoConfiguration
+@EnableConfigurationProperties(ObservabilityProperties.class)
+@ConditionalOnProperty(prefix = &quot;pcis.observability&quot;, name = &quot;enabled&quot;, havingValue = &quot;true&quot;, matchIfMissing = true)
+<span class="fc" id="L30">public class ObservabilityAutoConfiguration {</span>
+
+  @Bean
+  @ConditionalOnMissingBean
+  @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+  public CorrelationIdFilter correlationIdFilter(
+      ObservabilityProperties properties, Environment environment) {
+<span class="fc" id="L37">    String serviceName = environment.getProperty(&quot;spring.application.name&quot;, &quot;pcis-service&quot;);</span>
+<span class="fc" id="L38">    return new CorrelationIdFilter(properties, serviceName);</span>
+  }
+
+  @Bean
+  @ConditionalOnMissingBean(name = &quot;correlationIdFilterRegistration&quot;)
+  @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+  public FilterRegistrationBean&lt;CorrelationIdFilter&gt; correlationIdFilterRegistration(
+      CorrelationIdFilter correlationIdFilter) {
+<span class="fc" id="L46">    FilterRegistrationBean&lt;CorrelationIdFilter&gt; registration =</span>
+        new FilterRegistrationBean&lt;&gt;(correlationIdFilter);
+<span class="fc" id="L48">    registration.setName(&quot;pcisCorrelationIdFilter&quot;);</span>
+<span class="fc" id="L49">    registration.setDispatcherTypes(DispatcherType.REQUEST, DispatcherType.ASYNC, DispatcherType.ERROR);</span>
+<span class="fc" id="L50">    registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 10);</span>
+<span class="fc" id="L51">    registration.addUrlPatterns(&quot;/*&quot;);</span>
+<span class="fc" id="L52">    return registration;</span>
+  }
+
+  @Bean
+  @ConditionalOnMissingBean(name = &quot;pcisCommonTagsMeterRegistryCustomizer&quot;)
+  public MeterRegistryCustomizer&lt;MeterRegistry&gt; pcisCommonTagsMeterRegistryCustomizer(
+      Environment environment) {
+<span class="fc" id="L59">    String service = environment.getProperty(&quot;spring.application.name&quot;, &quot;pcis-service&quot;);</span>
+<span class="fc" id="L60">    String env =</span>
+<span class="fc" id="L61">        firstNonBlank(</span>
+<span class="fc" id="L62">            environment.getProperty(&quot;pcis.observability.environment&quot;),</span>
+<span class="fc" id="L63">            environment.getProperty(&quot;spring.profiles.active&quot;),</span>
+            &quot;default&quot;);
+<span class="fc" id="L65">    return registry -&gt;</span>
+<span class="fc" id="L66">        registry.config().commonTags(&quot;service&quot;, service, &quot;environment&quot;, env.split(&quot;,&quot;)[0].trim());</span>
+  }
+
+  @Bean
+  @ConditionalOnMissingBean(name = &quot;pcisDenyHighCardinalityMeterFilter&quot;)
+  public MeterFilter pcisDenyHighCardinalityMeterFilter() {
+<span class="fc" id="L72">    return MeterFilter.denyNameStartsWith(&quot;tomcat.sessions.&quot;);</span>
+  }
+
+  @Bean
+  @ConditionalOnClass(RestTemplate.class)
+  @ConditionalOnMissingBean(CorrelationIdRestTemplateCustomizer.class)
+  public RestTemplateCustomizer correlationIdRestTemplateCustomizer(
+      ObservabilityProperties properties) {
+<span class="fc" id="L80">    return new CorrelationIdRestTemplateCustomizer(properties);</span>
+  }
+
+  @Bean
+  @ConditionalOnMissingBean(name = &quot;pcisTraceSampleRateConfigurer&quot;)
+  public TraceSampleRateConfigurer pcisTraceSampleRateConfigurer(
+      ObservabilityProperties properties, ObjectProvider&lt;Environment&gt; environment) {
+<span class="fc" id="L87">    return new TraceSampleRateConfigurer(properties, environment.getIfAvailable());</span>
+  }
+
+  private static String firstNonBlank(String... values) {
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">    if (values == null) {</span>
+<span class="nc" id="L92">      return null;</span>
+    }
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">    for (String value : values) {</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">      if (StringUtils.hasText(value)) {</span>
+<span class="fc" id="L96">        return value;</span>
+      }
+    }
+<span class="nc" id="L99">    return null;</span>
+  }
+
+  /**
+   * Applies {@code pcis.observability.trace-sample-rate} to the OTel sampler argument when the
+   * process property is unset.
+   */
+  public static final class TraceSampleRateConfigurer {
+
+    private final double sampleRate;
+
+<span class="fc" id="L110">    TraceSampleRateConfigurer(ObservabilityProperties properties, Environment environment) {</span>
+<span class="fc" id="L111">      this.sampleRate = properties.getTraceSampleRate();</span>
+<span class="fc" id="L112">      String argKey = &quot;otel.traces.sampler.arg&quot;;</span>
+<span class="fc" id="L113">      boolean alreadySet =</span>
+<span class="pc bpc" id="L114" title="1 of 4 branches missed.">          System.getProperty(argKey) != null</span>
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">              || (environment != null &amp;&amp; environment.getProperty(argKey) != null);</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">      if (!alreadySet) {</span>
+<span class="fc" id="L117">        System.setProperty(argKey, Double.toString(sampleRate));</span>
+      }
+<span class="pc bpc" id="L119" title="1 of 4 branches missed.">      if (System.getProperty(&quot;otel.traces.sampler&quot;) == null</span>
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">          &amp;&amp; (environment == null || environment.getProperty(&quot;otel.traces.sampler&quot;) == null)) {</span>
+<span class="fc" id="L121">        System.setProperty(&quot;otel.traces.sampler&quot;, &quot;parentbased_traceidratio&quot;);</span>
+      }
+<span class="fc" id="L123">    }</span>
+
+    public double getSampleRate() {
+<span class="fc" id="L126">      return sampleRate;</span>
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

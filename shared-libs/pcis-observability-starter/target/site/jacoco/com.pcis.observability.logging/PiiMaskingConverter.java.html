@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PiiMaskingConverter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">PCIS Observability Starter</a> &gt; <a href="index.source.html" class="el_package">com.pcis.observability.logging</a> &gt; <span class="el_source">PiiMaskingConverter.java</span></div><h1>PiiMaskingConverter.java</h1><pre class="source lang-java linenums">package com.pcis.observability.logging;
+
+import ch.qos.logback.classic.pattern.ClassicConverter;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * Logback {@link ClassicConverter} that redacts Restricted-tier PII (SSN/tax ID, phone, email)
+ * from log messages before emission.
+ *
+ * &lt;p&gt;Masking formats:
+ * &lt;ul&gt;
+ *   &lt;li&gt;SSN / tax ID ({@code ddd-dd-dddd} or 9 consecutive digits): {@code ***-**-****}&lt;/li&gt;
+ *   &lt;li&gt;Phone (10+ digit sequences / common NA formats): {@code ****-last4}&lt;/li&gt;
+ *   &lt;li&gt;Email: {@code first2***@domain}&lt;/li&gt;
+ * &lt;/ul&gt;
+ */
+<span class="fc" id="L19">public class PiiMaskingConverter extends ClassicConverter {</span>
+
+<span class="fc" id="L21">  private static final Pattern SSN_DASHED =</span>
+<span class="fc" id="L22">      Pattern.compile(&quot;(?&lt;!\\d)\\d{3}-\\d{2}-\\d{4}(?!\\d)&quot;);</span>
+  /** Nine-digit tax ids; avoid matching hex fragments inside UUIDs. */
+<span class="fc" id="L24">  private static final Pattern SSN_PLAIN =</span>
+<span class="fc" id="L25">      Pattern.compile(&quot;(?&lt;![A-Za-z0-9])\\d{9}(?![A-Za-z0-9])&quot;);</span>
+<span class="fc" id="L26">  private static final Pattern PHONE =</span>
+<span class="fc" id="L27">      Pattern.compile(</span>
+          &quot;(?&lt;!\\d)(?:\\+?1[-.\\s]?)?(?:\\(?\\d{3}\\)?[-.\\s]?)\\d{3}[-.\\s]?\\d{4}(?!\\d)&quot;);
+<span class="fc" id="L29">  private static final Pattern EMAIL =</span>
+<span class="fc" id="L30">      Pattern.compile(</span>
+          &quot;(?i)\\b([A-Za-z0-9._%+-]{1,64})@([A-Za-z0-9.-]+\\.[A-Za-z]{2,63})\\b&quot;);
+
+  @Override
+  public String convert(ILoggingEvent event) {
+<span class="fc bfc" id="L35" title="All 2 branches covered.">    if (event == null) {</span>
+<span class="fc" id="L36">      return &quot;&quot;;</span>
+    }
+<span class="fc" id="L38">    String message = event.getFormattedMessage();</span>
+<span class="fc bfc" id="L39" title="All 2 branches covered.">    if (message == null) {</span>
+<span class="fc" id="L40">      return &quot;&quot;;</span>
+    }
+    try {
+<span class="fc" id="L43">      return maskPii(message);</span>
+<span class="nc" id="L44">    } catch (RuntimeException ex) {</span>
+      // Never break the logging pipeline
+      try {
+<span class="nc" id="L47">        addWarn(&quot;PII masking failed; emitting original message: &quot; + ex.getMessage());</span>
+<span class="nc" id="L48">      } catch (RuntimeException ignored) {</span>
+        // Context may be unavailable in unit tests
+<span class="nc" id="L50">      }</span>
+<span class="nc" id="L51">      return message;</span>
+    }
+  }
+
+  /**
+   * Applies all PII masking rules to the given text. Public for unit tests and reuse from
+   * throwable / JSON providers.
+   */
+  public static String maskPii(String input) {
+<span class="pc bpc" id="L60" title="2 of 4 branches missed.">    if (input == null || input.isEmpty()) {</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">      return input == null ? &quot;&quot; : input;</span>
+    }
+<span class="fc" id="L63">    String masked = SSN_DASHED.matcher(input).replaceAll(&quot;***-**-****&quot;);</span>
+<span class="fc" id="L64">    masked = SSN_PLAIN.matcher(masked).replaceAll(&quot;***-**-****&quot;);</span>
+<span class="fc" id="L65">    masked = maskPhones(masked);</span>
+<span class="fc" id="L66">    masked = maskEmails(masked);</span>
+<span class="fc" id="L67">    return masked;</span>
+  }
+
+  private static String maskPhones(String input) {
+<span class="fc" id="L71">    Matcher matcher = PHONE.matcher(input);</span>
+<span class="fc" id="L72">    StringBuffer sb = new StringBuffer();</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">    while (matcher.find()) {</span>
+<span class="fc" id="L74">      String digits = matcher.group().replaceAll(&quot;\\D&quot;, &quot;&quot;);</span>
+<span class="pc bpc" id="L75" title="1 of 2 branches missed.">      if (digits.length() &lt; 10) {</span>
+<span class="nc" id="L76">        matcher.appendReplacement(sb, Matcher.quoteReplacement(matcher.group()));</span>
+<span class="nc" id="L77">        continue;</span>
+      }
+<span class="fc" id="L79">      String last4 = digits.substring(digits.length() - 4);</span>
+<span class="fc" id="L80">      matcher.appendReplacement(sb, Matcher.quoteReplacement(&quot;****-&quot; + last4));</span>
+<span class="fc" id="L81">    }</span>
+<span class="fc" id="L82">    matcher.appendTail(sb);</span>
+<span class="fc" id="L83">    return sb.toString();</span>
+  }
+
+  private static String maskEmails(String input) {
+<span class="fc" id="L87">    Matcher matcher = EMAIL.matcher(input);</span>
+<span class="fc" id="L88">    StringBuffer sb = new StringBuffer();</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">    while (matcher.find()) {</span>
+<span class="fc" id="L90">      String local = matcher.group(1);</span>
+<span class="fc" id="L91">      String domain = matcher.group(2);</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">      String prefix = local.length() &lt;= 2 ? local : local.substring(0, 2);</span>
+<span class="fc" id="L93">      matcher.appendReplacement(sb, Matcher.quoteReplacement(prefix + &quot;***@&quot; + domain));</span>
+<span class="fc" id="L94">    }</span>
+<span class="fc" id="L95">    matcher.appendTail(sb);</span>
+<span class="fc" id="L96">    return sb.toString();</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,5 @@
+Customer tax id ***-**-**** contacted at ja***@example.com phone ****-4567
+Plain SSN ***-**-**** and email al***@pcis.example
+Mixed: SSN ***-**-**** PHONE ****-0100 EMAIL bo***@acme.org
+Exception payload contains ***-**-**** and vi***@mail.test
+No PII in this operational heartbeat message

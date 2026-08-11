@@ -1,0 +1,9 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+PCIS Observability Starter,com.pcis.observability.logging,PiiMaskingConverter,24,144,5,13,8,41,4,11,0,6
+PCIS Observability Starter,com.pcis.observability.config,ObservabilityAutoConfiguration.TraceSampleRateConfigurer,0,46,4,10,0,13,4,5,0,2
+PCIS Observability Starter,com.pcis.observability.config,ObservabilityProperties,4,32,0,4,2,9,1,6,1,4
+PCIS Observability Starter,com.pcis.observability.config,ObservabilityAutoConfiguration,4,146,2,4,2,23,2,10,0,9
+PCIS Observability Starter,com.pcis.observability.propagation,CorrelationIdRestTemplateCustomizer.CorrelationIdInterceptor,1,32,2,2,0,10,2,2,0,2
+PCIS Observability Starter,com.pcis.observability.propagation,CorrelationIdRestTemplateCustomizer,0,16,0,0,0,5,0,2,0,2
+PCIS Observability Starter,com.pcis.observability.filter,CorrelationIdFilter,32,187,12,24,9,53,12,16,1,9
+PCIS Observability Starter,com.pcis.observability.env,ObservabilityEnvironmentPostProcessor,2,91,0,0,1,19,1,2,1,2

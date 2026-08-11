@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ObservabilityEnvironmentPostProcessor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">PCIS Observability Starter</a> &gt; <a href="index.source.html" class="el_package">com.pcis.observability.env</a> &gt; <span class="el_source">ObservabilityEnvironmentPostProcessor.java</span></div><h1>ObservabilityEnvironmentPostProcessor.java</h1><pre class="source lang-java linenums">package com.pcis.observability.env;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.env.EnvironmentPostProcessor;
+import org.springframework.core.Ordered;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.MapPropertySource;
+
+/**
+ * Registers low-precedence actuator / OTel defaults so applications can override them.
+ */
+<span class="fc" id="L14">public class ObservabilityEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {</span>
+
+  public static final String PROPERTY_SOURCE_NAME = &quot;pcisObservabilityDefaults&quot;;
+
+  @Override
+  public void postProcessEnvironment(
+      ConfigurableEnvironment environment, SpringApplication application) {
+<span class="fc" id="L21">    Map&lt;String, Object&gt; defaults = new LinkedHashMap&lt;&gt;();</span>
+
+<span class="fc" id="L23">    defaults.put(&quot;management.endpoints.web.exposure.include&quot;, &quot;health,info,prometheus,metrics&quot;);</span>
+<span class="fc" id="L24">    defaults.put(&quot;management.endpoint.health.probes.enabled&quot;, &quot;true&quot;);</span>
+<span class="fc" id="L25">    defaults.put(&quot;management.endpoint.health.show-details&quot;, &quot;when_authorized&quot;);</span>
+<span class="fc" id="L26">    defaults.put(&quot;management.endpoint.health.group.liveness.include&quot;, &quot;ping,livenessState&quot;);</span>
+    // db / keycloak / flyway are included when those indicators exist; missing ones are ignored
+<span class="fc" id="L28">    defaults.put(&quot;management.endpoint.health.group.readiness.include&quot;, &quot;readinessState,db,keycloak&quot;);</span>
+<span class="fc" id="L29">    defaults.put(&quot;management.endpoint.health.group.startup.include&quot;, &quot;ping,flyway&quot;);</span>
+<span class="fc" id="L30">    defaults.put(&quot;management.prometheus.metrics.export.enabled&quot;, &quot;true&quot;);</span>
+<span class="fc" id="L31">    defaults.put(&quot;management.metrics.distribution.percentiles-histogram.http.server.requests&quot;, &quot;true&quot;);</span>
+
+<span class="fc" id="L33">    defaults.put(&quot;pcis.observability.trace-sample-rate&quot;, &quot;0.1&quot;);</span>
+
+<span class="fc" id="L35">    String sampleRate = environment.getProperty(&quot;pcis.observability.trace-sample-rate&quot;, &quot;0.1&quot;);</span>
+<span class="fc" id="L36">    defaults.put(&quot;otel.traces.sampler&quot;, &quot;parentbased_traceidratio&quot;);</span>
+<span class="fc" id="L37">    defaults.put(&quot;otel.traces.sampler.arg&quot;, sampleRate);</span>
+
+    // Prefer silent local/dev when no collector is configured
+<span class="fc" id="L40">    defaults.put(&quot;otel.exporter.otlp.endpoint&quot;, &quot;http://localhost:4317&quot;);</span>
+<span class="fc" id="L41">    defaults.put(&quot;otel.metrics.exporter&quot;, &quot;none&quot;);</span>
+<span class="fc" id="L42">    defaults.put(&quot;otel.logs.exporter&quot;, &quot;none&quot;);</span>
+
+<span class="fc" id="L44">    environment.getPropertySources().addLast(new MapPropertySource(PROPERTY_SOURCE_NAME, defaults));</span>
+<span class="fc" id="L45">  }</span>
+
+  @Override
+  public int getOrder() {
+<span class="nc" id="L49">    return Ordered.LOWEST_PRECEDENCE - 100;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

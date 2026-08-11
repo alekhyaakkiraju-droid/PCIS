@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Include from a service logback-spring.xml:
+
+    <include resource="logback-spring-defaults.xml"/>
+
+  Provides JSON structured logging (LogstashEncoder) with PII masking via %maskedMsg
+  and MDC fields correlationId, service, program, actor, resource, operation.
+-->
+<included>
+  <conversionRule conversionWord="maskedMsg"
+                  class="com.pcis.observability.logging.PiiMaskingConverter"/>
+
+  <springProperty name="SERVICE_NAME" source="spring.application.name" defaultValue="pcis-service"/>
+
+  <appender name="PCIS_JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+      <providers>
+        <timestamp>
+          <fieldName>@timestamp</fieldName>
+        </timestamp>
+        <logLevel>
+          <fieldName>level</fieldName>
+        </logLevel>
+        <loggerName>
+          <fieldName>logger</fieldName>
+        </loggerName>
+        <threadName>
+          <fieldName>thread</fieldName>
+        </threadName>
+        <pattern>
+          <omitEmptyFields>true</omitEmptyFields>
+          <pattern>
+            {
+              "message": "%maskedMsg",
+              "service": "${SERVICE_NAME}",
+              "correlationId": "%mdc{correlationId:-}",
+              "program": "%mdc{program:-}",
+              "actor": "%mdc{actor:-}",
+              "resource": "%mdc{resource:-}",
+              "operation": "%mdc{operation:-}",
+              "jobId": "%mdc{jobId:-}",
+              "runId": "%mdc{runId:-}"
+            }
+          </pattern>
+        </pattern>
+        <stackTrace>
+          <fieldName>stack_trace</fieldName>
+        </stackTrace>
+      </providers>
+    </encoder>
+  </appender>
+
+  <logger name="com.pcis" level="INFO"/>
+
+  <root level="INFO">
+    <appender-ref ref="PCIS_JSON_CONSOLE"/>
+  </root>
+</included>
