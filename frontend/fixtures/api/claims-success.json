@@ -1,0 +1,48 @@
+{
+  "content": [
+    {
+      "claimNbr": "CLM000001",
+      "polNbr": "POL-2024-001",
+      "custId": 100001,
+      "lossDate": "2025-03-15",
+      "claimType": "AUT",
+      "claimStatus": "O",
+      "crtTimestamp": "2025-03-16T08:30:00Z",
+      "updTimestamp": "2025-06-20T14:00:00Z",
+      "reserves": [
+        {
+          "reserveId": 1001,
+          "reserveType": "BI",
+          "approvedAmt": "50000.00",
+          "paidToDate": "12500.00",
+          "reserveStatus": "A"
+        }
+      ]
+    },
+    {
+      "claimNbr": "CLM000002",
+      "polNbr": "POL-2024-002",
+      "custId": 100002,
+      "lossDate": "2025-04-22",
+      "claimType": "PRP",
+      "claimStatus": "O",
+      "crtTimestamp": "2025-04-23T10:15:00Z",
+      "updTimestamp": "2025-07-01T09:30:00Z",
+      "reserves": [
+        {
+          "reserveId": 1002,
+          "reserveType": "PD",
+          "approvedAmt": "25000.00",
+          "paidToDate": "0.00",
+          "reserveStatus": "A"
+        }
+      ]
+    }
+  ],
+  "page": {
+    "size": 20,
+    "number": 0,
+    "totalElements": 2,
+    "totalPages": 1
+  }
+}

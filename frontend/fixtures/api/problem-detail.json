@@ -1,0 +1,47 @@
+{
+  "forbidden": {
+    "type": "https://pcis.example.com/problems/forbidden",
+    "title": "Forbidden",
+    "status": 403,
+    "detail": "Adjuster authority limit of $25,000.00 exceeded for requested payment of $50,000.00",
+    "instance": "/api/v1/claims/CLM000001/payments"
+  },
+  "unauthorized": {
+    "type": "https://pcis.example.com/problems/unauthorized",
+    "title": "Unauthorized",
+    "status": 401,
+    "detail": "Bearer token has expired",
+    "instance": "/api/v1/claims"
+  },
+  "not_found": {
+    "type": "https://pcis.example.com/problems/not-found",
+    "title": "Not Found",
+    "status": 404,
+    "detail": "Claim CLM999999 does not exist or you do not have access",
+    "instance": "/api/v1/claims/CLM999999"
+  },
+  "validation": {
+    "type": "https://pcis.example.com/problems/validation",
+    "title": "Validation Error",
+    "status": 422,
+    "detail": "One or more fields failed validation",
+    "instance": "/api/v1/claims/CLM000001/payments",
+    "invalid-params": [
+      {
+        "name": "paymentAmt",
+        "reason": "Must be greater than 0"
+      },
+      {
+        "name": "payeeId",
+        "reason": "Payee ID is required"
+      }
+    ]
+  },
+  "bad_gateway": {
+    "type": "https://pcis.example.com/problems/bad-gateway",
+    "title": "Bad Gateway",
+    "status": 502,
+    "detail": "An upstream service is temporarily unavailable. Please retry your request.",
+    "instance": "/api/v1/claims"
+  }
+}
