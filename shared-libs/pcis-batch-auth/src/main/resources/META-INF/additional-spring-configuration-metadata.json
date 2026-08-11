@@ -1,0 +1,30 @@
+{
+  "properties": [
+    {
+      "name": "pcis.batch.oauth2.token-uri",
+      "type": "java.lang.String",
+      "description": "OAuth2 token endpoint URI for client-credentials grant."
+    },
+    {
+      "name": "pcis.batch.oauth2.client-id",
+      "type": "java.lang.String",
+      "description": "OAuth2 client identifier for the batch workload."
+    },
+    {
+      "name": "pcis.batch.oauth2.client-secret-ref",
+      "type": "java.lang.String",
+      "description": "ARN or placeholder reference to the client secret in the managed secret store (never plaintext in yaml)."
+    },
+    {
+      "name": "pcis.batch.oauth2.scope",
+      "type": "java.lang.String",
+      "description": "Optional OAuth2 scope requested for the batch workload token."
+    },
+    {
+      "name": "pcis.batch.oauth2.expiration-buffer-seconds",
+      "type": "java.lang.Integer",
+      "description": "Seconds before token expiry to proactively refresh the cached access token.",
+      "defaultValue": 30
+    }
+  ]
+}
