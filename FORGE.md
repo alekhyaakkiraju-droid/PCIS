@@ -42,3 +42,10 @@
 - **Files:** 1 (+4/-0)
 - **Duration:** 197ss
 - **Approach:** Almost all WO-246 artifacts were already committed (AuthProvider, ProtectedRoute, LoginCallback, role-menu-config, Sidebar role filtering, session fixtures, OIDC config, test suite). The single gap was AC5: ForbiddenPage was missing its return-to-dashboard link. Added `<Link to="/">Return to dashboard</Link>` via react-router Link, satisfying the accessible navigation requirement equivalent to MENUMD1-91 error handling.
+
+## WO-224: User Story: WO-224 - OIDC PKCE Login and Role-Based Navigation
+- **Status:** completed
+- **Commit:** `6bf04b3`
+- **Files:** 9 (+234/-0)
+- **Duration:** 556ss
+- **Approach:** The core OIDC PKCE authentication implementation (AuthContext/AuthProvider, ProtectedRoute, ForbiddenPage, LoginCallback, Sidebar, role-menu-config, oidc-config, session-api, errors, and unit tests) was already present in the repository from a prior implementation. The missing pieces were: (1) session fixtures for UNDERWRITER, FINANCE, and COMPLIANCE roles needed for AC 9; (2) .env.development and .env.example files for VITE_OIDC_* environment variable configuration required by the Technical Details section; (3) a Playwright E2E test required by AC 8. Added @playwright/test to devDependencies, created playwright.config.ts with Chromium project and optional webServer, and wrote e2e/auth.spec.ts covering unauthenticated PKCE redirect, role-based sidebar visibility (adjuster/CSR), 403 Forbidden page, and logout using Playwright route interception to mock BFF and Keycloak endpoints.

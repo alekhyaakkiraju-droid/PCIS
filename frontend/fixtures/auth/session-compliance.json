@@ -1,0 +1,9 @@
+{
+  "authenticated": true,
+  "user": {
+    "sub": "compliance-claire",
+    "name": "Claire Compliance",
+    "email": "claire.compliance@pcis.example.com",
+    "roles": ["COMPLIANCE"]
+  }
+}
