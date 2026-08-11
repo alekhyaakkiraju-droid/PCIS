@@ -1,24 +1,25 @@
 spring:
+  batch:
+    job:
+      enabled: false
   flyway:
     enabled: true
+    locations: classpath:db/migration
   autoconfigure:
     exclude:
+      - com.pcis.batch.auth.config.BatchAuthAutoConfiguration
       - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
       - org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost/test-issuer
 
 pcis:
   classification:
     registry-location: classpath:pcis-data-classification-test.yaml
     drift-detection-enabled: false
     loader-enabled: false
-  premium:
-    referral-threshold: 75000.00
-
-logging:
-  level:
-    com.pcis.premium: DEBUG
+  claims:
+    payment:
+      chunk-size: 1
+      cession-threshold: 100000.00
+  tunables:
+    numeric-defaults:
+      claims.reinsurance.cessionThreshold: 100000.00
