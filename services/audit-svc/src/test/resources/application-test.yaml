@@ -11,6 +11,13 @@ spring:
         jwt:
           issuer-uri: http://localhost/test-issuer
 
+pcis:
+  outbox:
+    relay-enabled: false
+  audit:
+    kafka:
+      consumer-enabled: false
+
 logging:
   level:
     com.pcis.audit: DEBUG

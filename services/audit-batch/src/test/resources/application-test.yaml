@@ -5,8 +5,19 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+  autoconfigure:
+    exclude:
+      - com.pcis.batch.auth.config.BatchAuthAutoConfiguration
 
 pcis:
   audit:
     retention-days: 365
     chunk-size: 1000
+  tunables:
+    numeric-defaults:
+      audit.retention.days: 365
+      audit.archive.chunkSize: 1000
+      billing.leadDays: 15
+      premium.graceDays: 30
+      policy.renewalWindowDays: 60
+      claims.reinsurance.cessionThreshold: 100000.00

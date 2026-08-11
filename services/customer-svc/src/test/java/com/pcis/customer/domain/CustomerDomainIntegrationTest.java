@@ -7,7 +7,7 @@ import com.pcis.customer.domain.exception.DuplicateTaxIdException;
 import com.pcis.customer.domain.model.CreateCustomerCommand;
 import com.pcis.customer.domain.model.UpdateCustomerCommand;
 import com.pcis.customer.domain.repository.CustomerRepository;
-import com.pcis.customer.outbox.OutboxEventRepository;
+import com.pcis.outbox.OutboxEventRepository;
 import com.pcis.customer.support.PostgresTestContainer;
 import com.pcis.customer.support.TestEnvironment;
 import com.pcis.customer.support.TestSecurityConfig;

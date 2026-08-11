@@ -35,6 +35,14 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: ${OIDC_ISSUER_URI:https://idp.example.com/realms/pcis}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      properties:
+        enable.idempotence: true
 
 management:
   endpoints:
@@ -63,6 +71,9 @@ management:
 
 # Feign client base URLs — injected from Secrets Manager via EKS pod env in production
 pcis:
+  outbox:
+    relay-enabled: true
+    kafka-topic: ${PCIS_OUTBOX_KAFKA_TOPIC:pcis.domain.events}
   authz-svc:
     url: ${AUTHZ_SVC_URL:http://authz-svc:8083}
   audit-svc:

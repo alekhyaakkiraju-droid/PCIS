@@ -5,6 +5,7 @@ import com.pcis.batch.auth.BatchSecurityContextInitializer;
 import com.pcis.batch.audit.domain.AuditLogRow;
 import com.pcis.batch.audit.infrastructure.ArchiveWriter;
 import com.pcis.batch.audit.infrastructure.ExpiredAuditLogReader;
+import com.pcis.batch.audit.job.PartitionDetachTasklet;
 import com.pcis.batch.audit.job.RunLogTasklet;
 import com.pcis.batch.audit.job.VerificationTasklet;
 import com.pcis.batch.common.BatchExitCodeJobListener;
@@ -20,6 +21,7 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,8 +45,9 @@ public class AuditArchiveJobConfig {
 
   @Bean
   ExpiredAuditLogReader expiredAuditLogReader(
-      DataSource dataSource, Clock clock, AuditArchiveProperties properties) {
-    Instant cutoff = Instant.now(clock).minus(properties.getRetentionDays(), ChronoUnit.DAYS);
+      DataSource dataSource, Clock clock, RetentionConfigService retentionConfigService) {
+    Instant cutoff =
+        Instant.now(clock).minus(retentionConfigService.getRetentionDays(), ChronoUnit.DAYS);
     return new ExpiredAuditLogReader(dataSource, cutoff);
   }
 
@@ -81,6 +84,16 @@ public class AuditArchiveJobConfig {
   }
 
   @Bean
+  Step detachPartitionStep(
+      JobRepository jobRepository,
+      PlatformTransactionManager transactionManager,
+      PartitionDetachTasklet partitionDetachTasklet) {
+    return new StepBuilder("detachPartitionStep", jobRepository)
+        .tasklet(partitionDetachTasklet, transactionManager)
+        .build();
+  }
+
+  @Bean
   Step runLogStep(
       JobRepository jobRepository,
       PlatformTransactionManager transactionManager,
@@ -103,17 +116,18 @@ public class AuditArchiveJobConfig {
   @Bean
   Job auditArchiveJob(
       JobRepository jobRepository,
-      Step archiveStep,
-      Step verifyStep,
-      Step runLogStep,
-      BatchJobExitCodeListener batchJobExitCodeListener,
+      @Qualifier("archiveStep") Step archiveStep,
+      @Qualifier("verifyStep") Step verifyStep,
+      @Qualifier("detachPartitionStep") Step detachPartitionStep,
+      @Qualifier("runLogStep") Step runLogStep,
       BatchExitCodeJobListener batchExitCodeJobListener,
+      ObjectProvider<BatchJobExitCodeListener> batchJobExitCodeListener,
       ObjectProvider<BatchSecurityContextInitializer> batchSecurityContextInitializer) {
     JobBuilder builder =
         new JobBuilder("auditArchiveJob", jobRepository)
-            .listener(batchJobExitCodeListener)
             .listener(batchExitCodeJobListener);
+    batchJobExitCodeListener.ifAvailable(builder::listener);
     batchSecurityContextInitializer.ifAvailable(builder::listener);
-    return builder.start(archiveStep).next(verifyStep).next(runLogStep).build();
+    return builder.start(archiveStep).next(verifyStep).next(detachPartitionStep).next(runLogStep).build();
   }
 }

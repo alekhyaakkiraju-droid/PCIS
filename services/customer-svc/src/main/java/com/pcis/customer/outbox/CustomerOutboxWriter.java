@@ -1,8 +1,11 @@
 package com.pcis.customer.outbox;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pcis.outbox.OutboxEvent;
+import com.pcis.outbox.OutboxEventRepository;
+import com.pcis.outbox.OutboxEventStatus;
+import java.time.Instant;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,28 +16,25 @@ public class CustomerOutboxWriter {
   private static final String AGGREGATE_TYPE = "Customer";
 
   private final OutboxEventRepository outboxEventRepository;
-  private final ObjectMapper objectMapper;
 
-  public CustomerOutboxWriter(OutboxEventRepository outboxEventRepository, ObjectMapper objectMapper) {
+  public CustomerOutboxWriter(OutboxEventRepository outboxEventRepository) {
     this.outboxEventRepository = outboxEventRepository;
-    this.objectMapper = objectMapper;
   }
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public void writeAuditEvent(String aggregateId, String eventType, Map<String, Object> payload) {
+  @Transactional(propagation = Propagation.MANDATORY)
+  public void writeDomainEvent(
+      String aggregateId, String eventType, Map<String, Object> payload, UUID idempotencyKey) {
     OutboxEvent event = new OutboxEvent();
     event.setAggregateType(AGGREGATE_TYPE);
     event.setAggregateId(aggregateId);
     event.setEventType(eventType);
-    event.setPayload(toJson(payload));
+    event.setPayload(payload);
+    event.setIdempotencyKey(idempotencyKey);
+    event.setStatus(OutboxEventStatus.PENDING);
+    event.setAttemptCount(0);
+    event.setCreatedBy("CUSTSVC");
+    event.setCreatedAt(Instant.now());
+    event.setNextAttemptAt(Instant.now());
     outboxEventRepository.save(event);
-  }
-
-  private String toJson(Map<String, Object> payload) {
-    try {
-      return objectMapper.writeValueAsString(payload);
-    } catch (JsonProcessingException ex) {
-      throw new IllegalStateException("Failed to serialize outbox payload", ex);
-    }
   }
 }

@@ -1,9 +1,10 @@
 package com.pcis.audit;
 
+import com.pcis.outbox.OutboxAutoConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = OutboxAutoConfiguration.class)
 public class AuditApplication {
 
   public static void main(String[] args) {

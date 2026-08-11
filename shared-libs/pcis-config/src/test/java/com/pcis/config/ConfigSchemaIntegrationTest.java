@@ -150,7 +150,7 @@ class ConfigSchemaIntegrationTest {
 
   private static org.flywaydb.core.api.output.MigrateResult migrate(DataSource dataSource) {
     Path migrations = Path.of("db/migration").toAbsolutePath();
-    if (!migrations.resolve("V1__config_tunables.sql").toFile().exists()) {
+      if (!migrations.resolve("V100__config_tunables.sql").toFile().exists()) {
       migrations = Path.of("..", "db", "migration").toAbsolutePath();
     }
     return Flyway.configure()

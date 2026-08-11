@@ -57,6 +57,9 @@ public class AuditLogEntity {
   @Column(name = "operation", nullable = false, length = 30)
   private String operation;
 
+  @Column(name = "idempotency_key")
+  private UUID idempotencyKey;
+
   public Long getAuditLogId() {
     return auditLogId;
   }
@@ -159,5 +162,13 @@ public class AuditLogEntity {
 
   public void setEventTimestamp(Instant eventTimestamp) {
     this.eventTimestamp = eventTimestamp;
+  }
+
+  public UUID getIdempotencyKey() {
+    return idempotencyKey;
+  }
+
+  public void setIdempotencyKey(UUID idempotencyKey) {
+    this.idempotencyKey = idempotencyKey;
   }
 }

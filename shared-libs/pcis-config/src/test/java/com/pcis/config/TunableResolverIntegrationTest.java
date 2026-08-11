@@ -56,7 +56,7 @@ class TunableResolverIntegrationTest {
   private static final class PathMigrations {
     private static void migrate(DataSource dataSource) {
       java.nio.file.Path migrations = java.nio.file.Path.of("db/migration").toAbsolutePath();
-      if (!migrations.resolve("V1__config_tunables.sql").toFile().exists()) {
+      if (!migrations.resolve("V100__config_tunables.sql").toFile().exists()) {
         migrations = java.nio.file.Path.of("..", "db", "migration").toAbsolutePath();
       }
       Flyway.configure()
