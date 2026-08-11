@@ -1,0 +1,10 @@
+# OpenAPI contract snapshot registry (WO-221).
+# Each entry binds a committed snapshot to the live generated spec source.
+# Update snapshots intentionally when additive contract changes ship:
+#   bash scripts/openapi-contract-gate.sh --update-snapshots
+
+apis:
+  - id: customer-api
+    snapshot: contracts/snapshots/customer-api.yaml
+    generated: frontend/specs/customer-svc.yaml
+    description: Customer service v1 REST contract for web UI and downstream consumers
