@@ -35,6 +35,16 @@ class FlywayMigrationTest {
           "policy_property", "policy_vehicle", "endorsement", "billing_plan");
 
   @Test
+  void billingPlanNotNullConstraintExists() {
+    Integer count =
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM information_schema.table_constraints "
+                + "WHERE table_name = 'billing_plan' AND constraint_type = 'FOREIGN KEY'",
+            Integer.class);
+    assertThat(count).isGreaterThanOrEqualTo(1);
+  }
+
+  @Test
   void allPolicyDomainTablesExist() {
     for (String table : EXPECTED_TABLES) {
       Integer count =
