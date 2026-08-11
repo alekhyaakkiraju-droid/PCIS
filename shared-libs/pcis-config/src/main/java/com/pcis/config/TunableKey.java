@@ -6,7 +6,8 @@ public enum TunableKey {
   BILLING_LEAD_DAYS("billing.leadDays", true),
   PREMIUM_GRACE_DAYS("premium.graceDays", true),
   POLICY_RENEWAL_WINDOW_DAYS("policy.renewalWindowDays", true),
-  CLAIMS_REINSURANCE_CESSION_THRESHOLD("claims.reinsurance.cessionThreshold", true);
+  CLAIMS_REINSURANCE_CESSION_THRESHOLD("claims.reinsurance.cessionThreshold", true),
+  BATCH_RUN_LOG_ENABLED("batch.runLog.enabled", false);
 
   private final String key;
   private final boolean required;

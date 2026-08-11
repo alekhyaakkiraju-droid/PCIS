@@ -71,10 +71,18 @@ class CodeTableCompletenessGateTest {
 
   private static java.util.List<Path> seedFiles() {
     Path schemaSeed =
-        Path.of("../pcis-schema/db/migration/V2__seed_reference_data.sql").toAbsolutePath().normalize();
+        Path.of("../pcis-schema/db/migration/V4__seed_reference_data.sql")
+            .toAbsolutePath()
+            .normalize();
     if (!schemaSeed.toFile().exists()) {
       schemaSeed =
-          Path.of("..", "..", "pcis-schema", "db", "migration", "V2__seed_reference_data.sql")
+          Path.of("shared-libs", "pcis-schema", "db", "migration", "V4__seed_reference_data.sql")
+              .toAbsolutePath()
+              .normalize();
+    }
+    if (!schemaSeed.toFile().exists()) {
+      schemaSeed =
+          Path.of("..", "..", "pcis-schema", "db", "migration", "V4__seed_reference_data.sql")
               .toAbsolutePath()
               .normalize();
     }

@@ -46,10 +46,18 @@ final class SharedMigrationSupport {
 
   static Path resolveSchemaSeedFile() {
     Path schemaSeed =
-        Path.of("../pcis-schema/db/migration/V2__seed_reference_data.sql").toAbsolutePath().normalize();
+        Path.of("../pcis-schema/db/migration/V4__seed_reference_data.sql")
+            .toAbsolutePath()
+            .normalize();
     if (!schemaSeed.toFile().exists()) {
       schemaSeed =
-          Path.of("..", "..", "pcis-schema", "db", "migration", "V2__seed_reference_data.sql")
+          Path.of("shared-libs", "pcis-schema", "db", "migration", "V4__seed_reference_data.sql")
+              .toAbsolutePath()
+              .normalize();
+    }
+    if (!schemaSeed.toFile().exists()) {
+      schemaSeed =
+          Path.of("..", "..", "pcis-schema", "db", "migration", "V4__seed_reference_data.sql")
               .toAbsolutePath()
               .normalize();
     }
@@ -61,9 +69,13 @@ final class SharedMigrationSupport {
   }
 
   private static Path resolveConfigMigrations() {
-    Path configMigrations = Path.of("db/migration").toAbsolutePath();
-    if (!configMigrations.resolve("V1__config_tunables.sql").toFile().exists()) {
-      configMigrations = Path.of("..", "db", "migration").toAbsolutePath();
+    Path configMigrations = Path.of("db/migration").toAbsolutePath().normalize();
+    if (!configMigrations.resolve("V100__config_tunables.sql").toFile().exists()) {
+      configMigrations =
+          Path.of("shared-libs", "pcis-config", "db", "migration").toAbsolutePath().normalize();
+    }
+    if (!configMigrations.resolve("V100__config_tunables.sql").toFile().exists()) {
+      configMigrations = Path.of("..", "db", "migration").toAbsolutePath().normalize();
     }
     return configMigrations;
   }
