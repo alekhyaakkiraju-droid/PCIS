@@ -1,6 +1,10 @@
 package com.pcis.observability.config;
 
 import com.pcis.observability.filter.CorrelationIdFilter;
+import com.pcis.observability.metrics.BatchJobExitCodeListener;
+import com.pcis.observability.metrics.BatchJobExitCodeMetrics;
+import com.pcis.observability.metrics.OutboxEventMetricsRepository;
+import com.pcis.observability.metrics.OutboxMetrics;
 import com.pcis.observability.propagation.CorrelationIdRestTemplateCustomizer;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.config.MeterFilter;
@@ -8,6 +12,7 @@ import jakarta.servlet.DispatcherType;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryCustomizer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -85,6 +90,34 @@ public class ObservabilityAutoConfiguration {
   public TraceSampleRateConfigurer pcisTraceSampleRateConfigurer(
       ObservabilityProperties properties, ObjectProvider<Environment> environment) {
     return new TraceSampleRateConfigurer(properties, environment.getIfAvailable());
+  }
+
+  @Bean
+  @ConditionalOnBean(OutboxEventMetricsRepository.class)
+  @ConditionalOnMissingBean
+  public OutboxMetrics outboxMetrics(
+      MeterRegistry registry,
+      OutboxEventMetricsRepository repository,
+      Environment environment) {
+    String serviceName = environment.getProperty("spring.application.name", "pcis-service");
+    return new OutboxMetrics(registry, repository, serviceName);
+  }
+
+  @Bean
+  @ConditionalOnClass(name = "org.springframework.batch.core.JobExecutionListener")
+  @ConditionalOnBean(MeterRegistry.class)
+  @ConditionalOnMissingBean
+  public BatchJobExitCodeMetrics batchJobExitCodeMetrics(MeterRegistry registry) {
+    return new BatchJobExitCodeMetrics(registry);
+  }
+
+  @Bean
+  @ConditionalOnClass(name = "org.springframework.batch.core.JobExecutionListener")
+  @ConditionalOnBean(BatchJobExitCodeMetrics.class)
+  @ConditionalOnMissingBean
+  public BatchJobExitCodeListener batchJobExitCodeListener(
+      BatchJobExitCodeMetrics batchJobExitCodeMetrics) {
+    return new BatchJobExitCodeListener(batchJobExitCodeMetrics);
   }
 
   private static String firstNonBlank(String... values) {

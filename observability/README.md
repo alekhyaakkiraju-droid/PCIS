@@ -1,7 +1,7 @@
-# PCIS Observability — SLI Metric Catalog and Prometheus Rules (WO-141)
+# PCIS Observability — SLI Metric Catalog, Prometheus Rules, and Alertmanager (WO-141 / WO-143)
 
-Version-controlled Prometheus recording and alerting rules for PCIS SLO monitoring.
-Consumes Micrometer metrics from Spring Boot services (`http_server_requests_seconds`,
+Version-controlled Prometheus recording and alerting rules plus Alertmanager routing for PCIS SLO
+monitoring. Consumes Micrometer metrics from Spring Boot services (`http_server_requests_seconds`,
 `spring_batch_job_seconds`, `hikaricp_connections_active`) and custom `pcis_*` gauges.
 
 ## Layout
@@ -11,6 +11,9 @@ Consumes Micrometer metrics from Spring Boot services (`http_server_requests_sec
 | `prometheus/recording-rules.yaml` | SLI recording rules (`pcis:*` aggregates) |
 | `prometheus/alerting-rules.yaml` | SLO breach alerts |
 | `prometheus/promtool-check.sh` | CI validation via `promtool check rules` |
+| `alertmanager/alertmanager.yaml` | Alert routing — PagerDuty (critical), Slack (warning) |
+| `alertmanager/templates/pcis.tmpl` | Notification templates with runbook and Grafana links |
+| `alertmanager/amtool-check.sh` | CI validation via `amtool` or static YAML fallback |
 | `test-fixtures/sample-metrics.txt` | Prometheus exposition samples (normal + breach) |
 | `test/test-rules.sh` | Integration test (optional Docker) |
 | `docker-compose.test.yaml` | Prometheus + pushgateway test stack |
@@ -27,6 +30,14 @@ Consumes Micrometer metrics from Spring Boot services (`http_server_requests_sec
 | `pcis:audit_outbox_pending_count` | `pcis_audit_outbox_pending_count` | service, namespace, pod |
 | `pcis:hikaricp_connections_active` | `hikaricp_connections_active` | service, namespace, pod |
 | `pcis:batch_window:utilization_ratio` | duration / `pcis_batch_window_seconds` | job_name |
+
+Custom Micrometer gauges (WO-143) are registered by `pcis-observability-starter`:
+
+| Metric | Source | Update cadence |
+|--------|--------|----------------|
+| `pcis_audit_outbox_pending_count` | `OutboxMetrics` via `OutboxEventMetricsRepository` | Each outbox relay poll |
+| `pcis_audit_outbox_lag_seconds` | Oldest pending `outbox_events.CRT_TIMESTAMP` | Each outbox relay poll |
+| `pcis_batch_job_exit_code` | `BatchJobExitCodeListener` after job completion | Once per batch run |
 
 **ASSUMPTION:** `pcis_batch_window_seconds` values are placeholders until Phase 0 batch-window
 baseline measurement completes. Update gauge values without changing rule structure.
@@ -45,17 +56,35 @@ baseline measurement completes. Update gauge values without changing rule struct
 | CertificateExpirySoon | warning | expiry < 14 days | 1h | `docs/runbooks/certificate-expiry.md` | platform |
 | SecretRotationOverdue | info | last rotation > 90 days | 1h | `docs/runbooks/secret-rotation.md` | platform |
 
-### Alert routing
+### Alert routing (Alertmanager WO-143)
 
-- **critical** → PagerDuty (`BatchJobFailed`, `AuditOutboxLagHigh`, `ErrorRateHigh`)
-- **warning** → Slack (`ApiReadLatencyHigh`, `BatchWindowBreached`, `CertificateExpirySoon`, …)
-- **info** → Grafana annotation only (`SecretRotationOverdue`)
+| Alert | Severity | Receiver | Inhibited by | Repeat interval | Escalation |
+|-------|----------|----------|--------------|-----------------|------------|
+| BatchJobFailed | critical | PagerDuty | — | 4h | On-call SRE page |
+| AuditOutboxLagHigh | critical | PagerDuty | — | 4h | On-call SRE page |
+| ErrorRateHigh | critical | PagerDuty | — | 4h | On-call SRE page |
+| ApiReadLatencyHigh | warning | Slack | — | 4h | `#pcis-ops` channel |
+| ApiWriteLatencyHigh | warning | Slack | — | 4h | `#pcis-ops` channel |
+| BatchWindowBreached | warning | Slack | BatchJobFailed (same `job_name`) | 4h | `#pcis-ops` channel |
+| AuditOutboxBacklog | warning | Slack | AuditOutboxLagHigh (same `service`) | 4h | `#pcis-ops` channel |
+| CertificateExpirySoon | warning | Slack | — | 4h | `#pcis-ops` channel |
+| SecretRotationOverdue | info | Slack | — | 4h | Grafana annotation |
+
+Route defaults: `group_by: [alertname, service, job_name]`, `group_wait: 30s`, `group_interval: 5m`.
+
+PagerDuty and Slack credentials are injected at deploy time via `${PAGERDUTY_KEY}` and
+`${SLACK_WEBHOOK_URL}` (Kubernetes Secrets — never committed).
+
+### Prometheus alert catalog (WO-141)
 
 ## Validation
 
 ```bash
 # Primary CI gate (requires promtool)
 make lint-prometheus
+
+# Alertmanager config (amtool when installed, else static YAML validation)
+make lint-alertmanager
 
 # Metadata + optional Docker integration test
 bash observability/test/test-rules.sh
@@ -65,9 +94,11 @@ docker compose -f observability/docker-compose.test.yaml up --abort-on-container
 ```
 
 If Docker is unavailable, `test-rules.sh` skips integration and relies on `promtool` validation.
+If `amtool` is unavailable, `amtool-check.sh` runs `validate-alertmanager.py` for structural checks.
 
 ## Dependencies
 
 - WO-130 (observability starter — `service` common tag)
+- WO-143 (`OutboxMetrics`, `BatchJobExitCodeListener` in `pcis-observability-starter`)
 - Phase 0 baseline (batch window gauge values — ASSUMPTION placeholders)
 - WO-142 (Grafana dashboards consume these recording rules)

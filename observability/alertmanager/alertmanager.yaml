@@ -1,0 +1,59 @@
+# PCIS Alertmanager routing (WO-143).
+# Credentials: PAGERDUTY_KEY and SLACK_WEBHOOK_URL from Kubernetes Secrets (env substitution at deploy).
+global:
+  resolve_timeout: 5m
+
+templates:
+  - /etc/alertmanager/templates/pcis.tmpl
+
+route:
+  receiver: slack-warning
+  group_by: [alertname, service, job_name]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    - receiver: pagerduty-critical
+      matchers:
+        - severity="critical"
+      continue: false
+    - receiver: slack-warning
+      matchers:
+        - severity="warning"
+      continue: false
+    - receiver: slack-warning
+      matchers:
+        - severity="info"
+      continue: false
+
+receivers:
+  - name: pagerduty-critical
+    pagerduty_configs:
+      - routing_key: ${PAGERDUTY_KEY}
+        send_resolved: true
+        description: '{{ template "pcis.pagerduty.description" . }}'
+        details:
+          firing: '{{ template "pcis.pagerduty.details" . }}'
+
+  - name: slack-warning
+    slack_configs:
+      - api_url: ${SLACK_WEBHOOK_URL}
+        send_resolved: true
+        title: '{{ template "pcis.slack.title" . }}'
+        text: '{{ template "pcis.slack.text" . }}'
+        color: '{{ template "pcis.slack.color" . }}'
+
+inhibit_rules:
+  # Failure implies window breach — suppress redundant BatchWindowBreached.
+  - source_matchers:
+      - alertname="BatchJobFailed"
+    target_matchers:
+      - alertname="BatchWindowBreached"
+    equal: [job_name]
+
+  # High lag subsumes backlog warning for the same service.
+  - source_matchers:
+      - alertname="AuditOutboxLagHigh"
+    target_matchers:
+      - alertname="AuditOutboxBacklog"
+    equal: [service]

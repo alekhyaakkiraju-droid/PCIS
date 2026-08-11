@@ -1,0 +1,65 @@
+{{ define "pcis.alert.labels" -}}
+{{- range .Alerts -}}
+{{- if .Labels.job_name -}}
+Job: {{ .Labels.job_name }}
+{{- else if .Labels.service -}}
+Service: {{ .Labels.service }}
+{{- end -}}
+{{- end -}}
+{{- end }}
+
+{{ define "pcis.grafana.link" -}}
+{{- $base := or (env "GRAFANA_BASE_URL") "https://grafana.pcis.example.com" -}}
+{{- $alert := index .Alerts 0 -}}
+{{- if eq $alert.Labels.alertname "BatchJobFailed" -}}
+{{ $base }}/d/pcis-batch-jobs/batch-jobs?var-job_name={{ $alert.Labels.job_name }}
+{{- else if or (eq $alert.Labels.alertname "AuditOutboxLagHigh") (eq $alert.Labels.alertname "AuditOutboxBacklog") -}}
+{{ $base }}/d/pcis-audit-health/audit-health?var-service={{ $alert.Labels.service }}
+{{- else if eq $alert.Labels.alertname "BatchWindowBreached" -}}
+{{ $base }}/d/pcis-batch-jobs/batch-jobs?var-job_name={{ $alert.Labels.job_name }}
+{{- else -}}
+{{ $base }}/d/pcis-service-health/service-health?var-service={{ $alert.Labels.service }}
+{{- end -}}
+{{- end }}
+
+{{ define "pcis.alert.detail" -}}
+{{- range .Alerts -}}
+*Alert:* {{ .Labels.alertname }}
+*Severity:* {{ .Labels.severity }}
+{{- if .Labels.service }}
+*Service:* {{ .Labels.service }}{{ end -}}
+{{- if .Labels.job_name }}
+*Job:* {{ .Labels.job_name }}{{ end -}}
+{{- if .Annotations.summary }}
+*Summary:* {{ .Annotations.summary }}{{ end -}}
+{{- if .Annotations.description }}
+*Description:* {{ .Annotations.description }}{{ end -}}
+*Value:* {{ .Annotations.value }}{{ if .Annotations.threshold }} (threshold: {{ .Annotations.threshold }}){{ end }}
+{{- if .Annotations.runbook_url }}
+*Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+*Dashboard:* {{ template "pcis.grafana.link" $ }}
+{{ end -}}
+{{- end }}
+
+{{ define "pcis.pagerduty.description" -}}
+[{{ .CommonLabels.severity | toUpper }}] {{ .CommonLabels.alertname }} — {{ .CommonAnnotations.summary }}
+{{- end }}
+
+{{ define "pcis.pagerduty.details" -}}
+{{ template "pcis.alert.detail" . }}
+{{- end }}
+
+{{ define "pcis.slack.title" -}}
+[{{ .CommonLabels.severity | toUpper }}] {{ .CommonLabels.alertname }}
+{{- end }}
+
+{{ define "pcis.slack.text" -}}
+{{ template "pcis.alert.detail" . }}
+{{- end }}
+
+{{ define "pcis.slack.color" -}}
+{{- if eq .CommonLabels.severity "critical" -}}danger
+{{- else if eq .CommonLabels.severity "warning" -}}warning
+{{- else -}}#439FE0
+{{- end -}}
+{{- end }}
