@@ -1,0 +1,28 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost/test-issuer
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: false
+
+# Disable Feign client auto-configuration for tests that don't need service-to-service calls
+pcis:
+  authz-svc:
+    url: http://localhost:9999
+  audit-svc:
+    url: http://localhost:9998
+
+logging:
+  level:
+    com.pcis.customer: DEBUG
+    org.flywaydb.core: INFO

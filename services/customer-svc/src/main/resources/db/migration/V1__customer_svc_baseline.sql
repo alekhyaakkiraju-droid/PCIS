@@ -1,0 +1,4 @@
+-- V1 customer-svc baseline migration placeholder.
+-- Domain entity tables (CUSTOMER_T, CUSTOMER_ADDRESS_T, CUSTOMER_CONTACT_T, etc.)
+-- will be added in subsequent story migrations once the customer domain model is defined.
+-- This placeholder verifies the Flyway migration infrastructure works at service startup.
