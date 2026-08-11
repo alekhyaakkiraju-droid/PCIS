@@ -1,0 +1,50 @@
+/* JOBSCHD_NEW_DRIVERS - New Job Scheduler Driver Programs             */
+/* Purpose: Defines JOBSCHD4 through JOBSCHD7 for the PCIS batch      */
+/*          scheduling topology.  These programs replace the legacy   */
+/*          runtime-only JOBSCHD1-3 pattern (see PCIS_CRTOBJ.clle).   */
+/* Scheduler topology (G-08):                                          */
+/*   JOBSCHD1-3: referenced in PCIS_CRTOBJ.clle — no source           */
+/*   JOBSCHD4-7: defined here in JOBSCHD_NEW_DRIVERS.clle             */
+PGM
+
+DCL VAR(&SCHEDLIB) TYPE(*CHAR) LEN(10) VALUE('PCISPGM')
+DCL VAR(&RUNDATE)  TYPE(*CHAR) LEN(10)
+DCL VAR(&ERRFLAG)  TYPE(*LGL)          VALUE('0')
+
+/* ------------------------------------------------------------------ */
+/* JOBSCHD4 — Claims Batch Scheduler                                  */
+/* ------------------------------------------------------------------ */
+CRTSQLCBLI OBJ(JOBSCHD4) SRCFILE(PCIS/QCBLSRC) SRCMBR(JOBSCHD4) +
+  COMMIT(*NONE)
+CRTPGM PGM(JOBSCHD4) MODULE(JOBSCHD4) BNDDIR(*LIBL/PCISBND)
+
+/* ------------------------------------------------------------------ */
+/* JOBSCHD5 — Billing Batch Scheduler                                 */
+/* ------------------------------------------------------------------ */
+CRTSQLCBLI OBJ(JOBSCHD5) SRCFILE(PCIS/QCBLSRC) SRCMBR(JOBSCHD5) +
+  COMMIT(*NONE)
+CRTPGM PGM(JOBSCHD5) MODULE(JOBSCHD5) BNDDIR(*LIBL/PCISBND)
+
+/* ------------------------------------------------------------------ */
+/* JOBSCHD6 — Premium Delinquency Scheduler                           */
+/* ------------------------------------------------------------------ */
+CRTSQLCBLI OBJ(JOBSCHD6) SRCFILE(PCIS/QCBLSRC) SRCMBR(JOBSCHD6) +
+  COMMIT(*NONE)
+CRTPGM PGM(JOBSCHD6) MODULE(JOBSCHD6) BNDDIR(*LIBL/PCISBND)
+
+/* ------------------------------------------------------------------ */
+/* JOBSCHD7 — Commission Batch Scheduler                              */
+/* ------------------------------------------------------------------ */
+CRTSQLCBLI OBJ(JOBSCHD7) SRCFILE(PCIS/QCBLSRC) SRCMBR(JOBSCHD7) +
+  COMMIT(*NONE)
+CRTPGM PGM(JOBSCHD7) MODULE(JOBSCHD7) BNDDIR(*LIBL/PCISBND)
+
+/* ------------------------------------------------------------------ */
+/* Submit new scheduler jobs                                           */
+/* ------------------------------------------------------------------ */
+SBMJOB CMD(CALL PGM(JOBSCHD4)) JOB(JOBSCHD4) JOBQ(PCISQ)
+SBMJOB CMD(CALL PGM(JOBSCHD5)) JOB(JOBSCHD5) JOBQ(PCISQ)
+SBMJOB CMD(CALL PGM(JOBSCHD6)) JOB(JOBSCHD6) JOBQ(PCISQ)
+SBMJOB CMD(CALL PGM(JOBSCHD7)) JOB(JOBSCHD7) JOBQ(PCISQ)
+
+ENDPGM
