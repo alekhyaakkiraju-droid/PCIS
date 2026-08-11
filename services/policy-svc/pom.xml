@@ -69,6 +69,21 @@
       <artifactId>pcis-outbox</artifactId>
       <version>0.1.0-SNAPSHOT</version>
     </dependency>
+    <dependency>
+      <groupId>com.pcis</groupId>
+      <artifactId>pcis-batch-common</artifactId>
+      <version>0.1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.pcis</groupId>
+      <artifactId>pcis-batch-auth</artifactId>
+      <version>0.1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.pcis</groupId>
+      <artifactId>pcis-config</artifactId>
+      <version>0.1.0-SNAPSHOT</version>
+    </dependency>
 
     <!-- Web + Validation -->
     <dependency>
@@ -94,6 +109,14 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-batch</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-aop</artifactId>
     </dependency>
     <dependency>
       <groupId>org.postgresql</groupId>
@@ -148,6 +171,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.springframework.batch</groupId>
+      <artifactId>spring-batch-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>
@@ -166,7 +194,7 @@
     </dependency>
     <dependency>
       <groupId>org.wiremock</groupId>
-      <artifactId>wiremock-standalone</artifactId>
+      <artifactId>wiremock-jetty12</artifactId>
       <version>${wiremock.version}</version>
       <scope>test</scope>
     </dependency>

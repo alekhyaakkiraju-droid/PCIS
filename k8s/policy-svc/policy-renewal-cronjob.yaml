@@ -1,0 +1,53 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: policy-renewal-batch
+  labels:
+    app: policy-svc
+    job: policyRenewalJob
+spec:
+  # Placeholder — nightly schedule assumption pending Phase 0 baseline measurement
+  schedule: "0 1 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 7200
+      template:
+        spec:
+          restartPolicy: Never
+          serviceAccountName: policy-batch
+          containers:
+            - name: policy-svc
+              image: policy-svc:latest
+              args: ["--spring.batch.job.name=policyRenewalJob"]
+              envFrom:
+                - configMapRef:
+                    name: policy-svc-config
+              env:
+                - name: DATASOURCE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: policy-svc-db
+                      key: url
+                - name: DATASOURCE_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: policy-svc-db
+                      key: username
+                - name: DATASOURCE_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: policy-svc-db
+                      key: password
+                - name: PREMIUM_SVC_URL
+                  value: http://premium-svc:8085
+              resources:
+                requests:
+                  cpu: 250m
+                  memory: 512Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi

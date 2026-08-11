@@ -24,7 +24,7 @@ public final class PostgresTestContainer {
     if (container == null) {
       container =
           new PostgreSQLContainer<>(PG17)
-              .withDatabaseName("pcis_policy_test")
+              .withDatabaseName("pcis_policy_svc_test")
               .withUsername("pcis")
               .withPassword("pcis");
       container.start();
