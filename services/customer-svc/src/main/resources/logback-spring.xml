@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+  <!-- PII masking converter: SSN, phone, email, tax ID redaction before log persistence -->
+  <conversionRule conversionWord="piiMask"
+                  converterClass="com.pcis.customer.logging.PiiMaskingConverter"/>
+
+  <!-- Production: structured JSON via logstash-logback-encoder with MDC correlation fields -->
+  <springProfile name="!test">
+    <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+      <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+        <!-- Static service label as custom field -->
+        <customFields>{"service":"customer-svc"}</customFields>
+        <!-- Include correlation MDC fields set by CorrelationIdFilter -->
+        <includeMdcKeyName>correlationId</includeMdcKeyName>
+        <includeMdcKeyName>actor</includeMdcKeyName>
+        <includeMdcKeyName>resource</includeMdcKeyName>
+        <includeMdcKeyName>operation</includeMdcKeyName>
+        <!-- Message masking via pattern message provider -->
+        <messageJsonProvider class="net.logstash.logback.composite.loggingevent.MessageJsonProvider"/>
+      </encoder>
+    </appender>
+    <root level="INFO">
+      <appender-ref ref="ASYNC_JSON"/>
+    </root>
+    <!-- Async wrapper to decouple log I/O from request threads -->
+    <appender name="ASYNC_JSON" class="ch.qos.logback.classic.AsyncAppender">
+      <appender-ref ref="JSON"/>
+      <queueSize>512</queueSize>
+      <discardingThreshold>0</discardingThreshold>
+      <includeCallerData>false</includeCallerData>
+    </appender>
+  </springProfile>
+
+  <!-- Test: plain-text console with PII masking pattern for readability -->
+  <springProfile name="test">
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+      <encoder>
+        <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %piiMask%n</pattern>
+      </encoder>
+    </appender>
+    <root level="INFO">
+      <appender-ref ref="CONSOLE"/>
+    </root>
+    <logger name="com.pcis.customer" level="DEBUG"/>
+  </springProfile>
+
+</configuration>

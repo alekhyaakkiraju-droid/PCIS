@@ -1,0 +1,101 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: customer-svc
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/pcis_customer}
+    username: ${DATABASE_USERNAME:pcis_customer_app}
+    password: ${DATABASE_PASSWORD:}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      validation-timeout: 5000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-test-query: SELECT 1
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+    validate-migration-naming: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${OIDC_ISSUER_URI:https://idp.example.com/realms/pcis}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,readiness,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when_authorized
+      group:
+        liveness:
+          include: livenessstate
+        readiness:
+          include: readinessstate,db
+        # Startup probe group: Kubernetes can use /actuator/health/startup with a higher
+        # initialDelaySeconds before switching to the liveness probe.
+        startup:
+          include: readinessstate,db
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
+# Feign client base URLs — injected from Secrets Manager via EKS pod env in production
+pcis:
+  authz-svc:
+    url: ${AUTHZ_SVC_URL:http://authz-svc:8083}
+  audit-svc:
+    url: ${AUDIT_SVC_URL:http://audit-svc:8080}
+
+# Resilience4j circuit breaker defaults for Feign clients
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+    instances:
+      authz-svc:
+        baseConfig: default
+      audit-svc:
+        baseConfig: default
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 5s
+    instances:
+      authz-svc:
+        baseConfig: default
+      audit-svc:
+        baseConfig: default
+
+spring.cloud.openfeign.circuitbreaker.enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.pcis.customer: INFO
