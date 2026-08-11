@@ -1,5 +1,6 @@
 package com.pcis.authz.application;
 
+import com.pcis.authz.infrastructure.persistence.entity.RoleEntity;
 import com.pcis.authz.infrastructure.persistence.repository.RolePermissionRepository;
 import com.pcis.authz.infrastructure.persistence.repository.RoleRepository;
 import com.pcis.authz.infrastructure.persistence.repository.UserRoleRepository;
@@ -24,6 +25,19 @@ public class PermissionResolver {
     this.userRoleRepository = userRoleRepository;
     this.roleRepository = roleRepository;
     this.rolePermissionRepository = rolePermissionRepository;
+  }
+
+  /** Role codes assigned to the principal (active roles only). */
+  @Transactional(readOnly = true)
+  public List<String> resolveRoleCodes(String principalId) {
+    Set<String> roleCodes = new LinkedHashSet<>();
+    for (var assignment : userRoleRepository.findByPrincipalId(principalId)) {
+      roleRepository
+          .findById(assignment.getRoleId())
+          .filter(RoleEntity::isActive)
+          .ifPresent(role -> roleCodes.add(role.getRoleCode()));
+    }
+    return List.copyOf(roleCodes);
   }
 
   @Transactional(readOnly = true)

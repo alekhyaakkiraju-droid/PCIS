@@ -89,6 +89,38 @@ class PaymentAuthorityIntegrationTest {
   }
 
   @Test
+  @Sql(
+      scripts = {
+        "classpath:db/testdata/payment_authority_baseline.sql",
+        "classpath:db/testdata/sod-scenarios.sql"
+      },
+      config = @SqlConfig(separator = ";"))
+  void sodDeniesWhenApproverEqualsDisburser() {
+    var result =
+        paymentAuthorityService.checkPaymentAuthority(
+            "CLM0001201", 1201L, new java.math.BigDecimal("1000.00"), "BOB");
+
+    assertThat(result.reasonCode()).isEqualTo(ReasonCode.SELF_APPROVAL_FORBIDDEN);
+    assertThat(result.maskedApproverPrincipal()).isEqualTo("BOB");
+    assertThat(result.maskedDisburserPrincipal()).isEqualTo("BOB");
+  }
+
+  @Test
+  @Sql(
+      scripts = {
+        "classpath:db/testdata/payment_authority_baseline.sql",
+        "classpath:db/testdata/sod-scenarios.sql"
+      },
+      config = @SqlConfig(separator = ";"))
+  void sodPermitsWhenDisburserDiffersFromApprover() {
+    var result =
+        paymentAuthorityService.checkPaymentAuthority(
+            "CLM0001201", 1201L, new java.math.BigDecimal("1000.00"), "ALICE");
+
+    assertThat(result.reasonCode()).isEqualTo(ReasonCode.PAYMENT_AUTHORITY_GRANTED);
+  }
+
+  @Test
   void initiatePaymentDecisionWritesOutboxInSameTransaction() throws Exception {
     mockMvc
         .perform(

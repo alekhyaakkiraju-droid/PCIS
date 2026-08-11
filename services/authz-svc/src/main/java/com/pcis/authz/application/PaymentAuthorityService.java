@@ -3,6 +3,8 @@ package com.pcis.authz.application;
 import com.pcis.authz.contract.AuthorizationRequest;
 import com.pcis.authz.contract.AuthorizationResponse;
 import com.pcis.authz.domain.decision.AuthorityCheckResult;
+import com.pcis.authz.domain.decision.AuthorizationDecision;
+import com.pcis.authz.domain.decision.PaymentOperations;
 import com.pcis.authz.domain.decision.ReasonCode;
 import com.pcis.authz.infrastructure.persistence.entity.ApprovalEntity;
 import com.pcis.authz.infrastructure.persistence.projection.AdjusterAuthorityProjection;
@@ -10,37 +12,51 @@ import com.pcis.authz.infrastructure.persistence.projection.ReservePaidToDatePro
 import com.pcis.authz.infrastructure.persistence.repository.ApprovalRepository;
 import com.pcis.authz.infrastructure.persistence.repository.ClaimAdjusterRepository;
 import com.pcis.authz.infrastructure.persistence.repository.ClaimReserveRepository;
+import com.pcis.authz.util.PrincipalMaskingUtil;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Evaluates claim payment authority: approval linkage (check one) then cumulative authority limit
- * (check two, BR-01 / P-B01).
+ * Evaluates claim payment authority: approval linkage (check one), cumulative authority limit
+ * (check two, BR-01 / P-B01), then segregation-of-duties (check three, BR-01 / SOX).
  */
 @Service
 public class PaymentAuthorityService {
 
+  private static final Logger log = LoggerFactory.getLogger(PaymentAuthorityService.class);
+
+  static final String ROLE_BATCH_SVC = "BATCH_SVC";
+  static final String ROLE_BATCH = "BATCH";
+
   private final ApprovalRepository approvalRepository;
   private final ClaimAdjusterRepository claimAdjusterRepository;
   private final ClaimReserveRepository claimReserveRepository;
+  private final PermissionResolver permissionResolver;
 
   public PaymentAuthorityService(
       ApprovalRepository approvalRepository,
       ClaimAdjusterRepository claimAdjusterRepository,
-      ClaimReserveRepository claimReserveRepository) {
+      ClaimReserveRepository claimReserveRepository,
+      PermissionResolver permissionResolver) {
     this.approvalRepository = approvalRepository;
     this.claimAdjusterRepository = claimAdjusterRepository;
     this.claimReserveRepository = claimReserveRepository;
+    this.permissionResolver = permissionResolver;
   }
 
   @Transactional(readOnly = true)
   public AuthorityCheckResult checkPaymentAuthority(
-      String claimId, Long reserveId, BigDecimal requestedAmount, String adjusterId) {
-    if (isBlank(claimId) || reserveId == null || requestedAmount == null || isBlank(adjusterId)) {
+      String claimId, Long reserveId, BigDecimal requestedAmount, String disburserPrincipal) {
+    if (isBlank(claimId)
+        || reserveId == null
+        || requestedAmount == null
+        || isBlank(disburserPrincipal)) {
       return AuthorityCheckResult.deny(ReasonCode.APPROVAL_MISSING);
     }
 
@@ -52,34 +68,109 @@ public class PaymentAuthorityService {
     }
 
     ApprovalEntity approved = approval.get();
+    String approverPrincipal = approved.getApproverId();
+    if (isBlank(approverPrincipal)) {
+      log.error(
+          "Approval record missing approver for claimId={} reserveId={}", claimId, reserveId);
+      return AuthorityCheckResult.deny(ReasonCode.APPROVAL_MISSING);
+    }
+
     var reserve = claimReserveRepository.findByReserveHistIdAndClaimId(reserveId, claimId);
     if (reserve.isEmpty()) {
       return AuthorityCheckResult.deny(ReasonCode.APPROVAL_MISSING);
     }
 
-    var adjuster = claimAdjusterRepository.findAuthorityByAdjusterId(adjusterId);
+    var adjuster = claimAdjusterRepository.findAuthorityByAdjusterId(disburserPrincipal);
     if (adjuster.isEmpty()) {
       return AuthorityCheckResult.deny(ReasonCode.AUTHORITY_LIMIT_EXCEEDED);
     }
 
-    return evaluateCumulativeLimit(approved, reserve.get(), adjuster.get(), requestedAmount);
+    AuthorityCheckResult limitResult =
+        evaluateCumulativeLimit(approved, reserve.get(), adjuster.get(), requestedAmount);
+    if (limitResult.decision() == AuthorizationDecision.DENY) {
+      return limitResult;
+    }
+
+    if (samePrincipal(approverPrincipal, disburserPrincipal)) {
+      log.warn(
+          "Self-approval forbidden for claimId={} reserveId={} approver={} disburser={}",
+          claimId,
+          reserveId,
+          PrincipalMaskingUtil.maskPrincipal(approverPrincipal),
+          PrincipalMaskingUtil.maskPrincipal(disburserPrincipal));
+      return AuthorityCheckResult.denySod(
+          ReasonCode.SELF_APPROVAL_FORBIDDEN,
+          approved.getApprovalId(),
+          approverPrincipal,
+          disburserPrincipal,
+          limitResult.authorityLimitApplied(),
+          limitResult.cumulativePaidToDate());
+    }
+
+    return limitResult;
   }
 
   @Transactional(readOnly = true)
   public AuthorizationResponse evaluate(
       String principalId, AuthorizationRequest request, String correlationId) {
+    if (PaymentOperations.APPROVE_PAYMENT.equalsIgnoreCase(request.operation())) {
+      return evaluateApprovePayment(principalId, request, correlationId);
+    }
+
     Map<String, Object> context = request.context();
     String claimId = stringValue(context.get("claimId"));
     Long reserveId = longValue(context.get("reserveId"));
     BigDecimal requestedAmount = decimalValue(context.get("requestedAmount"));
-    String adjusterId = stringValue(context.get("adjusterId"));
-    if (isBlank(adjusterId)) {
-      adjusterId = principalId;
+    String disburserPrincipal = stringValue(context.get("adjusterId"));
+    if (isBlank(disburserPrincipal)) {
+      disburserPrincipal = principalId;
     }
 
     AuthorityCheckResult result =
-        checkPaymentAuthority(claimId, reserveId, requestedAmount, adjusterId);
-    return toAuthorizationResponse(result, correlationId);
+        checkPaymentAuthority(claimId, reserveId, requestedAmount, disburserPrincipal);
+    return toAuthorizationResponse(result, correlationId, claimId, reserveId);
+  }
+
+  private AuthorizationResponse evaluateApprovePayment(
+      String principalId, AuthorizationRequest request, String correlationId) {
+    if (hasBatchServiceRole(principalId)) {
+      log.warn("Batch service account attempted approval: principal={}", principalId);
+      return denyWithSodMetadata(
+          ReasonCode.BATCH_CANNOT_APPROVE,
+          principalId,
+          stringValue(request.context().get("originalRequesterId")),
+          correlationId,
+          stringValue(request.context().get("claimId")),
+          longValue(request.context().get("reserveId")));
+    }
+
+    String originalRequesterId = stringValue(request.context().get("originalRequesterId"));
+    if (!isBlank(originalRequesterId) && samePrincipal(principalId, originalRequesterId)) {
+      log.warn(
+          "Self-approval forbidden on APPROVE_PAYMENT: approver={} requester={}",
+          PrincipalMaskingUtil.maskPrincipal(principalId),
+          PrincipalMaskingUtil.maskPrincipal(originalRequesterId));
+      return denyWithSodMetadata(
+          ReasonCode.SELF_APPROVAL_FORBIDDEN,
+          principalId,
+          originalRequesterId,
+          correlationId,
+          stringValue(request.context().get("claimId")),
+          longValue(request.context().get("reserveId")));
+    }
+
+    return new AuthorizationResponse(
+        AuthorizationDecision.PERMIT,
+        ReasonCode.GRANT_MATCH,
+        List.of("claim:approve_payment"),
+        correlationId);
+  }
+
+  private boolean hasBatchServiceRole(String principalId) {
+    return permissionResolver.resolveRoleCodes(principalId).stream()
+        .anyMatch(
+            code ->
+                ROLE_BATCH_SVC.equalsIgnoreCase(code) || ROLE_BATCH.equalsIgnoreCase(code));
   }
 
   private static AuthorityCheckResult evaluateCumulativeLimit(
@@ -105,8 +196,9 @@ public class PaymentAuthorityService {
   }
 
   private static AuthorizationResponse toAuthorizationResponse(
-      AuthorityCheckResult result, String correlationId) {
+      AuthorityCheckResult result, String correlationId, String claimId, Long reserveId) {
     List<String> evaluatedPermissions = new ArrayList<>();
+    appendSodMetadata(evaluatedPermissions, result, claimId, reserveId);
     if (result.approvalId() != null) {
       evaluatedPermissions.add("approval:" + result.approvalId());
     }
@@ -121,6 +213,51 @@ public class PaymentAuthorityService {
     }
     return new AuthorizationResponse(
         result.decision(), result.reasonCode(), List.copyOf(evaluatedPermissions), correlationId);
+  }
+
+  private static AuthorizationResponse denyWithSodMetadata(
+      ReasonCode reasonCode,
+      String approverPrincipal,
+      String disburserPrincipal,
+      String correlationId,
+      String claimId,
+      Long reserveId) {
+    List<String> evaluatedPermissions = new ArrayList<>();
+    evaluatedPermissions.add(
+        "sod:maskedApprover=" + PrincipalMaskingUtil.maskPrincipal(approverPrincipal));
+    evaluatedPermissions.add(
+        "sod:maskedDisburser=" + PrincipalMaskingUtil.maskPrincipal(disburserPrincipal));
+    if (!isBlank(claimId)) {
+      evaluatedPermissions.add("sod:claimId=" + claimId);
+    }
+    if (reserveId != null) {
+      evaluatedPermissions.add("sod:reserveId=" + reserveId);
+    }
+    return new AuthorizationResponse(
+        AuthorizationDecision.DENY, reasonCode, List.copyOf(evaluatedPermissions), correlationId);
+  }
+
+  static void appendSodMetadata(
+      List<String> evaluatedPermissions,
+      AuthorityCheckResult result,
+      String claimId,
+      Long reserveId) {
+    if (result.maskedApproverPrincipal() != null) {
+      evaluatedPermissions.add("sod:maskedApprover=" + result.maskedApproverPrincipal());
+    }
+    if (result.maskedDisburserPrincipal() != null) {
+      evaluatedPermissions.add("sod:maskedDisburser=" + result.maskedDisburserPrincipal());
+    }
+    if (!isBlank(claimId)) {
+      evaluatedPermissions.add("sod:claimId=" + claimId);
+    }
+    if (reserveId != null) {
+      evaluatedPermissions.add("sod:reserveId=" + reserveId);
+    }
+  }
+
+  private static boolean samePrincipal(String left, String right) {
+    return left != null && right != null && left.equalsIgnoreCase(right);
   }
 
   private static boolean isBlank(String value) {
