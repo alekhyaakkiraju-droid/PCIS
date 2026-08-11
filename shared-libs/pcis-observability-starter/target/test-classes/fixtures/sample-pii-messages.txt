@@ -1,5 +1,0 @@
-Customer tax id 123-45-6789 contacted at jane.doe@example.com phone 555-123-4567
-Plain SSN 987654321 and email alex@pcis.example
-Mixed: SSN 111-22-3333 PHONE (415) 555-0100 EMAIL bob.smith@acme.org
-Exception payload contains 222-33-4444 and victim@mail.test
-No PII in this operational heartbeat message

@@ -20,3 +20,14 @@ terraform.rc
 .forge-commit-ready
 node_modules/
 frontend/dist/
+
+# Maven / Java
+**/target/
+*.class
+*.jar
+*.war
+.idea/
+*.iml
+.classpath
+.project
+.settings/
