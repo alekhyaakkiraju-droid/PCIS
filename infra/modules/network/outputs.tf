@@ -18,6 +18,11 @@ output "private_app_subnet_ids" {
   value       = aws_subnet.private_app[*].id
 }
 
+output "private_app_subnet_cidrs" {
+  description = "CIDR blocks of private application subnets (for Aurora SG ingress)."
+  value       = local.private_app_subnet_cidrs
+}
+
 output "private_data_subnet_ids" {
   description = "IDs of private data subnets (Aurora, ElastiCache, MSK)."
   value       = aws_subnet.private_data[*].id
