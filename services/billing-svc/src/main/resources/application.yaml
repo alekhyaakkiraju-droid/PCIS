@@ -70,6 +70,10 @@ pcis:
       chunk-size: 1
       program-name: CMM001B
       reference-date: 2024-06-15
+    delinquency:
+      chunk-size: 1
+      program-name: PRM005B
+      reference-date: 2024-06-15
   outbox:
     relay-enabled: ${PCIS_OUTBOX_RELAY_ENABLED:true}
     relay-interval-ms: ${PCIS_OUTBOX_POLL_INTERVAL_MS:5000}

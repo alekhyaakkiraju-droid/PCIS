@@ -53,6 +53,8 @@ pcis:
       lead-days: 15
     commission:
       reference-date: 2024-06-15
+    delinquency:
+      reference-date: 2024-06-15
 
 logging:
   level:
