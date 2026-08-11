@@ -1,0 +1,40 @@
+# Argo CD Helm values (WO-130) — templated by Terraform
+fullname:
+  logging:
+    level: info
+
+configs:
+  cm:
+    timeout.reconciliation: 180s
+    application.instanceLabelKey: argocd.argoproj.io/instance
+  rbac:
+    policy.default: role:readonly
+    policy.csv: |
+      p, role:org-admin, applications, *, */*, allow
+      p, role:org-admin, clusters, get, *, allow
+      p, role:org-admin, repositories, *, *, allow
+      p, role:readonly, applications, get, */*, allow
+      g, pcis-admins, role:org-admin
+      g, pcis-readers, role:readonly
+  params:
+    server.insecure: true
+
+controller:
+  revisionHistoryLimit: ${revision_history_limit}
+
+server:
+  extraArgs:
+    - --insecure
+
+applicationSet:
+  enabled: true
+
+notifications:
+  enabled: false
+
+# Automated sync is DISABLED for prd (edge case); env=${environment_name}
+# Controllers still reconcile manually approved syncs.
+global:
+  additionalLabels:
+    pcis.environment: ${environment_name}
+    pcis.argocd.automated: "${automated_sync_enabled}"

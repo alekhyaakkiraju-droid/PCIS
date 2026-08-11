@@ -1,0 +1,105 @@
+# PCIS scheduler-map.yaml schema (WO-003 baseline, WO-238 measurement extensions)
+# Used by ops/validate-scheduler-map.py for structural validation.
+
+version:
+  type: string
+  required: true
+
+generated_for:
+  type: string
+  required: true
+
+sources:
+  type: list
+  required: true
+
+conflicts:
+  type: list
+  required: false
+
+batch_programs:
+  type: map
+  required: true
+  keys:
+    - AUD002B
+    - BIL003B
+    - CLM006B
+    - CMM001B
+    - POL006B
+    - PRM005B
+  entry_fields:
+    legacy_description:
+      type: string
+      required: true
+    legacy_schedule:
+      type: string
+      required: true
+      must_contain: ASSUMPTION
+    target_cronjob_name:
+      type: string
+      required: true
+    target_schedule:
+      type: string
+      required: true
+      must_contain: ASSUMPTION
+    naming_notes:
+      type: string
+      required: true
+    legacy_scheduler_entries:
+      type: list
+      required: true
+      min_items: 1
+    measured_avg_duration_seconds:
+      type: measurement
+      required: true
+      description: >
+        30-day average run duration in seconds from RPT_RUN_LOG_T
+        (measure_batch_windows.sql). Placeholder until Phase 0 measurement.
+    measured_max_duration_seconds:
+      type: measurement
+      required: true
+      description: >
+        30-day maximum run duration in seconds from RPT_RUN_LOG_T
+        (measure_batch_windows.sql). Placeholder until Phase 0 measurement.
+
+scheduler_index:
+  type: map
+  required: true
+
+kubernetes_cronjobs:
+  type: map
+  required: true
+  keys:
+    - audit-archive-job
+    - billing-installment-job
+    - claim-payment-job
+    - commission-calc-job
+    - premium-processing-job
+    - policy-renewal-job
+  entry_fields:
+    batch_program:
+      type: string
+      required: true
+    legacy_target_name:
+      type: string
+      required: true
+    schedule:
+      type: string
+      required: true
+    schedule_note:
+      type: string
+      required: true
+      must_contain: ASSUMPTION
+
+exit_code_contract:
+  type: map
+  required: true
+
+# Measurement field value contract (WO-238)
+measurement_value:
+  allowed_placeholders:
+    - MEASUREMENT_PENDING
+  allowed_types:
+    - integer
+    - float
+  min_value: 0

@@ -1,0 +1,3 @@
+-- exactly at 10-day grace boundary (due 2024-06-05)
+INSERT INTO POLICY_T (POLICY_ID, STATUS, PREMIUM_DUE_DATE, GRACE_DAYS) VALUES
+ ('POLPRM0002', 'A', '2024-06-05', 10);

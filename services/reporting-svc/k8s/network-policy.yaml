@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: reporting-svc
+  labels:
+    app.kubernetes.io/name: reporting-svc
+    app.kubernetes.io/part-of: pcis
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: reporting-svc
+      app: reporting-svc
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: api-gateway
+      ports:
+        - protocol: TCP
+          port: 8080
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 5432
+    - ports:
+        - protocol: TCP
+          port: 443
+        - protocol: UDP
+          port: 53

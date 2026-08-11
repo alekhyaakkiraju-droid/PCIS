@@ -1,0 +1,90 @@
+# PCIS sample metrics for SLI rule evaluation (WO-141).
+# Prometheus exposition format — normal values first, threshold-breaching values marked BREACH.
+
+# --- Normal API read latency (claims-svc GET p95 ~200ms) ---
+http_server_requests_seconds_bucket{service="claims-svc",method="GET",uri="/api/v1/claims",status="200",le="0.05"} 10
+http_server_requests_seconds_bucket{service="claims-svc",method="GET",uri="/api/v1/claims",status="200",le="0.1"} 40
+http_server_requests_seconds_bucket{service="claims-svc",method="GET",uri="/api/v1/claims",status="200",le="0.25"} 85
+http_server_requests_seconds_bucket{service="claims-svc",method="GET",uri="/api/v1/claims",status="200",le="0.5"} 98
+http_server_requests_seconds_bucket{service="claims-svc",method="GET",uri="/api/v1/claims",status="200",le="1"} 100
+http_server_requests_seconds_bucket{service="claims-svc",method="GET",uri="/api/v1/claims",status="200",le="+Inf"} 100
+http_server_requests_seconds_count{service="claims-svc",method="GET",uri="/api/v1/claims",status="200"} 100
+http_server_requests_seconds_sum{service="claims-svc",method="GET",uri="/api/v1/claims",status="200"} 18.5
+
+# --- BREACH: API read latency high (billing-svc GET p95 > 500ms) ---
+http_server_requests_seconds_bucket{service="billing-svc",method="GET",uri="/api/v1/invoices",status="200",le="0.05"} 5
+http_server_requests_seconds_bucket{service="billing-svc",method="GET",uri="/api/v1/invoices",status="200",le="0.1"} 10
+http_server_requests_seconds_bucket{service="billing-svc",method="GET",uri="/api/v1/invoices",status="200",le="0.25"} 20
+http_server_requests_seconds_bucket{service="billing-svc",method="GET",uri="/api/v1/invoices",status="200",le="0.5"} 30
+http_server_requests_seconds_bucket{service="billing-svc",method="GET",uri="/api/v1/invoices",status="200",le="1"} 95
+http_server_requests_seconds_bucket{service="billing-svc",method="GET",uri="/api/v1/invoices",status="200",le="+Inf"} 100
+http_server_requests_seconds_count{service="billing-svc",method="GET",uri="/api/v1/invoices",status="200"} 100
+http_server_requests_seconds_sum{service="billing-svc",method="GET",uri="/api/v1/invoices",status="200"} 72.0
+
+# --- Normal API write latency (policy-svc POST p95 ~400ms) ---
+http_server_requests_seconds_bucket{service="policy-svc",method="POST",uri="/api/v1/policies",status="201",le="0.1"} 20
+http_server_requests_seconds_bucket{service="policy-svc",method="POST",uri="/api/v1/policies",status="201",le="0.25"} 60
+http_server_requests_seconds_bucket{service="policy-svc",method="POST",uri="/api/v1/policies",status="201",le="0.5"} 95
+http_server_requests_seconds_bucket{service="policy-svc",method="POST",uri="/api/v1/policies",status="201",le="1"} 100
+http_server_requests_seconds_bucket{service="policy-svc",method="POST",uri="/api/v1/policies",status="201",le="+Inf"} 100
+http_server_requests_seconds_count{service="policy-svc",method="POST",uri="/api/v1/policies",status="201"} 100
+http_server_requests_seconds_sum{service="policy-svc",method="POST",uri="/api/v1/policies",status="201"} 35.0
+
+# --- BREACH: API write latency high (customer-svc POST p95 > 1000ms) ---
+http_server_requests_seconds_bucket{service="customer-svc",method="POST",uri="/api/v1/customers",status="201",le="0.25"} 10
+http_server_requests_seconds_bucket{service="customer-svc",method="POST",uri="/api/v1/customers",status="201",le="0.5"} 20
+http_server_requests_seconds_bucket{service="customer-svc",method="POST",uri="/api/v1/customers",status="201",le="1"} 40
+http_server_requests_seconds_bucket{service="customer-svc",method="POST",uri="/api/v1/customers",status="201",le="2"} 95
+http_server_requests_seconds_bucket{service="customer-svc",method="POST",uri="/api/v1/customers",status="201",le="+Inf"} 100
+http_server_requests_seconds_count{service="customer-svc",method="POST",uri="/api/v1/customers",status="201"} 100
+http_server_requests_seconds_sum{service="customer-svc",method="POST",uri="/api/v1/customers",status="201"} 130.0
+
+# --- Normal error rate (premium-svc ~0.5% 5xx) ---
+http_server_requests_seconds_count{service="premium-svc",method="GET",uri="/api/v1/quotes",status="200"} 995
+http_server_requests_seconds_count{service="premium-svc",method="GET",uri="/api/v1/quotes",status="500"} 5
+
+# --- BREACH: Error rate high (reporting-svc >1% 5xx) ---
+http_server_requests_seconds_count{service="reporting-svc",method="GET",uri="/api/v1/reports",status="200"} 970
+http_server_requests_seconds_count{service="reporting-svc",method="GET",uri="/api/v1/reports",status="500"} 30
+
+# --- Normal batch job duration (billing-installment-job) ---
+spring_batch_job_seconds_bucket{job_name="billing-installment-job",le="300"} 50
+spring_batch_job_seconds_bucket{job_name="billing-installment-job",le="600"} 90
+spring_batch_job_seconds_bucket{job_name="billing-installment-job",le="900"} 100
+spring_batch_job_seconds_bucket{job_name="billing-installment-job",le="+Inf"} 100
+spring_batch_job_seconds_count{job_name="billing-installment-job"} 100
+spring_batch_job_seconds_sum{job_name="billing-installment-job"} 45000
+
+# ASSUMPTION: batch window seconds pending Phase 0 baseline (3h = 10800s)
+pcis_batch_window_seconds{job_name="billing-installment-job"} 10800
+
+# --- BREACH: Batch window utilization >75% (audit-archive-job) ---
+spring_batch_job_seconds_bucket{job_name="audit-archive-job",le="6000"} 10
+spring_batch_job_seconds_bucket{job_name="audit-archive-job",le="7200"} 50
+spring_batch_job_seconds_bucket{job_name="audit-archive-job",le="9000"} 95
+spring_batch_job_seconds_bucket{job_name="audit-archive-job",le="+Inf"} 100
+spring_batch_job_seconds_count{job_name="audit-archive-job"} 100
+spring_batch_job_seconds_sum{job_name="audit-archive-job"} 820000
+pcis_batch_window_seconds{job_name="audit-archive-job"} 10800
+
+# --- BREACH: Batch job failed (commission-calc-job exit code 2) ---
+pcis_batch_job_exit_code{job_name="commission-calc-job",namespace="pcis-dev",pod="commission-calc-job-abc12"} 2
+
+# --- Normal audit outbox lag (audit-svc relay) ---
+pcis_audit_outbox_lag_seconds{service="audit-svc",namespace="pcis-dev",pod="audit-svc-relay-1"} 5
+pcis_audit_outbox_pending_count{service="audit-svc",namespace="pcis-dev",pod="audit-svc-relay-1"} 12
+
+# --- BREACH: Audit outbox lag high (claims-svc outbox relay) ---
+pcis_audit_outbox_lag_seconds{service="claims-svc",namespace="pcis-dev",pod="claims-svc-relay-1"} 45
+
+# --- BREACH: Audit outbox backlog (billing-svc) ---
+pcis_audit_outbox_pending_count{service="billing-svc",namespace="pcis-dev",pod="billing-svc-relay-1"} 150
+
+# --- HikariCP connections (authz-svc normal load) ---
+hikaricp_connections_active{service="authz-svc",namespace="pcis-dev",pod="authz-svc-1"} 8
+
+# --- BREACH: Certificate expiry soon (<14 days) ---
+ssl_certificate_expiry_seconds{service="api-gateway",namespace="pcis-dev",pod="gateway-1"} 864000
+
+# --- BREACH: Secret rotation overdue (>90 days) ---
+pcis_secret_last_rotation_timestamp_seconds{service="billing-svc",secret_name="db-credentials",namespace="pcis-dev"} 1700000000

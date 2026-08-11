@@ -1,0 +1,15 @@
+{
+  "requiredMdcKeys": [
+    "correlationId",
+    "service",
+    "program",
+    "actor",
+    "resource",
+    "operation"
+  ],
+  "optionalBatchKeys": [
+    "jobId",
+    "runId"
+  ],
+  "correlationHeader": "X-Correlation-ID"
+}

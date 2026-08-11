@@ -1,0 +1,7 @@
+pcis:
+  reporting:
+    replica-lag:
+      poll-interval-ms: 5000
+spring:
+  flyway:
+    enabled: false

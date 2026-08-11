@@ -1,0 +1,65 @@
+# Prologue-vs-code contradictions (gap analysis) — golden oracle documents ACTUAL behavior.
+# Java conversions must match reality below, not aspirational prologue comments.
+version: 1
+woref: WO-148
+source: Property_Casualty_Insurance_System/PCIS_Artifact_Gap_Analysis.md
+
+contradictions:
+  - id: CLM006B-SECCHK01
+    program: CLM006B
+    claim: "Prologue / design docs claim authority verification via SECCHK01 before payment."
+    reality: "PROCEDURE DIVISION contains zero CALL 'SECCHK01'. Authority check is not performed."
+    gap: G-02
+    golden_implication: "Payments proceed without authorization gate; Java parity must match unless an intentional fix is approved."
+
+  - id: CLM006B-APPROVAL-T
+    program: CLM006B
+    claim: "Prologue claims APPROVAL_T usage for payment approval workflow."
+    reality: "No APPROVAL_T SQL in CLM006B. Approval table is ignored (ADR-001)."
+    gap: X-07
+    golden_implication: "Golden artifacts will not show APPROVAL_T mutations for CLM006B runs."
+
+  - id: PRM005B-PRMCLC01
+    program: PRM005B
+    claim: "Prologue claims CALL to PRMCLC01 for premium calculation."
+    reality: "PROCEDURE DIVISION contains zero CALL 'PRMCLC01'. PRMCLC01 has no source in the repository."
+    gap: G-01
+    golden_implication: "Golden capture records delinquency processing without a rating CALLee."
+
+  - id: BATCH-AUDLOG01-SWALLOW
+    program: MULTI
+    programs_affected:
+      - BIL003B
+      - CLM006B
+      - CMM001B
+      - POL006B
+      - PRM005B
+    claim: "Audit write failure should prevent financial mutation commit."
+    reality: >
+      Five batch programs call AUDLOG01 (no source — G-03) and continue / commit
+      the financial mutation when the audit CALL fails. Failures surface as DISPLAY
+      text only; they do not ROLLBACK the money movement.
+    gap: G-03
+    golden_implication: >
+      DISPLAY output may contain AUDLOG01 failure messages while table CSVs show
+      committed mutations. Documented in each program's metadata.yaml after capture.
+
+edge_cases_documented_in_seeds:
+  - program: BIL003B
+    case: remainder-penny-on-first-installment
+    note: "Annual premium not evenly divisible — first installment receives remainder (legacy)."
+  - program: CLM006B
+    case: zero-payable-reserves
+    note: "Job completes exit 0 with zero payments when no AP reserves exist."
+  - program: AUD002B
+    case: archive-verify-mismatch-halt
+    note: "When archive count ≠ delete count, program ROLLBACKs / halts."
+  - program: CMM001B
+    case: COMM_CALC_FLAG-guard
+    note: "Already-commissioned rows (flag set) are skipped, not re-processed."
+  - program: PRM005B
+    case: grace-period-boundary
+    note: "Policies exactly at 10-day grace boundary — capture documents inclusive/exclusive behavior."
+  - program: POL006B
+    case: deductible-carry-forward-gap-P-P8
+    note: "POL006B does NOT copy DEDUCTIBLE_T on renewal; golden documents absence."

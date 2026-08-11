@@ -1,0 +1,9 @@
+{
+  "authenticated": true,
+  "user": {
+    "sub": "csr-carol",
+    "name": "Carol CSR",
+    "email": "carol.csr@pcis.example.com",
+    "roles": ["CSR"]
+  }
+}

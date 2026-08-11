@@ -1,0 +1,109 @@
+{
+  "completionStatus": "COMPLETED",
+  "displayOutput": "POL006B START REF=2024-06-15\nSKIP OUTSIDE WINDOW\nPOL006B END\n",
+  "formatVersion": "1.0.0",
+  "program": "POL006B",
+  "referenceDate": "2024-06-15",
+  "runLog": {
+    "programName": "POL006B",
+    "rowsProcessed": 0,
+    "runEnded": "NORMALIZED_TS",
+    "runStarted": "NORMALIZED_TS",
+    "status": "COMPLETED"
+  },
+  "scenario": "scenario-02",
+  "tables": [
+    {
+      "businessKeys": [
+        "POLICY_ID"
+      ],
+      "columns": [
+        {
+          "name": "POLICY_ID",
+          "type": "STRING"
+        },
+        {
+          "name": "STATUS",
+          "type": "STATUS"
+        },
+        {
+          "name": "EXPIRY_DATE",
+          "type": "DATE"
+        }
+      ],
+      "rows": [
+        {
+          "EXPIRY_DATE": "2024-12-01",
+          "POLICY_ID": "POLREN0002",
+          "STATUS": "A"
+        }
+      ],
+      "tableName": "POLICY_T"
+    },
+    {
+      "businessKeys": [
+        "POLICY_ID"
+      ],
+      "columns": [
+        {
+          "name": "POLICY_ID",
+          "type": "STRING"
+        },
+        {
+          "name": "DEDUCTIBLE_AMT",
+          "type": "NUMERIC(11,2)"
+        }
+      ],
+      "rows": [
+        {
+          "DEDUCTIBLE_AMT": "1000.00",
+          "POLICY_ID": "POLREN0002"
+        }
+      ],
+      "tableName": "DEDUCTIBLE_T"
+    },
+    {
+      "businessKeys": [
+        "PROGRAM_NAME",
+        "STATUS"
+      ],
+      "columns": [
+        {
+          "name": "RUN_ID",
+          "type": "SURROGATE"
+        },
+        {
+          "name": "PROGRAM_NAME",
+          "type": "STRING"
+        },
+        {
+          "name": "STATUS",
+          "type": "STATUS"
+        },
+        {
+          "name": "ROWS_PROCESSED",
+          "type": "INTEGER"
+        },
+        {
+          "name": "RUN_STARTED",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "RUN_ENDED",
+          "type": "TIMESTAMP"
+        }
+      ],
+      "rows": [
+        {
+          "PROGRAM_NAME": "POL006B",
+          "ROWS_PROCESSED": 0,
+          "RUN_ENDED": "NORMALIZED_TS",
+          "RUN_ID": "SEQ_001",
+          "RUN_STARTED": "NORMALIZED_TS",
+          "STATUS": "COMPLETED"
+        }
+      ],
+      "tableName": "RPT_RUN_LOG_T"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+management:
+  endpoint:
+    health:
+      group:
+        readiness:
+          include: readinessState,replicaLag
+pcis:
+  reporting:
+    datasource:
+      url: ${AURORA_READER_JDBC_URL}
+      username: ${AURORA_READER_USERNAME}
+      password: ${AURORA_READER_PASSWORD}
+      maximum-pool-size: 10
+      connection-timeout-ms: 30000
+      read-only: true

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: pcis-common
+description: Shared Helm library chart for PCIS microservices (security defaults, probes, HPA/PDB, NetworkPolicy, Istio)
+type: library
+version: 0.1.0
+appVersion: "1.0.0"

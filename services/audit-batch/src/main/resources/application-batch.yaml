@@ -1,0 +1,9 @@
+spring:
+  batch:
+    job:
+      enabled: true
+
+pcis:
+  batch:
+    oauth2:
+      client-secret: test-secret

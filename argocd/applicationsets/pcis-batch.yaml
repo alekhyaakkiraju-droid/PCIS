@@ -1,0 +1,79 @@
+# PCIS batch CronJob ApplicationSet (WO-139)
+# Deploys helm/charts/pcis-batch to dev/tst/prd with environment-specific sync policy.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: pcis-batch
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: pcis
+    pcis.work-order: WO-139
+  annotations:
+    pcis.governance/description: >
+      Spring Batch CronJobs for six legacy COBOL programs (WO-137 chart).
+      Dev sync is automated; tst/prd require manual approval (prd gated).
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - list:
+        elements:
+          - env: dev
+            namespace: pcis-dev
+            valuesFile: values-dev.yaml
+            automated: "true"
+          - env: tst
+            namespace: pcis-tst
+            valuesFile: values-dev.yaml
+            automated: "false"
+          - env: prd
+            namespace: pcis-prd
+            valuesFile: values-prd.yaml
+            automated: "false"
+  template:
+    metadata:
+      name: "pcis-batch-{{ .env }}"
+      labels:
+        app.kubernetes.io/part-of: pcis
+        pcis.component: batch
+        pcis.environment: "{{ .env }}"
+      annotations:
+        pcis.governance/sync-mode: "{{ if eq .automated \"true\" }}automated{{ else }}manual{{ end }}"
+        {{- if eq .env "prd" }}
+        pcis.governance/approval-required: "true"
+        pcis.governance/approver-group: pcis-admins
+        pcis.governance/change-ticket-required: "true"
+        notifications.argoproj.io/subscribe.on-sync-running.slack: pcis-prod-deployments
+        notifications.argoproj.io/subscribe.on-sync-succeeded.slack: pcis-prod-deployments
+        notifications.argoproj.io/subscribe.on-sync-failed.slack: pcis-prod-alerts
+        notifications.argoproj.io/subscribe.on-health-degraded.slack: pcis-prod-alerts
+        {{- end }}
+    spec:
+      project: pcis
+      source:
+        repoURL: https://github.com/alekhyaakkiraju-droid/PCIS.git
+        targetRevision: main
+        path: helm/charts/pcis-batch
+        helm:
+          releaseName: pcis-batch
+          valueFiles:
+            - values.yaml
+            - "{{ .valuesFile }}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{ .namespace }}"
+      revisionHistoryLimit: 5
+      {{- if eq .automated "true" }}
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=false
+          - RespectIgnoreDifferences=true
+      {{- else }}
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=false
+          - RespectIgnoreDifferences=true
+      {{- end }}

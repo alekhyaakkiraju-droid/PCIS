@@ -1,0 +1,3 @@
+-- cession-at-threshold: exactly $100000.00 — does NOT trigger RECOVERY_T (strictly-greater-than check)
+INSERT INTO CLAIM_RESERVE_T (CLAIM_ID, RESERVE_ID, RESERVE_STATUS, RESERVE_AMT, AUTHORITY_LIMIT)
+VALUES ('CLM0006001', 'RSV001', 'AP', 100000.00, 150000.00);

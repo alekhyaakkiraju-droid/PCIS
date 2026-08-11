@@ -1,0 +1,536 @@
+{
+  "generated_at": "2026-08-11T04:19:55Z",
+  "summary": {
+    "crtobj_object_names": 34,
+    "repo_object_names": 32,
+    "matched": 30,
+    "in_crtobj_missing_repo": 4,
+    "in_repo_missing_crtobj": 0,
+    "known_missing_service_programs": 3,
+    "instest_typo_detected": false
+  },
+  "matched": [
+    "AUD002B",
+    "BIL003B",
+    "BILSTSD1",
+    "CLM006B",
+    "CLMADJD1",
+    "CLMAPRD1",
+    "CLMCLSD1",
+    "CLMFNLD1",
+    "CLMINQD1",
+    "CLMPAYD1",
+    "CLMRSVD1",
+    "CMM001B",
+    "COMRPTD1",
+    "CUS001A",
+    "CUSCNTD1",
+    "CUSDELD1",
+    "CUSINQD1",
+    "CUSLSTD1",
+    "CUSMNTD1",
+    "MENUMD1",
+    "POL001A",
+    "POL006B",
+    "POLENDD1",
+    "POLINQD1",
+    "POLLSTD1",
+    "POLMNTD1",
+    "POLREND1",
+    "PRM005B",
+    "PRMINQD1",
+    "RPTMNUD1"
+  ],
+  "in_crtobj_missing_repo": [
+    {
+      "name": "CLMPAYP1",
+      "crtobj_entries": [
+        {
+          "name": "CLMPAYP1",
+          "type": "*FILE",
+          "category": "printer-file",
+          "library": "PCISPGM",
+          "command": "CRTPRTF",
+          "source_file": "PCIS/QDDSSRC",
+          "source_member": "CLMPAYP1",
+          "line": 71,
+          "raw": "CRTPRTF FILE(CLMPAYP1) SRCFILE(PCIS/QDDSSRC) SRCMBR(CLMPAYP1)"
+        }
+      ],
+      "reason": "referenced_in_crtobj_no_repo_source"
+    },
+    {
+      "name": "POLPOLP1",
+      "crtobj_entries": [
+        {
+          "name": "POLPOLP1",
+          "type": "*FILE",
+          "category": "printer-file",
+          "library": "PCISPGM",
+          "command": "CRTPRTF",
+          "source_file": "PCIS/QDDSSRC",
+          "source_member": "POLPOLP1",
+          "line": 70,
+          "raw": "CRTPRTF FILE(POLPOLP1) SRCFILE(PCIS/QDDSSRC) SRCMBR(POLPOLP1)"
+        }
+      ],
+      "reason": "referenced_in_crtobj_no_repo_source"
+    },
+    {
+      "name": "RPT001P1",
+      "crtobj_entries": [
+        {
+          "name": "RPT001P1",
+          "type": "*FILE",
+          "category": "printer-file",
+          "library": "PCISPGM",
+          "command": "CRTPRTF",
+          "source_file": "PCIS/QDDSSRC",
+          "source_member": "RPT001P1",
+          "line": 72,
+          "raw": "CRTPRTF FILE(RPT001P1) SRCFILE(PCIS/QDDSSRC) SRCMBR(RPT001P1)"
+        }
+      ],
+      "reason": "referenced_in_crtobj_no_repo_source"
+    },
+    {
+      "name": "RPT006P1",
+      "crtobj_entries": [
+        {
+          "name": "RPT006P1",
+          "type": "*FILE",
+          "category": "printer-file",
+          "library": "PCISPGM",
+          "command": "CRTPRTF",
+          "source_file": "PCIS/QDDSSRC",
+          "source_member": "RPT006P1",
+          "line": 73,
+          "raw": "CRTPRTF FILE(RPT006P1) SRCFILE(PCIS/QDDSSRC) SRCMBR(RPT006P1)"
+        }
+      ],
+      "reason": "referenced_in_crtobj_no_repo_source"
+    }
+  ],
+  "in_repo_missing_crtobj": [],
+  "known_missing_service_programs": [
+    {
+      "name": "AUDLOG01",
+      "in_repo": false,
+      "in_crtobj": false,
+      "status": "missing-service-program",
+      "notes": "Known shared callee with no source member in repository."
+    },
+    {
+      "name": "SECCHK01",
+      "in_repo": false,
+      "in_crtobj": false,
+      "status": "missing-service-program",
+      "notes": "Known shared callee with no source member in repository."
+    },
+    {
+      "name": "PRMCLC01",
+      "in_repo": false,
+      "in_crtobj": false,
+      "status": "missing-service-program",
+      "notes": "Known shared callee with no source member in repository."
+    }
+  ],
+  "printer_file_gaps": [
+    {
+      "name": "CLMPAYP1",
+      "crtobj_entries": [
+        {
+          "name": "CLMPAYP1",
+          "type": "*FILE",
+          "category": "printer-file",
+          "library": "PCISPGM",
+          "command": "CRTPRTF",
+          "source_file": "PCIS/QDDSSRC",
+          "source_member": "CLMPAYP1",
+          "line": 71,
+          "raw": "CRTPRTF FILE(CLMPAYP1) SRCFILE(PCIS/QDDSSRC) SRCMBR(CLMPAYP1)"
+        }
+      ],
+      "reason": "referenced_in_crtobj_no_repo_source"
+    },
+    {
+      "name": "POLPOLP1",
+      "crtobj_entries": [
+        {
+          "name": "POLPOLP1",
+          "type": "*FILE",
+          "category": "printer-file",
+          "library": "PCISPGM",
+          "command": "CRTPRTF",
+          "source_file": "PCIS/QDDSSRC",
+          "source_member": "POLPOLP1",
+          "line": 70,
+          "raw": "CRTPRTF FILE(POLPOLP1) SRCFILE(PCIS/QDDSSRC) SRCMBR(POLPOLP1)"
+        }
+      ],
+      "reason": "referenced_in_crtobj_no_repo_source"
+    },
+    {
+      "name": "RPT001P1",
+      "crtobj_entries": [
+        {
+          "name": "RPT001P1",
+          "type": "*FILE",
+          "category": "printer-file",
+          "library": "PCISPGM",
+          "command": "CRTPRTF",
+          "source_file": "PCIS/QDDSSRC",
+          "source_member": "RPT001P1",
+          "line": 72,
+          "raw": "CRTPRTF FILE(RPT001P1) SRCFILE(PCIS/QDDSSRC) SRCMBR(RPT001P1)"
+        }
+      ],
+      "reason": "referenced_in_crtobj_no_repo_source"
+    },
+    {
+      "name": "RPT006P1",
+      "crtobj_entries": [
+        {
+          "name": "RPT006P1",
+          "type": "*FILE",
+          "category": "printer-file",
+          "library": "PCISPGM",
+          "command": "CRTPRTF",
+          "source_file": "PCIS/QDDSSRC",
+          "source_member": "RPT006P1",
+          "line": 73,
+          "raw": "CRTPRTF FILE(RPT006P1) SRCFILE(PCIS/QDDSSRC) SRCMBR(RPT006P1)"
+        }
+      ],
+      "reason": "referenced_in_crtobj_no_repo_source"
+    }
+  ],
+  "jobschd_reconciliation": {
+    "crtobj_submitted": [
+      "JOBSCHD1",
+      "JOBSCHD2",
+      "JOBSCHD3"
+    ],
+    "runtime_only_no_source": [
+      "JOBSCHD1",
+      "JOBSCHD2",
+      "JOBSCHD3"
+    ],
+    "new_drivers_defined": [
+      "JOBSCHD4",
+      "JOBSCHD5",
+      "JOBSCHD6",
+      "JOBSCHD7"
+    ],
+    "new_drivers_expected": [
+      "JOBSCHD4",
+      "JOBSCHD5",
+      "JOBSCHD6",
+      "JOBSCHD7"
+    ],
+    "new_drivers_complete": true,
+    "notes": "JOBSCHD1-3 are runtime-only (SBMJOB in PCIS_CRTOBJ.clle, no source). JOBSCHD4-7 are defined in JOBSCHD_NEW_DRIVERS.clle."
+  },
+  "instest_typos": [],
+  "dspobjd_checklist": [
+    {
+      "object": "AUD002B",
+      "library": "INSPRD",
+      "type": "*PGM",
+      "category": "program",
+      "command": "DSPOBJD OBJ(INSPRD/AUD002B) OBJTYPE(*PGM)",
+      "repo_present": true
+    },
+    {
+      "object": "BIL003B",
+      "library": "INSPRD",
+      "type": "*PGM",
+      "category": "program",
+      "command": "DSPOBJD OBJ(INSPRD/BIL003B) OBJTYPE(*PGM)",
+      "repo_present": true
+    },
+    {
+      "object": "BILSTSD1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "display-file",
+      "command": "DSPOBJD OBJ(INSPRD/BILSTSD1) OBJTYPE(*FILE)",
+      "repo_present": true
+    },
+    {
+      "object": "CLM006B",
+      "library": "INSPRD",
+      "type": "*PGM",
+      "category": "program",
+      "command": "DSPOBJD OBJ(INSPRD/CLM006B) OBJTYPE(*PGM)",
+      "repo_present": true
+    },
+    {
+      "object": "CLMADJD1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "display-file",
+      "command": "DSPOBJD OBJ(INSPRD/CLMADJD1) OBJTYPE(*FILE)",
+      "repo_present": true
+    },
+    {
+      "object": "CLMAPRD1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "display-file",
+      "command": "DSPOBJD OBJ(INSPRD/CLMAPRD1) OBJTYPE(*FILE)",
+      "repo_present": true
+    },
+    {
+      "object": "CLMCLSD1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "display-file",
+      "command": "DSPOBJD OBJ(INSPRD/CLMCLSD1) OBJTYPE(*FILE)",
+      "repo_present": true
+    },
+    {
+      "object": "CLMFNLD1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "display-file",
+      "command": "DSPOBJD OBJ(INSPRD/CLMFNLD1) OBJTYPE(*FILE)",
+      "repo_present": true
+    },
+    {
+      "object": "CLMINQD1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "display-file",
+      "command": "DSPOBJD OBJ(INSPRD/CLMINQD1) OBJTYPE(*FILE)",
+      "repo_present": true
+    },
+    {
+      "object": "CLMPAYD1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "display-file",
+      "command": "DSPOBJD OBJ(INSPRD/CLMPAYD1) OBJTYPE(*FILE)",
+      "repo_present": true
+    },
+    {
+      "object": "CLMPAYP1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "printer-file",
+      "command": "DSPOBJD OBJ(INSPRD/CLMPAYP1) OBJTYPE(*FILE)",
+      "repo_present": false
+    },
+    {
+      "object": "CLMRSVD1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "display-file",
+      "command": "DSPOBJD OBJ(INSPRD/CLMRSVD1) OBJTYPE(*FILE)",
+      "repo_present": true
+    },
+    {
+      "object": "CMM001B",
+      "library": "INSPRD",
+      "type": "*PGM",
+      "category": "program",
+      "command": "DSPOBJD OBJ(INSPRD/CMM001B) OBJTYPE(*PGM)",
+      "repo_present": true
+    },
+    {
+      "object": "COMRPTD1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "display-file",
+      "command": "DSPOBJD OBJ(INSPRD/COMRPTD1) OBJTYPE(*FILE)",
+      "repo_present": true
+    },
+    {
+      "object": "CUS001A",
+      "library": "INSPRD",
+      "type": "*PGM",
+      "category": "program",
+      "command": "DSPOBJD OBJ(INSPRD/CUS001A) OBJTYPE(*PGM)",
+      "repo_present": true
+    },
+    {
+      "object": "CUSCNTD1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "display-file",
+      "command": "DSPOBJD OBJ(INSPRD/CUSCNTD1) OBJTYPE(*FILE)",
+      "repo_present": true
+    },
+    {
+      "object": "CUSDELD1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "display-file",
+      "command": "DSPOBJD OBJ(INSPRD/CUSDELD1) OBJTYPE(*FILE)",
+      "repo_present": true
+    },
+    {
+      "object": "CUSINQD1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "display-file",
+      "command": "DSPOBJD OBJ(INSPRD/CUSINQD1) OBJTYPE(*FILE)",
+      "repo_present": true
+    },
+    {
+      "object": "CUSLSTD1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "display-file",
+      "command": "DSPOBJD OBJ(INSPRD/CUSLSTD1) OBJTYPE(*FILE)",
+      "repo_present": true
+    },
+    {
+      "object": "CUSMNTD1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "display-file",
+      "command": "DSPOBJD OBJ(INSPRD/CUSMNTD1) OBJTYPE(*FILE)",
+      "repo_present": true
+    },
+    {
+      "object": "MENUMD1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "display-file",
+      "command": "DSPOBJD OBJ(INSPRD/MENUMD1) OBJTYPE(*FILE)",
+      "repo_present": true
+    },
+    {
+      "object": "POL001A",
+      "library": "INSPRD",
+      "type": "*PGM",
+      "category": "program",
+      "command": "DSPOBJD OBJ(INSPRD/POL001A) OBJTYPE(*PGM)",
+      "repo_present": true
+    },
+    {
+      "object": "POL006B",
+      "library": "INSPRD",
+      "type": "*PGM",
+      "category": "program",
+      "command": "DSPOBJD OBJ(INSPRD/POL006B) OBJTYPE(*PGM)",
+      "repo_present": true
+    },
+    {
+      "object": "POLENDD1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "display-file",
+      "command": "DSPOBJD OBJ(INSPRD/POLENDD1) OBJTYPE(*FILE)",
+      "repo_present": true
+    },
+    {
+      "object": "POLINQD1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "display-file",
+      "command": "DSPOBJD OBJ(INSPRD/POLINQD1) OBJTYPE(*FILE)",
+      "repo_present": true
+    },
+    {
+      "object": "POLLSTD1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "display-file",
+      "command": "DSPOBJD OBJ(INSPRD/POLLSTD1) OBJTYPE(*FILE)",
+      "repo_present": true
+    },
+    {
+      "object": "POLMNTD1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "display-file",
+      "command": "DSPOBJD OBJ(INSPRD/POLMNTD1) OBJTYPE(*FILE)",
+      "repo_present": true
+    },
+    {
+      "object": "POLPOLP1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "printer-file",
+      "command": "DSPOBJD OBJ(INSPRD/POLPOLP1) OBJTYPE(*FILE)",
+      "repo_present": false
+    },
+    {
+      "object": "POLREND1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "display-file",
+      "command": "DSPOBJD OBJ(INSPRD/POLREND1) OBJTYPE(*FILE)",
+      "repo_present": true
+    },
+    {
+      "object": "PRM005B",
+      "library": "INSPRD",
+      "type": "*PGM",
+      "category": "program",
+      "command": "DSPOBJD OBJ(INSPRD/PRM005B) OBJTYPE(*PGM)",
+      "repo_present": true
+    },
+    {
+      "object": "PRMINQD1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "display-file",
+      "command": "DSPOBJD OBJ(INSPRD/PRMINQD1) OBJTYPE(*FILE)",
+      "repo_present": true
+    },
+    {
+      "object": "RPT001P1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "printer-file",
+      "command": "DSPOBJD OBJ(INSPRD/RPT001P1) OBJTYPE(*FILE)",
+      "repo_present": false
+    },
+    {
+      "object": "RPT006P1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "printer-file",
+      "command": "DSPOBJD OBJ(INSPRD/RPT006P1) OBJTYPE(*FILE)",
+      "repo_present": false
+    },
+    {
+      "object": "RPTMNUD1",
+      "library": "INSPRD",
+      "type": "*FILE",
+      "category": "display-file",
+      "command": "DSPOBJD OBJ(INSPRD/RPTMNUD1) OBJTYPE(*FILE)",
+      "repo_present": true
+    },
+    {
+      "object": "AUDLOG01",
+      "library": "INSCOM",
+      "type": "*PGM",
+      "category": "service-program",
+      "command": "DSPOBJD OBJ(INSCOM/AUDLOG01) OBJTYPE(*PGM)",
+      "repo_present": false,
+      "note": "shared service program \u2014 verify presence in INSCOM or *LIBL"
+    },
+    {
+      "object": "SECCHK01",
+      "library": "INSCOM",
+      "type": "*PGM",
+      "category": "service-program",
+      "command": "DSPOBJD OBJ(INSCOM/SECCHK01) OBJTYPE(*PGM)",
+      "repo_present": false,
+      "note": "shared service program \u2014 verify presence in INSCOM or *LIBL"
+    },
+    {
+      "object": "PRMCLC01",
+      "library": "INSCOM",
+      "type": "*PGM",
+      "category": "service-program",
+      "command": "DSPOBJD OBJ(INSCOM/PRMCLC01) OBJTYPE(*PGM)",
+      "repo_present": false,
+      "note": "shared service program \u2014 verify presence in INSCOM or *LIBL"
+    }
+  ]
+}

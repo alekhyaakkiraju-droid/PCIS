@@ -1,0 +1,3 @@
+-- even-division: 1200.00 / 12 = 100.00 exactly (no remainder)
+INSERT INTO POLICY_T (POLICY_ID, BILLING_FREQ, ANNUAL_PREMIUM, STATUS)
+VALUES ('POLBILEVN', 'M', 1200.00, 'A');

@@ -1,0 +1,17 @@
+{{- define "pcis-common.service" -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pcis-common.fullname" . }}
+  labels:
+    {{- include "pcis-common.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type | default "ClusterIP" }}
+  ports:
+    - port: {{ .Values.service.port | default 80 }}
+      targetPort: {{ .Values.service.targetPort | default 8080 }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "pcis-common.selectorLabels" . | nindent 4 }}
+{{- end }}

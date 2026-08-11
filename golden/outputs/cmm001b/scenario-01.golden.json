@@ -1,0 +1,98 @@
+{
+  "completionStatus": "COMPLETED",
+  "displayOutput": "CMM001B START REF=2024-06-15\nCALC POLCMM0001 100.00\nCMM001B END\n",
+  "formatVersion": "1.0.0",
+  "program": "CMM001B",
+  "referenceDate": "2024-06-15",
+  "runLog": {
+    "programName": "CMM001B",
+    "rowsProcessed": 1,
+    "runEnded": "NORMALIZED_TS",
+    "runStarted": "NORMALIZED_TS",
+    "status": "COMPLETED"
+  },
+  "scenario": "scenario-01",
+  "tables": [
+    {
+      "businessKeys": [
+        "POLICY_ID",
+        "AGENT_ID"
+      ],
+      "columns": [
+        {
+          "name": "POLICY_ID",
+          "type": "STRING"
+        },
+        {
+          "name": "AGENT_ID",
+          "type": "STRING"
+        },
+        {
+          "name": "PREMIUM_AMT",
+          "type": "NUMERIC(11,2)"
+        },
+        {
+          "name": "COMM_CALC_FLAG",
+          "type": "STATUS"
+        },
+        {
+          "name": "COMMISSION_AMT",
+          "type": "NUMERIC(9,2)"
+        }
+      ],
+      "rows": [
+        {
+          "AGENT_ID": "AGT001",
+          "COMMISSION_AMT": "100.00",
+          "COMM_CALC_FLAG": "Y",
+          "POLICY_ID": "POLCMM0001",
+          "PREMIUM_AMT": "1000.00"
+        }
+      ],
+      "tableName": "COMMISSION_T"
+    },
+    {
+      "businessKeys": [
+        "PROGRAM_NAME",
+        "STATUS"
+      ],
+      "columns": [
+        {
+          "name": "RUN_ID",
+          "type": "SURROGATE"
+        },
+        {
+          "name": "PROGRAM_NAME",
+          "type": "STRING"
+        },
+        {
+          "name": "STATUS",
+          "type": "STATUS"
+        },
+        {
+          "name": "ROWS_PROCESSED",
+          "type": "INTEGER"
+        },
+        {
+          "name": "RUN_STARTED",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "RUN_ENDED",
+          "type": "TIMESTAMP"
+        }
+      ],
+      "rows": [
+        {
+          "PROGRAM_NAME": "CMM001B",
+          "ROWS_PROCESSED": 1,
+          "RUN_ENDED": "NORMALIZED_TS",
+          "RUN_ID": "SEQ_001",
+          "RUN_STARTED": "NORMALIZED_TS",
+          "STATUS": "COMPLETED"
+        }
+      ],
+      "tableName": "RPT_RUN_LOG_T"
+    }
+  ]
+}

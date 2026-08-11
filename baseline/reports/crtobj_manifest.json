@@ -1,0 +1,499 @@
+{
+  "source": "/Users/alekhyaakkiraju/PCIS/Property_Casualty_Insurance_System/PCIS_CRTOBJ.clle",
+  "generated_at": "2026-08-11T04:19:55Z",
+  "default_libraries": {
+    "SRCLIB": "PCIS",
+    "PGMLIB": "PCISPGM",
+    "DSPLIB": "PCISPGM"
+  },
+  "object_count": 42,
+  "objects": [
+    {
+      "name": "CLM006B",
+      "type": "*MODULE",
+      "category": "cobol-module",
+      "library": "PCISPGM",
+      "command": "CRTSQLCBLI",
+      "source_file": "PCIS/QCBLSRC",
+      "source_member": "CLM006B",
+      "line": 17,
+      "raw": "CRTSQLCBLI OBJ(CLM006B) SRCFILE(PCIS/QCBLSRC) SRCMBR(CLM006B) COMMIT(*NONE) CLOSQLCSR(*ENDMOD) OPTION(*EVENTF)"
+    },
+    {
+      "name": "CLM006B",
+      "type": "*PGM",
+      "category": "program",
+      "library": "PCISPGM",
+      "command": "CRTPGM",
+      "source_file": null,
+      "source_member": null,
+      "line": 18,
+      "raw": "CRTPGM PGM(CLM006B) MODULE(CLM006B) BNDDIR(*LIBL/PCISBND)"
+    },
+    {
+      "name": "CMM001B",
+      "type": "*MODULE",
+      "category": "cobol-module",
+      "library": "PCISPGM",
+      "command": "CRTSQLCBLI",
+      "source_file": "PCIS/QCBLSRC",
+      "source_member": "CMM001B",
+      "line": 20,
+      "raw": "CRTSQLCBLI OBJ(CMM001B) SRCFILE(PCIS/QCBLSRC) SRCMBR(CMM001B) COMMIT(*NONE) CLOSQLCSR(*ENDMOD)"
+    },
+    {
+      "name": "CMM001B",
+      "type": "*PGM",
+      "category": "program",
+      "library": "PCISPGM",
+      "command": "CRTPGM",
+      "source_file": null,
+      "source_member": null,
+      "line": 21,
+      "raw": "CRTPGM PGM(CMM001B) MODULE(CMM001B) BNDDIR(*LIBL/PCISBND)"
+    },
+    {
+      "name": "POL001A",
+      "type": "*MODULE",
+      "category": "cobol-module",
+      "library": "PCISPGM",
+      "command": "CRTSQLCBLI",
+      "source_file": "PCIS/QCBLSRC",
+      "source_member": "POL001A",
+      "line": 23,
+      "raw": "CRTSQLCBLI OBJ(POL001A) SRCFILE(PCIS/QCBLSRC) SRCMBR(POL001A) COMMIT(*NONE) CLOSQLCSR(*ENDMOD)"
+    },
+    {
+      "name": "POL001A",
+      "type": "*PGM",
+      "category": "program",
+      "library": "PCISPGM",
+      "command": "CRTPGM",
+      "source_file": null,
+      "source_member": null,
+      "line": 24,
+      "raw": "CRTPGM PGM(POL001A) MODULE(POL001A) BNDDIR(*LIBL/PCISBND)"
+    },
+    {
+      "name": "POL006B",
+      "type": "*MODULE",
+      "category": "cobol-module",
+      "library": "PCISPGM",
+      "command": "CRTSQLCBLI",
+      "source_file": "PCIS/QCBLSRC",
+      "source_member": "POL006B",
+      "line": 26,
+      "raw": "CRTSQLCBLI OBJ(POL006B) SRCFILE(PCIS/QCBLSRC) SRCMBR(POL006B) COMMIT(*NONE) CLOSQLCSR(*ENDMOD)"
+    },
+    {
+      "name": "POL006B",
+      "type": "*PGM",
+      "category": "program",
+      "library": "PCISPGM",
+      "command": "CRTPGM",
+      "source_file": null,
+      "source_member": null,
+      "line": 27,
+      "raw": "CRTPGM PGM(POL006B) MODULE(POL006B) BNDDIR(*LIBL/PCISBND)"
+    },
+    {
+      "name": "PRM005B",
+      "type": "*MODULE",
+      "category": "cobol-module",
+      "library": "PCISPGM",
+      "command": "CRTSQLCBLI",
+      "source_file": "PCIS/QCBLSRC",
+      "source_member": "PRM005B",
+      "line": 29,
+      "raw": "CRTSQLCBLI OBJ(PRM005B) SRCFILE(PCIS/QCBLSRC) SRCMBR(PRM005B) COMMIT(*NONE) CLOSQLCSR(*ENDMOD)"
+    },
+    {
+      "name": "PRM005B",
+      "type": "*PGM",
+      "category": "program",
+      "library": "PCISPGM",
+      "command": "CRTPGM",
+      "source_file": null,
+      "source_member": null,
+      "line": 30,
+      "raw": "CRTPGM PGM(PRM005B) MODULE(PRM005B) BNDDIR(*LIBL/PCISBND)"
+    },
+    {
+      "name": "BIL003B",
+      "type": "*MODULE",
+      "category": "cobol-module",
+      "library": "PCISPGM",
+      "command": "CRTSQLCBLI",
+      "source_file": "PCIS/QCBLSRC",
+      "source_member": "BIL003B",
+      "line": 32,
+      "raw": "CRTSQLCBLI OBJ(BIL003B) SRCFILE(PCIS/QCBLSRC) SRCMBR(BIL003B) COMMIT(*NONE) CLOSQLCSR(*ENDMOD)"
+    },
+    {
+      "name": "BIL003B",
+      "type": "*PGM",
+      "category": "program",
+      "library": "PCISPGM",
+      "command": "CRTPGM",
+      "source_file": null,
+      "source_member": null,
+      "line": 33,
+      "raw": "CRTPGM PGM(BIL003B) MODULE(BIL003B) BNDDIR(*LIBL/PCISBND)"
+    },
+    {
+      "name": "AUD002B",
+      "type": "*MODULE",
+      "category": "cobol-module",
+      "library": "PCISPGM",
+      "command": "CRTSQLCBLI",
+      "source_file": "PCIS/QCBLSRC",
+      "source_member": "AUD002B",
+      "line": 35,
+      "raw": "CRTSQLCBLI OBJ(AUD002B) SRCFILE(PCIS/QCBLSRC) SRCMBR(AUD002B) COMMIT(*NONE) CLOSQLCSR(*ENDMOD)"
+    },
+    {
+      "name": "AUD002B",
+      "type": "*PGM",
+      "category": "program",
+      "library": "PCISPGM",
+      "command": "CRTPGM",
+      "source_file": null,
+      "source_member": null,
+      "line": 36,
+      "raw": "CRTPGM PGM(AUD002B) MODULE(AUD002B) BNDDIR(*LIBL/PCISBND)"
+    },
+    {
+      "name": "CUS001A",
+      "type": "*MODULE",
+      "category": "cobol-module",
+      "library": "PCISPGM",
+      "command": "CRTSQLCBLI",
+      "source_file": "PCIS/QCBLSRC",
+      "source_member": "CUS001A",
+      "line": 38,
+      "raw": "CRTSQLCBLI OBJ(CUS001A) SRCFILE(PCIS/QCBLSRC) SRCMBR(CUS001A) COMMIT(*NONE) CLOSQLCSR(*ENDMOD)"
+    },
+    {
+      "name": "CUS001A",
+      "type": "*PGM",
+      "category": "program",
+      "library": "PCISPGM",
+      "command": "CRTPGM",
+      "source_file": null,
+      "source_member": null,
+      "line": 39,
+      "raw": "CRTPGM PGM(CUS001A) MODULE(CUS001A) BNDDIR(*LIBL/PCISBND)"
+    },
+    {
+      "name": "CLMFNLD1",
+      "type": "*FILE",
+      "category": "display-file",
+      "library": "PCISPGM",
+      "command": "CRTDSPF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "CLMFNLD1",
+      "line": 44,
+      "raw": "CRTDSPF FILE(CLMFNLD1) SRCFILE(PCIS/QDDSSRC) SRCMBR(CLMFNLD1)"
+    },
+    {
+      "name": "CLMRSVD1",
+      "type": "*FILE",
+      "category": "display-file",
+      "library": "PCISPGM",
+      "command": "CRTDSPF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "CLMRSVD1",
+      "line": 45,
+      "raw": "CRTDSPF FILE(CLMRSVD1) SRCFILE(PCIS/QDDSSRC) SRCMBR(CLMRSVD1)"
+    },
+    {
+      "name": "CLMADJD1",
+      "type": "*FILE",
+      "category": "display-file",
+      "library": "PCISPGM",
+      "command": "CRTDSPF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "CLMADJD1",
+      "line": 46,
+      "raw": "CRTDSPF FILE(CLMADJD1) SRCFILE(PCIS/QDDSSRC) SRCMBR(CLMADJD1)"
+    },
+    {
+      "name": "CLMINQD1",
+      "type": "*FILE",
+      "category": "display-file",
+      "library": "PCISPGM",
+      "command": "CRTDSPF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "CLMINQD1",
+      "line": 47,
+      "raw": "CRTDSPF FILE(CLMINQD1) SRCFILE(PCIS/QDDSSRC) SRCMBR(CLMINQD1)"
+    },
+    {
+      "name": "CLMCLSD1",
+      "type": "*FILE",
+      "category": "display-file",
+      "library": "PCISPGM",
+      "command": "CRTDSPF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "CLMCLSD1",
+      "line": 48,
+      "raw": "CRTDSPF FILE(CLMCLSD1) SRCFILE(PCIS/QDDSSRC) SRCMBR(CLMCLSD1)"
+    },
+    {
+      "name": "CLMAPRD1",
+      "type": "*FILE",
+      "category": "display-file",
+      "library": "PCISPGM",
+      "command": "CRTDSPF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "CLMAPRD1",
+      "line": 49,
+      "raw": "CRTDSPF FILE(CLMAPRD1) SRCFILE(PCIS/QDDSSRC) SRCMBR(CLMAPRD1)"
+    },
+    {
+      "name": "CLMPAYD1",
+      "type": "*FILE",
+      "category": "display-file",
+      "library": "PCISPGM",
+      "command": "CRTDSPF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "CLMPAYD1",
+      "line": 50,
+      "raw": "CRTDSPF FILE(CLMPAYD1) SRCFILE(PCIS/QDDSSRC) SRCMBR(CLMPAYD1)"
+    },
+    {
+      "name": "CUSMNTD1",
+      "type": "*FILE",
+      "category": "display-file",
+      "library": "PCISPGM",
+      "command": "CRTDSPF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "CUSMNTD1",
+      "line": 51,
+      "raw": "CRTDSPF FILE(CUSMNTD1) SRCFILE(PCIS/QDDSSRC) SRCMBR(CUSMNTD1)"
+    },
+    {
+      "name": "CUSINQD1",
+      "type": "*FILE",
+      "category": "display-file",
+      "library": "PCISPGM",
+      "command": "CRTDSPF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "CUSINQD1",
+      "line": 52,
+      "raw": "CRTDSPF FILE(CUSINQD1) SRCFILE(PCIS/QDDSSRC) SRCMBR(CUSINQD1)"
+    },
+    {
+      "name": "CUSLSTD1",
+      "type": "*FILE",
+      "category": "display-file",
+      "library": "PCISPGM",
+      "command": "CRTDSPF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "CUSLSTD1",
+      "line": 53,
+      "raw": "CRTDSPF FILE(CUSLSTD1) SRCFILE(PCIS/QDDSSRC) SRCMBR(CUSLSTD1)"
+    },
+    {
+      "name": "CUSDELD1",
+      "type": "*FILE",
+      "category": "display-file",
+      "library": "PCISPGM",
+      "command": "CRTDSPF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "CUSDELD1",
+      "line": 54,
+      "raw": "CRTDSPF FILE(CUSDELD1) SRCFILE(PCIS/QDDSSRC) SRCMBR(CUSDELD1)"
+    },
+    {
+      "name": "CUSCNTD1",
+      "type": "*FILE",
+      "category": "display-file",
+      "library": "PCISPGM",
+      "command": "CRTDSPF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "CUSCNTD1",
+      "line": 55,
+      "raw": "CRTDSPF FILE(CUSCNTD1) SRCFILE(PCIS/QDDSSRC) SRCMBR(CUSCNTD1)"
+    },
+    {
+      "name": "POLMNTD1",
+      "type": "*FILE",
+      "category": "display-file",
+      "library": "PCISPGM",
+      "command": "CRTDSPF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "POLMNTD1",
+      "line": 56,
+      "raw": "CRTDSPF FILE(POLMNTD1) SRCFILE(PCIS/QDDSSRC) SRCMBR(POLMNTD1)"
+    },
+    {
+      "name": "POLINQD1",
+      "type": "*FILE",
+      "category": "display-file",
+      "library": "PCISPGM",
+      "command": "CRTDSPF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "POLINQD1",
+      "line": 57,
+      "raw": "CRTDSPF FILE(POLINQD1) SRCFILE(PCIS/QDDSSRC) SRCMBR(POLINQD1)"
+    },
+    {
+      "name": "POLREND1",
+      "type": "*FILE",
+      "category": "display-file",
+      "library": "PCISPGM",
+      "command": "CRTDSPF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "POLREND1",
+      "line": 58,
+      "raw": "CRTDSPF FILE(POLREND1) SRCFILE(PCIS/QDDSSRC) SRCMBR(POLREND1)"
+    },
+    {
+      "name": "POLLSTD1",
+      "type": "*FILE",
+      "category": "display-file",
+      "library": "PCISPGM",
+      "command": "CRTDSPF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "POLLSTD1",
+      "line": 59,
+      "raw": "CRTDSPF FILE(POLLSTD1) SRCFILE(PCIS/QDDSSRC) SRCMBR(POLLSTD1)"
+    },
+    {
+      "name": "POLENDD1",
+      "type": "*FILE",
+      "category": "display-file",
+      "library": "PCISPGM",
+      "command": "CRTDSPF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "POLENDD1",
+      "line": 60,
+      "raw": "CRTDSPF FILE(POLENDD1) SRCFILE(PCIS/QDDSSRC) SRCMBR(POLENDD1)"
+    },
+    {
+      "name": "PRMINQD1",
+      "type": "*FILE",
+      "category": "display-file",
+      "library": "PCISPGM",
+      "command": "CRTDSPF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "PRMINQD1",
+      "line": 61,
+      "raw": "CRTDSPF FILE(PRMINQD1) SRCFILE(PCIS/QDDSSRC) SRCMBR(PRMINQD1)"
+    },
+    {
+      "name": "BILSTSD1",
+      "type": "*FILE",
+      "category": "display-file",
+      "library": "PCISPGM",
+      "command": "CRTDSPF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "BILSTSD1",
+      "line": 62,
+      "raw": "CRTDSPF FILE(BILSTSD1) SRCFILE(PCIS/QDDSSRC) SRCMBR(BILSTSD1)"
+    },
+    {
+      "name": "COMRPTD1",
+      "type": "*FILE",
+      "category": "display-file",
+      "library": "PCISPGM",
+      "command": "CRTDSPF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "COMRPTD1",
+      "line": 63,
+      "raw": "CRTDSPF FILE(COMRPTD1) SRCFILE(PCIS/QDDSSRC) SRCMBR(COMRPTD1)"
+    },
+    {
+      "name": "RPTMNUD1",
+      "type": "*FILE",
+      "category": "display-file",
+      "library": "PCISPGM",
+      "command": "CRTDSPF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "RPTMNUD1",
+      "line": 64,
+      "raw": "CRTDSPF FILE(RPTMNUD1) SRCFILE(PCIS/QDDSSRC) SRCMBR(RPTMNUD1)"
+    },
+    {
+      "name": "MENUMD1",
+      "type": "*FILE",
+      "category": "display-file",
+      "library": "PCISPGM",
+      "command": "CRTDSPF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "MENUMD1",
+      "line": 65,
+      "raw": "CRTDSPF FILE(MENUMD1)  SRCFILE(PCIS/QDDSSRC) SRCMBR(MENUMD1)"
+    },
+    {
+      "name": "POLPOLP1",
+      "type": "*FILE",
+      "category": "printer-file",
+      "library": "PCISPGM",
+      "command": "CRTPRTF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "POLPOLP1",
+      "line": 70,
+      "raw": "CRTPRTF FILE(POLPOLP1) SRCFILE(PCIS/QDDSSRC) SRCMBR(POLPOLP1)"
+    },
+    {
+      "name": "CLMPAYP1",
+      "type": "*FILE",
+      "category": "printer-file",
+      "library": "PCISPGM",
+      "command": "CRTPRTF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "CLMPAYP1",
+      "line": 71,
+      "raw": "CRTPRTF FILE(CLMPAYP1) SRCFILE(PCIS/QDDSSRC) SRCMBR(CLMPAYP1)"
+    },
+    {
+      "name": "RPT001P1",
+      "type": "*FILE",
+      "category": "printer-file",
+      "library": "PCISPGM",
+      "command": "CRTPRTF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "RPT001P1",
+      "line": 72,
+      "raw": "CRTPRTF FILE(RPT001P1) SRCFILE(PCIS/QDDSSRC) SRCMBR(RPT001P1)"
+    },
+    {
+      "name": "RPT006P1",
+      "type": "*FILE",
+      "category": "printer-file",
+      "library": "PCISPGM",
+      "command": "CRTPRTF",
+      "source_file": "PCIS/QDDSSRC",
+      "source_member": "RPT006P1",
+      "line": 73,
+      "raw": "CRTPRTF FILE(RPT006P1) SRCFILE(PCIS/QDDSSRC) SRCMBR(RPT006P1)"
+    }
+  ],
+  "submitted_jobs": [
+    {
+      "job": "JOBSCHD1",
+      "program": "JOBSCHD1",
+      "library": "PCISPGM",
+      "line": 79,
+      "command": "SBMJOB CMD(CALL PGM(JOBSCHD1)) JOB(JOBSCHD1) JOBQ(PCISQ)"
+    },
+    {
+      "job": "JOBSCHD2",
+      "program": "JOBSCHD2",
+      "library": "PCISPGM",
+      "line": 80,
+      "command": "SBMJOB CMD(CALL PGM(JOBSCHD2)) JOB(JOBSCHD2) JOBQ(PCISQ)"
+    },
+    {
+      "job": "JOBSCHD3",
+      "program": "JOBSCHD3",
+      "library": "PCISPGM",
+      "line": 81,
+      "command": "SBMJOB CMD(CALL PGM(JOBSCHD3)) JOB(JOBSCHD3) JOBQ(PCISQ)"
+    }
+  ],
+  "instest_typos": [],
+  "instest_typo_detected": false
+}

@@ -1,0 +1,18 @@
+     A*================================================================*
+     A* BILSTSD1 - BILLING STATUS DISPLAY
+     A*================================================================*
+     A                                      DSPSIZ(*DS4)
+     A                                      INDARA
+     A                                      PRINT
+     A*
+     A          R BILSTSD1F
+     A                                      CA03(03 'F3=Exit')
+     A                                      CA12(12 'F12=Cancel')
+     A                                      PFILE(BILLING_PLAN_T)
+     A*
+     A*  Screen title
+     A                              2  2'BILLING STATUS DISPLAY'
+     A*                                     DSPATR(HI)
+     A*
+     A  98                         24  2'F3=Exit  F12=Cancel'
+     A*

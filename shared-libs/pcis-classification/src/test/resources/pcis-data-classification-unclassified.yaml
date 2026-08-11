@@ -1,0 +1,16 @@
+registry_version: "test-unclassified"
+tier_handling:
+  Internal:
+    retention_days: 2555
+    storage_encryption: at-rest-optional
+    access_control: authenticated
+    log_emission: allowed
+entities:
+  - entity: CUSTOMER_T
+    domain: CUS
+    tier: Internal
+    columns:
+      - column: CUST_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE

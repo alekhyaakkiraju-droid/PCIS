@@ -1,0 +1,3 @@
+-- cession-below-threshold: $99999.99 payment — at or below reinsurance cession boundary, no RECOVERY_T
+INSERT INTO CLAIM_RESERVE_T (CLAIM_ID, RESERVE_ID, RESERVE_STATUS, RESERVE_AMT, AUTHORITY_LIMIT)
+VALUES ('CLM0005001', 'RSV001', 'AP', 99999.99, 150000.00);

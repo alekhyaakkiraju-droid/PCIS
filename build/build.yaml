@@ -1,0 +1,43 @@
+# PCIS Legacy IBM i Build Configuration (WO-005)
+# Library names MUST come from this file — never hard-code in scripts.
+
+compiler:
+  min_supported_release: "7.1"
+  out_of_support_releases:
+    - "4.2"
+    - "5.1"
+    - "5.2"
+    - "6.3"
+  # 6.3.x past extended support end date
+  out_of_support_after:
+    "6.3": "2025-09-30"
+
+compile_options:
+  dds:
+    DBGVIEW: "*SOURCE"
+    TGTRLS: "*CURRENT"
+  cobol:
+    DBGVIEW: "*SOURCE"
+    TGTRLS: "*CURRENT"
+    COMMIT: "*NONE"
+    OPTION: "*EVENTF"
+  cl:
+    DBGVIEW: "*SOURCE"
+    TGTRLS: "*CURRENT"
+
+environments:
+  dev:
+    pgm_lib: INSDEV
+    data_lib: INSDEVDTA
+    shared_lib: INSCOM
+    tools_lib: INSTOOLS
+  tst:
+    pgm_lib: INSTST
+    data_lib: INSTSTDTA
+    shared_lib: INSCOM
+    tools_lib: INSTOOLS
+  prd:
+    pgm_lib: INSPRD
+    data_lib: INSPRDDTA
+    shared_lib: INSCOM
+    tools_lib: INSTOOLS

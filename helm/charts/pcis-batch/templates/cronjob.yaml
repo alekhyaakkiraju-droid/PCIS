@@ -1,0 +1,65 @@
+{{- range .Values.jobs }}
+---
+# PLACEHOLDER schedule — pending Phase 0 batch-window baseline measurement (WO-137)
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .name }}
+  namespace: {{ $.Values.namespace }}
+  labels:
+    {{- include "pcis-batch.labels" $ | nindent 4 }}
+    pcis.batch/job: {{ .name }}
+    pcis.batch/program: {{ .program }}
+  annotations:
+    pcis.batch/schedule-status: "placeholder-pending-phase0-baseline"
+    pcis.batch/schedule-note: "ASSUMPTION — update after Phase 0 batch-window measurement"
+spec:
+  schedule: {{ .schedule | quote }}
+  concurrencyPolicy: {{ $.Values.cronJobDefaults.concurrencyPolicy }}
+  startingDeadlineSeconds: {{ $.Values.cronJobDefaults.startingDeadlineSeconds }}
+  successfulJobsHistoryLimit: {{ $.Values.cronJobDefaults.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ $.Values.cronJobDefaults.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      backoffLimit: {{ $.Values.cronJobDefaults.backoffLimit }}
+      template:
+        metadata:
+          labels:
+            {{- include "pcis-batch.labels" $ | nindent 12 }}
+            pcis.batch/job: {{ .name }}
+            app.kubernetes.io/name: {{ .name }}
+        spec:
+          restartPolicy: {{ $.Values.cronJobDefaults.restartPolicy }}
+          serviceAccountName: {{ .serviceAccount.name | default .name }}
+          securityContext:
+            {{- include "pcis-batch.podSecurityContext" $ | nindent 12 }}
+          {{- with $.Values.batchNode.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $.Values.batchNode.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+            - name: batch
+              image: "{{ .image.repository }}:{{ .image.tag }}"
+              imagePullPolicy: {{ $.Values.global.image.pullPolicy }}
+              securityContext:
+                {{- include "pcis-batch.containerSecurityContext" $ | nindent 16 }}
+              command:
+                {{- toYaml .command | nindent 16 }}
+              env:
+                {{- range $key, $value := .env }}
+                - name: {{ $key }}
+                  value: {{ $value | quote }}
+                {{- end }}
+              resources:
+                {{- toYaml .resources | nindent 16 }}
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+          volumes:
+            - name: tmp
+              emptyDir: {}
+{{- end }}

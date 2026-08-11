@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: audit-svc-test
+  autoconfigure:
+    exclude: []
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+pcis:
+  observability:
+    enabled: true
+
+otel:
+  sdk:
+    disabled: true

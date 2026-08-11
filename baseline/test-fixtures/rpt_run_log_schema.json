@@ -1,0 +1,68 @@
+{
+  "table": "RPT_RUN_LOG_T",
+  "ddl_source": "baseline/ddl/RPT_RUN_LOG_T_reconciled.sql",
+  "work_order": "WO-237",
+  "notes": [
+    "Reconciled from PCIS_Database_Design.md drift (RUN_ID/PROGRAM_NAME/ROWS_PROCESSED/RUN_STATUS).",
+    "Shipped COBOL previously had no INSERT into RPT_RUN_LOG_T; instrumentation is additive.",
+    "REC_DELINQUENT is nullable and used only by PRM005B."
+  ],
+  "columns": [
+    {
+      "name": "RUN_LOG_ID",
+      "type": "BIGINT",
+      "nullable": false,
+      "identity": true,
+      "primary_key": true
+    },
+    {
+      "name": "PGM_NAME",
+      "type": "VARCHAR(10)",
+      "nullable": false
+    },
+    {
+      "name": "RUN_DATE",
+      "type": "DATE",
+      "nullable": false
+    },
+    {
+      "name": "REC_SELECTED",
+      "type": "INTEGER",
+      "nullable": false,
+      "default": "0"
+    },
+    {
+      "name": "REC_UPDATED",
+      "type": "INTEGER",
+      "nullable": false,
+      "default": "0"
+    },
+    {
+      "name": "REC_ERRORS",
+      "type": "INTEGER",
+      "nullable": false,
+      "default": "0"
+    },
+    {
+      "name": "REC_DELINQUENT",
+      "type": "INTEGER",
+      "nullable": true
+    },
+    {
+      "name": "START_TIMESTAMP",
+      "type": "TIMESTAMP(6)",
+      "nullable": false
+    },
+    {
+      "name": "END_TIMESTAMP",
+      "type": "TIMESTAMP(6)",
+      "nullable": false
+    },
+    {
+      "name": "CRT_TIMESTAMP",
+      "type": "TIMESTAMP",
+      "nullable": false,
+      "default": "CURRENT TIMESTAMP"
+    }
+  ]
+}

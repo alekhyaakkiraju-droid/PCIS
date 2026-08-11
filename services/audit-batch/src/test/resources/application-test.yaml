@@ -1,0 +1,12 @@
+spring:
+  batch:
+    job:
+      enabled: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+pcis:
+  audit:
+    retention-days: 365
+    chunk-size: 1000

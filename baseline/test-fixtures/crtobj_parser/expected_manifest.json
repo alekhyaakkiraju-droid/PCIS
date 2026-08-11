@@ -1,0 +1,17 @@
+{
+  "object_names": ["BADPGM01", "CLM006B", "CLMFNLD1", "POLPOLP1"],
+  "categories_by_name": {
+    "CLM006B": ["cobol-module", "program"],
+    "CLMFNLD1": ["display-file"],
+    "POLPOLP1": ["printer-file"],
+    "BADPGM01": ["program"]
+  },
+  "libraries_by_name": {
+    "CLM006B": ["PCISPGM"],
+    "CLMFNLD1": ["PCISPGM"],
+    "POLPOLP1": ["PCISPGM"],
+    "BADPGM01": ["INSTEST"]
+  },
+  "instest_typo_detected": true,
+  "submitted_jobs": ["JOBSCHD1"]
+}
