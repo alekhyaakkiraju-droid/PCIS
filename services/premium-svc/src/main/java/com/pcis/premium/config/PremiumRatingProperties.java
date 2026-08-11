@@ -32,6 +32,17 @@ public class PremiumRatingProperties {
   @Max(120)
   private int statementTimeoutSeconds = 30;
 
+  @DecimalMin("0.0000")
+  @DecimalMax("1.0000")
+  private BigDecimal maxCombinedDiscountPct = new BigDecimal("0.2500");
+
+  @DecimalMin("0.0000")
+  @DecimalMax("1.0000")
+  private BigDecimal maxCombinedSurchargePct = new BigDecimal("0.5000");
+
+  @DecimalMin("0.00")
+  private BigDecimal reinsuranceCessionThreshold = new BigDecimal("500000.00");
+
   public int getRateTableCacheTtlSeconds() {
     return rateTableCacheTtlSeconds;
   }
@@ -70,5 +81,29 @@ public class PremiumRatingProperties {
 
   public void setStatementTimeoutSeconds(int statementTimeoutSeconds) {
     this.statementTimeoutSeconds = statementTimeoutSeconds;
+  }
+
+  public BigDecimal getMaxCombinedDiscountPct() {
+    return maxCombinedDiscountPct;
+  }
+
+  public void setMaxCombinedDiscountPct(BigDecimal maxCombinedDiscountPct) {
+    this.maxCombinedDiscountPct = maxCombinedDiscountPct;
+  }
+
+  public BigDecimal getMaxCombinedSurchargePct() {
+    return maxCombinedSurchargePct;
+  }
+
+  public void setMaxCombinedSurchargePct(BigDecimal maxCombinedSurchargePct) {
+    this.maxCombinedSurchargePct = maxCombinedSurchargePct;
+  }
+
+  public BigDecimal getReinsuranceCessionThreshold() {
+    return reinsuranceCessionThreshold;
+  }
+
+  public void setReinsuranceCessionThreshold(BigDecimal reinsuranceCessionThreshold) {
+    this.reinsuranceCessionThreshold = reinsuranceCessionThreshold;
   }
 }

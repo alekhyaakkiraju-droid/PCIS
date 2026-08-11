@@ -34,6 +34,9 @@ pcis:
     decimal-scale: ${PREMIUM_DECIMAL_SCALE:2}
     max-coverage-lines-per-request: ${PREMIUM_MAX_COVERAGE_LINES:20}
     statement-timeout-seconds: ${PREMIUM_STATEMENT_TIMEOUT:30}
+    max-combined-discount-pct: ${PREMIUM_MAX_COMBINED_DISCOUNT_PCT:0.2500}
+    max-combined-surcharge-pct: ${PREMIUM_MAX_COMBINED_SURCHARGE_PCT:0.5000}
+    reinsurance-cession-threshold: ${PREMIUM_REINSURANCE_CESSION_THRESHOLD:500000.00}
     delinquency:
       chunk-size: 1
       grace-days: 10
