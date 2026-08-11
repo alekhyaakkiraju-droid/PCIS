@@ -98,7 +98,7 @@ def bil_policy(policy: str, freq: str | None, premium: str, status: str = "A") -
     }
 
 
-def bil_runlog(program: str = "BIL003B", status: str = "COMPLETED", rows: int = 0) -> dict:
+def bil_runlog_legacy(program: str = "BIL003B", status: str = "COMPLETED", rows: int = 0) -> dict:
     return {
         "businessKeys": ["PROGRAM_NAME", "STATUS"],
         "columns": [
@@ -121,6 +121,142 @@ def bil_runlog(program: str = "BIL003B", status: str = "COMPLETED", rows: int = 
         ],
         "tableName": "RPT_RUN_LOG_T",
     }
+
+
+def bil_runlog(
+    program: str = "BIL003B",
+    status: str = "COMPLETED",
+    rows: int = 0,
+    *,
+    rec_selected: int | None = None,
+    rec_updated: int | None = None,
+    rec_errors: int = 0,
+) -> dict:
+    selected = rec_selected if rec_selected is not None else rows
+    updated = rec_updated if rec_updated is not None else rows
+    return {
+        "businessKeys": ["PROGRAM_NAME", "STATUS"],
+        "columns": [
+            col("RUN_ID", "SURROGATE"),
+            col("PROGRAM_NAME", "STRING"),
+            col("STATUS", "STATUS"),
+            col("REC_SELECTED", "INTEGER"),
+            col("REC_UPDATED", "INTEGER"),
+            col("REC_ERRORS", "INTEGER"),
+            col("ROWS_PROCESSED", "INTEGER"),
+            col("RUN_STARTED", "TIMESTAMP"),
+            col("RUN_ENDED", "TIMESTAMP"),
+        ],
+        "rows": [
+            {
+                "PROGRAM_NAME": program,
+                "REC_ERRORS": rec_errors,
+                "REC_SELECTED": selected,
+                "REC_UPDATED": updated,
+                "ROWS_PROCESSED": rows,
+                "RUN_ENDED": "NORMALIZED_TS",
+                "RUN_ID": "SEQ_001",
+                "RUN_STARTED": "NORMALIZED_TS",
+                "STATUS": status,
+            }
+        ],
+        "tableName": "RPT_RUN_LOG_T",
+    }
+
+
+def gen_bil_wo179() -> None:
+    """WO-179 named billing installment golden scenarios."""
+    scenarios = {
+        "even-division": (
+            "POLBILEVN",
+            "M",
+            "1200.00",
+            ["100.00"] * 12,
+            12,
+            "",
+        ),
+        "remainder-loss": (
+            "POLBILREM",
+            "T",
+            "1000.00",
+            ["333.33", "333.33", "333.33"],
+            3,
+            "PENNY_REMAINDER=0.01 LOST (333.33x3=999.99)\n",
+        ),
+        "monthly-frequency": (
+            "POLBILMON",
+            "M",
+            "600.00",
+            ["50.00"] * 12,
+            12,
+            "",
+        ),
+        "quarterly-frequency": (
+            "POLBILQTR",
+            "Q",
+            "1000.00",
+            ["250.00"] * 4,
+            4,
+            "",
+        ),
+        "semiannual-frequency": (
+            "POLBILSEM",
+            "S",
+            "2400.00",
+            ["1200.00", "1200.00"],
+            2,
+            "",
+        ),
+        "annual-frequency": (
+            "POLBILANN",
+            "A",
+            "3600.00",
+            ["3600.00"],
+            1,
+            "",
+        ),
+        "lead-window-boundary": (
+            "POLBILLED",
+            "M",
+            "1200.00",
+            ["100.00"],
+            1,
+            "LEAD_WINDOW=15 DAYS_OUT=15\n",
+        ),
+        "zero-candidate": (
+            "POLBILZER",
+            None,
+            "1800.00",
+            [],
+            0,
+            "ZERO_CANDIDATES\n",
+        ),
+    }
+    for scen, (pol, freq, prem, amts, rows, extra) in scenarios.items():
+        status = "COMPLETED"
+        display = (
+            f"BIL003B START REF={REF}\n"
+            f"POLICY {pol} FREQ={freq} PREMIUM={prem}\n"
+            f"{extra}"
+            f"INSTALLMENTS={len(amts)}\n"
+            f"BIL003B END STATUS={status}\n"
+        )
+        dump(
+            "bil003b",
+            scen,
+            base(
+                "BIL003B",
+                scen,
+                status,
+                display,
+                rows,
+                [
+                    bil_policy(pol, freq, prem),
+                    bil_installments(pol, amts),
+                    bil_runlog(rows=rows),
+                ],
+            ),
+        )
 
 
 def gen_bil() -> None:
@@ -157,7 +293,7 @@ def gen_bil() -> None:
                 [
                     bil_policy(pol, freq, prem),
                     bil_installments(pol, amts),
-                    bil_runlog(rows=rows),
+                    bil_runlog_legacy(rows=rows),
                 ],
             ),
         )
@@ -214,7 +350,7 @@ def gen_clm() -> None:
                     ],
                     "tableName": "CLAIM_PAYMENT_T",
                 },
-                bil_runlog("CLM006B", "COMPLETED", 1),
+                bil_runlog_legacy("CLM006B", "COMPLETED", 1),
             ],
         ),
     )
@@ -293,7 +429,7 @@ def gen_clm() -> None:
                     ],
                     "tableName": "CLAIM_PAYMENT_T",
                 },
-                bil_runlog("CLM006B", "COMPLETED", 3),
+                bil_runlog_legacy("CLM006B", "COMPLETED", 3),
             ],
         ),
     )
@@ -346,7 +482,7 @@ def gen_clm() -> None:
                     "rows": [],
                     "tableName": "CLAIM_PAYMENT_T",
                 },
-                bil_runlog("CLM006B", "COMPLETED", 0),
+                bil_runlog_legacy("CLM006B", "COMPLETED", 0),
             ],
         ),
     )
@@ -413,7 +549,7 @@ def gen_aud() -> None:
                     ],
                     "tableName": "AUDIT_LOG_ARCHIVE_T",
                 },
-                bil_runlog("AUD002B", "COMPLETED", 2),
+                bil_runlog_legacy("AUD002B", "COMPLETED", 2),
             ],
         ),
     )
@@ -461,7 +597,7 @@ def gen_aud() -> None:
                         "rows": [],
                         "tableName": "AUDIT_LOG_ARCHIVE_T",
                     },
-                    bil_runlog("AUD002B", status, rows),
+                    bil_runlog_legacy("AUD002B", status, rows),
                 ],
             ),
         )
@@ -498,7 +634,7 @@ def gen_cmm() -> None:
                     ],
                     "tableName": "COMMISSION_T",
                 },
-                bil_runlog("CMM001B", "COMPLETED", 1),
+                bil_runlog_legacy("CMM001B", "COMPLETED", 1),
             ],
         ),
     )
@@ -532,7 +668,7 @@ def gen_cmm() -> None:
                     ],
                     "tableName": "COMMISSION_T",
                 },
-                bil_runlog("CMM001B", "COMPLETED", 0),
+                bil_runlog_legacy("CMM001B", "COMPLETED", 0),
             ],
         ),
     )
@@ -575,7 +711,7 @@ def gen_pol() -> None:
                     "rows": [{"DEDUCTIBLE_AMT": "500.00", "POLICY_ID": "POLREN0001"}],
                     "tableName": "DEDUCTIBLE_T",
                 },
-                bil_runlog("POL006B", "COMPLETED", 1),
+                bil_runlog_legacy("POL006B", "COMPLETED", 1),
             ],
         ),
     )
@@ -614,7 +750,7 @@ def gen_pol() -> None:
                     "rows": [{"DEDUCTIBLE_AMT": "1000.00", "POLICY_ID": "POLREN0002"}],
                     "tableName": "DEDUCTIBLE_T",
                 },
-                bil_runlog("POL006B", "COMPLETED", 0),
+                bil_runlog_legacy("POL006B", "COMPLETED", 0),
             ],
         ),
     )
@@ -649,7 +785,7 @@ def gen_prm() -> None:
                     ],
                     "tableName": "POLICY_T",
                 },
-                bil_runlog("PRM005B", "COMPLETED", 1),
+                bil_runlog_legacy("PRM005B", "COMPLETED", 1),
             ],
         ),
     )
@@ -681,7 +817,7 @@ def gen_prm() -> None:
                     ],
                     "tableName": "POLICY_T",
                 },
-                bil_runlog("PRM005B", "COMPLETED", 1),
+                bil_runlog_legacy("PRM005B", "COMPLETED", 1),
             ],
         ),
     )
@@ -689,6 +825,7 @@ def gen_prm() -> None:
 
 def main() -> int:
     gen_bil()
+    gen_bil_wo179()
     gen_clm()
     gen_aud()
     gen_cmm()

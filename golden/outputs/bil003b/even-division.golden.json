@@ -1,0 +1,206 @@
+{
+  "completionStatus": "COMPLETED",
+  "displayOutput": "BIL003B START REF=2024-06-15\nPOLICY POLBILEVN FREQ=M PREMIUM=1200.00\nINSTALLMENTS=12\nBIL003B END STATUS=COMPLETED\n",
+  "formatVersion": "1.0.0",
+  "program": "BIL003B",
+  "referenceDate": "2024-06-15",
+  "runLog": {
+    "programName": "BIL003B",
+    "rowsProcessed": 12,
+    "runEnded": "NORMALIZED_TS",
+    "runStarted": "NORMALIZED_TS",
+    "status": "COMPLETED"
+  },
+  "scenario": "even-division",
+  "tables": [
+    {
+      "businessKeys": [
+        "POLICY_ID"
+      ],
+      "columns": [
+        {
+          "name": "POLICY_ID",
+          "type": "STRING"
+        },
+        {
+          "name": "BILLING_FREQ",
+          "type": "STATUS"
+        },
+        {
+          "name": "ANNUAL_PREMIUM",
+          "type": "NUMERIC(11,2)"
+        },
+        {
+          "name": "STATUS",
+          "type": "STATUS"
+        }
+      ],
+      "rows": [
+        {
+          "ANNUAL_PREMIUM": "1200.00",
+          "BILLING_FREQ": "M",
+          "POLICY_ID": "POLBILEVN",
+          "STATUS": "A"
+        }
+      ],
+      "tableName": "POLICY_T"
+    },
+    {
+      "businessKeys": [
+        "POLICY_ID",
+        "INSTALLMENT_NO"
+      ],
+      "columns": [
+        {
+          "name": "INSTALLMENT_ID",
+          "type": "SURROGATE"
+        },
+        {
+          "name": "POLICY_ID",
+          "type": "STRING"
+        },
+        {
+          "name": "INSTALLMENT_NO",
+          "type": "INTEGER"
+        },
+        {
+          "name": "AMOUNT",
+          "type": "NUMERIC(11,2)"
+        }
+      ],
+      "rows": [
+        {
+          "AMOUNT": "100.00",
+          "INSTALLMENT_ID": "SEQ_001",
+          "INSTALLMENT_NO": 1,
+          "POLICY_ID": "POLBILEVN"
+        },
+        {
+          "AMOUNT": "100.00",
+          "INSTALLMENT_ID": "SEQ_002",
+          "INSTALLMENT_NO": 2,
+          "POLICY_ID": "POLBILEVN"
+        },
+        {
+          "AMOUNT": "100.00",
+          "INSTALLMENT_ID": "SEQ_003",
+          "INSTALLMENT_NO": 3,
+          "POLICY_ID": "POLBILEVN"
+        },
+        {
+          "AMOUNT": "100.00",
+          "INSTALLMENT_ID": "SEQ_004",
+          "INSTALLMENT_NO": 4,
+          "POLICY_ID": "POLBILEVN"
+        },
+        {
+          "AMOUNT": "100.00",
+          "INSTALLMENT_ID": "SEQ_005",
+          "INSTALLMENT_NO": 5,
+          "POLICY_ID": "POLBILEVN"
+        },
+        {
+          "AMOUNT": "100.00",
+          "INSTALLMENT_ID": "SEQ_006",
+          "INSTALLMENT_NO": 6,
+          "POLICY_ID": "POLBILEVN"
+        },
+        {
+          "AMOUNT": "100.00",
+          "INSTALLMENT_ID": "SEQ_007",
+          "INSTALLMENT_NO": 7,
+          "POLICY_ID": "POLBILEVN"
+        },
+        {
+          "AMOUNT": "100.00",
+          "INSTALLMENT_ID": "SEQ_008",
+          "INSTALLMENT_NO": 8,
+          "POLICY_ID": "POLBILEVN"
+        },
+        {
+          "AMOUNT": "100.00",
+          "INSTALLMENT_ID": "SEQ_009",
+          "INSTALLMENT_NO": 9,
+          "POLICY_ID": "POLBILEVN"
+        },
+        {
+          "AMOUNT": "100.00",
+          "INSTALLMENT_ID": "SEQ_010",
+          "INSTALLMENT_NO": 10,
+          "POLICY_ID": "POLBILEVN"
+        },
+        {
+          "AMOUNT": "100.00",
+          "INSTALLMENT_ID": "SEQ_011",
+          "INSTALLMENT_NO": 11,
+          "POLICY_ID": "POLBILEVN"
+        },
+        {
+          "AMOUNT": "100.00",
+          "INSTALLMENT_ID": "SEQ_012",
+          "INSTALLMENT_NO": 12,
+          "POLICY_ID": "POLBILEVN"
+        }
+      ],
+      "tableName": "BILLING_INSTALLMENT_T"
+    },
+    {
+      "businessKeys": [
+        "PROGRAM_NAME",
+        "STATUS"
+      ],
+      "columns": [
+        {
+          "name": "RUN_ID",
+          "type": "SURROGATE"
+        },
+        {
+          "name": "PROGRAM_NAME",
+          "type": "STRING"
+        },
+        {
+          "name": "STATUS",
+          "type": "STATUS"
+        },
+        {
+          "name": "REC_SELECTED",
+          "type": "INTEGER"
+        },
+        {
+          "name": "REC_UPDATED",
+          "type": "INTEGER"
+        },
+        {
+          "name": "REC_ERRORS",
+          "type": "INTEGER"
+        },
+        {
+          "name": "ROWS_PROCESSED",
+          "type": "INTEGER"
+        },
+        {
+          "name": "RUN_STARTED",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "RUN_ENDED",
+          "type": "TIMESTAMP"
+        }
+      ],
+      "rows": [
+        {
+          "PROGRAM_NAME": "BIL003B",
+          "REC_ERRORS": 0,
+          "REC_SELECTED": 12,
+          "REC_UPDATED": 12,
+          "ROWS_PROCESSED": 12,
+          "RUN_ENDED": "NORMALIZED_TS",
+          "RUN_ID": "SEQ_001",
+          "RUN_STARTED": "NORMALIZED_TS",
+          "STATUS": "COMPLETED"
+        }
+      ],
+      "tableName": "RPT_RUN_LOG_T"
+    }
+  ]
+}
