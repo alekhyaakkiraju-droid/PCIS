@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: billing-svc-config
+  namespace: pcis
+  labels:
+    app: billing-svc
+    domain: billing
+data:
+  SPRING_PROFILES_ACTIVE: prod
+  OIDC_ISSUER_URI: https://idp.example.com/realms/pcis
+  KAFKA_BOOTSTRAP_SERVERS: kafka.pcis.svc.cluster.local:9092
+  PCIS_BILLING_EVENTS_TOPIC: billing-events
+  PCIS_BILLING_EVENTS_DLQ_TOPIC: billing-events-dlq
+  PCIS_OUTBOX_RELAY_ENABLED: "true"

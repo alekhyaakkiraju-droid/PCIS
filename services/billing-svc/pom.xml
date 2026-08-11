@@ -14,13 +14,14 @@
   <artifactId>billing-svc</artifactId>
   <packaging>jar</packaging>
   <name>PCIS Billing Service</name>
-  <description>Billing service scaffold with BIL003B and CMM001B batch jobs (WO-207, WO-209)</description>
+  <description>Billing service REST scaffold with JPA domain, OpenAPI, and batch jobs (WO-201, WO-207, WO-209)</description>
 
   <properties>
     <testcontainers.version>1.20.6</testcontainers.version>
     <flyway.version>11.8.2</flyway.version>
     <logstash-logback.version>8.1</logstash-logback.version>
     <nimbus-jose-jwt.version>10.3</nimbus-jose-jwt.version>
+    <wiremock.version>3.13.1</wiremock.version>
     <jacoco.version>0.8.13</jacoco.version>
   </properties>
 
@@ -70,6 +71,11 @@
       <version>0.1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
+      <groupId>com.pcis</groupId>
+      <artifactId>pcis-outbox</artifactId>
+      <version>0.1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
@@ -88,6 +94,10 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-jdbc</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -111,6 +121,14 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-prometheus</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.kafka</groupId>
+      <artifactId>spring-kafka</artifactId>
     </dependency>
     <dependency>
       <groupId>net.logstash.logback</groupId>
@@ -148,6 +166,12 @@
       <version>${nimbus-jose-jwt.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.wiremock</groupId>
+      <artifactId>wiremock-jetty12</artifactId>
+      <version>${wiremock.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -170,6 +194,7 @@
         <version>3.14.0</version>
         <configuration>
           <release>${maven.compiler.release}</release>
+          <parameters>true</parameters>
         </configuration>
       </plugin>
       <plugin>

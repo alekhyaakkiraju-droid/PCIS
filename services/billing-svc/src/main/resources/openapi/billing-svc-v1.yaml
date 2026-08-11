@@ -1,0 +1,96 @@
+openapi: 3.1.0
+info:
+  title: PCIS Billing Service API
+  version: 1.0.0
+  description: Billing schedules, payments, and delinquency endpoints (WO-201 scaffold)
+paths:
+  /v1/billing/schedules:
+    post:
+      summary: Create billing schedule for a policy
+      operationId: createBillingSchedule
+      tags: [BillingSchedule]
+      security:
+        - oauth2: [billing:write]
+      responses:
+        '501':
+          description: Not implemented
+  /v1/billing/schedules/{polNbr}:
+    get:
+      summary: Get billing schedule for a policy
+      operationId: getBillingSchedule
+      tags: [BillingSchedule]
+      parameters:
+        - name: polNbr
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 12
+      security:
+        - oauth2: [billing:read]
+      responses:
+        '501':
+          description: Not implemented
+  /v1/payments:
+    post:
+      summary: Record a payment
+      operationId: createPayment
+      tags: [Payment]
+      security:
+        - oauth2: [billing:write]
+      responses:
+        '501':
+          description: Not implemented
+  /v1/payments/{paymentId}:
+    get:
+      summary: Get payment by identifier
+      operationId: getPayment
+      tags: [Payment]
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - oauth2: [billing:read]
+      responses:
+        '501':
+          description: Not implemented
+  /v1/billing/aging:
+    post:
+      summary: Trigger delinquency aging run
+      operationId: triggerAging
+      tags: [Delinquency]
+      security:
+        - oauth2: [billing:write]
+      responses:
+        '501':
+          description: Not implemented
+  /v1/billing/delinquency/{polNbr}:
+    get:
+      summary: Get delinquency status for a policy
+      operationId: getDelinquency
+      tags: [Delinquency]
+      parameters:
+        - name: polNbr
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 12
+      security:
+        - oauth2: [billing:read]
+      responses:
+        '501':
+          description: Not implemented
+components:
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://idp.example.com/realms/pcis/protocol/openid-connect/token
+          scopes:
+            billing:read: Read billing data
+            billing:write: Mutate billing data

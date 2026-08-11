@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+  <conversionRule conversionWord="piiMask"
+                  converterClass="com.pcis.masking.logback.ClassificationLogMaskingConverter"/>
+
+  <springProfile name="!test">
+    <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+      <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+        <customFields>{"service":"billing-svc"}</customFields>
+        <includeMdcKeyName>correlationId</includeMdcKeyName>
+        <includeMdcKeyName>actor</includeMdcKeyName>
+        <includeMdcKeyName>resource</includeMdcKeyName>
+        <includeMdcKeyName>operation</includeMdcKeyName>
+        <messageJsonProvider class="net.logstash.logback.composite.loggingevent.MessageJsonProvider"/>
+      </encoder>
+    </appender>
+    <appender name="ASYNC_JSON" class="ch.qos.logback.classic.AsyncAppender">
+      <appender-ref ref="JSON"/>
+      <queueSize>512</queueSize>
+      <discardingThreshold>0</discardingThreshold>
+      <includeCallerData>false</includeCallerData>
+    </appender>
+    <root level="INFO">
+      <appender-ref ref="ASYNC_JSON"/>
+    </root>
+  </springProfile>
+
+  <springProfile name="test">
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+      <encoder>
+        <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %piiMask%n</pattern>
+      </encoder>
+    </appender>
+    <root level="INFO">
+      <appender-ref ref="CONSOLE"/>
+    </root>
+    <logger name="com.pcis.billing" level="DEBUG"/>
+  </springProfile>
+
+</configuration>
