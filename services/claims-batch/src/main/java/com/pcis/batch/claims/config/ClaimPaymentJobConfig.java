@@ -62,7 +62,8 @@ public class ClaimPaymentJobConfig {
       JpaPagingItemReader<ClaimReserveEntity> payableReserveReader,
       ClaimPaymentItemProcessor claimPaymentItemProcessor,
       ClaimPaymentJpaWriter claimPaymentJpaWriter,
-      ClaimPaymentProperties properties) {
+      ClaimPaymentProperties properties,
+      ClaimPaymentMetricsListener claimPaymentMetricsListener) {
     return new StepBuilder("claimPaymentStep", jobRepository)
         .<ClaimReserveEntity, ClaimPaymentBatchItem>chunk(properties.getChunkSize(), transactionManager)
         .reader(payableReserveReader)
@@ -73,6 +74,7 @@ public class ClaimPaymentJobConfig {
         .skipLimit(properties.getSkipLimit())
         .retry(TransientDataAccessException.class)
         .retryLimit(3)
+        .listener(claimPaymentMetricsListener)
         .build();
   }
 
@@ -93,12 +95,17 @@ public class ClaimPaymentJobConfig {
       BatchExitCodeJobListener batchExitCodeJobListener,
       ObjectProvider<BatchJobExitCodeListener> batchJobExitCodeListener,
       ObjectProvider<BatchSecurityContextInitializer> batchSecurityContextInitializer,
-      ObjectProvider<org.springframework.batch.core.JobExecutionListener> jobExecutionListeners) {
+      ObjectProvider<org.springframework.batch.core.JobExecutionListener> jobExecutionListeners,
+      ClaimPaymentMetricsListener claimPaymentMetricsListener) {
     JobBuilder builder =
         new JobBuilder("claimPaymentJob", jobRepository).listener(batchExitCodeJobListener);
     batchJobExitCodeListener.ifAvailable(builder::listener);
     batchSecurityContextInitializer.ifAvailable(builder::listener);
+    builder.listener(claimPaymentMetricsListener);
     jobExecutionListeners.orderedStream().forEach(builder::listener);
-    return builder.start(claimPaymentStep).next(claimPaymentRunLogStep).build();
+    return builder
+        .start(claimPaymentStep)
+        .next(claimPaymentRunLogStep)
+        .build();
   }
 }

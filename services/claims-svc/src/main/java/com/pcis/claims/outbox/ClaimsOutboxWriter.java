@@ -3,9 +3,12 @@ package com.pcis.claims.outbox;
 import com.pcis.outbox.OutboxEvent;
 import com.pcis.outbox.OutboxEventRepository;
 import com.pcis.outbox.OutboxEventStatus;
+import com.pcis.observability.MdcKeys;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,11 +27,16 @@ public class ClaimsOutboxWriter {
   @Transactional(propagation = Propagation.MANDATORY)
   public void writeDomainEvent(
       String aggregateId, String eventType, Map<String, Object> payload, UUID idempotencyKey) {
+    Map<String, Object> enriched = new HashMap<>(payload);
+    String correlationId = MDC.get(MdcKeys.CORRELATION_ID);
+    if (correlationId != null && !correlationId.isBlank()) {
+      enriched.putIfAbsent("correlationId", correlationId);
+    }
     OutboxEvent event = new OutboxEvent();
     event.setAggregateType(AGGREGATE_TYPE);
     event.setAggregateId(aggregateId);
     event.setEventType(eventType);
-    event.setPayload(payload);
+    event.setPayload(enriched);
     event.setIdempotencyKey(idempotencyKey);
     event.setStatus(OutboxEventStatus.PENDING);
     event.setAttemptCount(0);

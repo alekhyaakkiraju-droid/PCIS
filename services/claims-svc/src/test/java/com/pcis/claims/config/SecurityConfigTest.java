@@ -28,6 +28,7 @@ class SecurityConfigTest {
   @MockBean private JwtDecoder jwtDecoder;
   @MockBean private ClaimsApplicationService claimsApplicationService;
   @MockBean private ClaimResponseMapper claimResponseMapper;
+  @MockBean private com.pcis.claims.observability.ClaimsMetrics claimsMetrics;
 
   @Test
   void healthEndpointPermittedWithoutAuthentication() throws Exception {
