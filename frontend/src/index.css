@@ -18,6 +18,53 @@ body {
 
 .app-shell {
   min-height: 100vh;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+}
+
+.app-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pcis-space-4);
+  padding: var(--pcis-space-4);
+  background: var(--pcis-color-neutral-800);
+  color: var(--pcis-color-neutral-50);
+  min-height: 100vh;
+}
+
+.app-sidebar__brand {
+  font-size: var(--pcis-font-size-lg);
+}
+
+.app-sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pcis-space-2);
+  flex: 1;
+}
+
+.app-sidebar nav a {
+  color: var(--pcis-color-neutral-50);
+  text-decoration: none;
+  opacity: 0.85;
+  padding: var(--pcis-space-2) var(--pcis-space-3);
+  border-radius: var(--pcis-radius-md);
+}
+
+.app-sidebar nav a.active {
+  opacity: 1;
+  background: var(--pcis-color-neutral-700);
+}
+
+.app-sidebar__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pcis-space-2);
+}
+
+.app-sidebar__user {
+  font-size: var(--pcis-font-size-sm);
+  opacity: 0.9;
 }
 
 .app-header {

@@ -1,0 +1,9 @@
+{
+  "authenticated": true,
+  "user": {
+    "sub": "super-bob",
+    "name": "Bob Supervisor",
+    "email": "bob.supervisor@pcis.example.com",
+    "roles": ["CLAIMS_SUPERVISOR"]
+  }
+}
