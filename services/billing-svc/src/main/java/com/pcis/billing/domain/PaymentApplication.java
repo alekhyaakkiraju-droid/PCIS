@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "PAYMENT_APPLICATION_T")
@@ -25,6 +26,9 @@ public class PaymentApplication extends AuditableEntity {
 
   @Column(name = "APPLIED_AMT", nullable = false, precision = 11, scale = 2)
   private BigDecimal appliedAmt;
+
+  @Column(name = "APPLIED_DATE")
+  private LocalDate appliedDate;
 
   public Long getPaymentAppId() {
     return paymentAppId;
@@ -56,5 +60,13 @@ public class PaymentApplication extends AuditableEntity {
 
   public void setAppliedAmt(BigDecimal appliedAmt) {
     this.appliedAmt = appliedAmt;
+  }
+
+  public LocalDate getAppliedDate() {
+    return appliedDate;
+  }
+
+  public void setAppliedDate(LocalDate appliedDate) {
+    this.appliedDate = appliedDate;
   }
 }

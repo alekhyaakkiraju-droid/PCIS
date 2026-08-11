@@ -11,7 +11,7 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 public final class TestJwtFactory {
 
-  private static final String TEST_SUBJECT = "billing-user";
+  private static final String TEST_SUBJECT = "bill-user";
 
   private TestJwtFactory() {}
 
