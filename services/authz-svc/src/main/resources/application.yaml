@@ -4,6 +4,11 @@ server:
 spring:
   application:
     name: authz-svc
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${OIDC_ISSUER_URI:https://idp.example.com/realms/pcis}
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/pcis_authz}
     username: ${DATABASE_USERNAME:pcis_authz}
@@ -38,6 +43,10 @@ management:
       enabled: true
     readinessstate:
       enabled: true
+
+pcis:
+  outbox:
+    relay-enabled: false
 
 logging:
   level:

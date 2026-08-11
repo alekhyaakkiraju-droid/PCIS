@@ -15,6 +15,7 @@ class FlywayMigrationTest {
     assertMigrationContains("db/migration/V2__create_permissions.sql", "CREATE TABLE permissions");
     assertMigrationContains("db/migration/V3__create_role_permission.sql", "CREATE TABLE role_permission");
     assertMigrationContains("db/migration/V4__create_user_role.sql", "CREATE TABLE user_role");
+    assertMigrationContains("db/migration/V5__create_outbox_events.sql", "CREATE TABLE outbox_events");
   }
 
   @Test
