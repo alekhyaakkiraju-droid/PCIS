@@ -3,13 +3,14 @@ package com.pcis.billing.batch.cmm001b.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pcis.batch.auth.BatchSecurityContextInitializer;
 import com.pcis.batch.common.BatchExitCodeJobListener;
+import com.pcis.batch.common.BatchJobRunLogSupport;
+import com.pcis.batch.common.BatchRunLogTasklet;
 import com.pcis.batch.common.OutboxEventWriter;
 import com.pcis.billing.batch.cmm001b.domain.CommissionCandidateRow;
 import com.pcis.billing.batch.cmm001b.domain.CommissionDecision;
 import com.pcis.billing.batch.cmm001b.infrastructure.CommissionCandidateReader;
 import com.pcis.billing.batch.cmm001b.infrastructure.CommissionLedgerWriter;
 import com.pcis.billing.batch.cmm001b.infrastructure.CommissionProcessor;
-import com.pcis.billing.batch.cmm001b.job.CommissionRunLogTasklet;
 import com.pcis.observability.metrics.BatchJobExitCodeListener;
 import javax.sql.DataSource;
 import org.springframework.batch.core.Job;
@@ -18,7 +19,6 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -74,16 +74,12 @@ public class CommissionCalculationJobConfig {
   Step commissionCalculationRunLogStep(
       JobRepository jobRepository,
       PlatformTransactionManager transactionManager,
-      CommissionRunLogTasklet commissionRunLogTasklet) {
-    return new StepBuilder("commissionCalculationRunLogStep", jobRepository)
-        .tasklet(commissionRunLogTasklet, transactionManager)
-        .build();
-  }
-
-  @Bean
-  CommissionRunLogTasklet commissionRunLogTasklet(
-      JdbcTemplate jdbcTemplate, CommissionCalculationProperties properties) {
-    return new CommissionRunLogTasklet(jdbcTemplate, properties);
+      @Qualifier("commissionCalculationRunLogTasklet") BatchRunLogTasklet commissionCalculationRunLogTasklet) {
+    return BatchJobRunLogSupport.runLogStep(
+        "commissionCalculationRunLogStep",
+        jobRepository,
+        transactionManager,
+        commissionCalculationRunLogTasklet);
   }
 
   @Bean

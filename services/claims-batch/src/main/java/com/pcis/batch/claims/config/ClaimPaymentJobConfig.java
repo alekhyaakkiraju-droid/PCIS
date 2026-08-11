@@ -5,8 +5,9 @@ import com.pcis.batch.auth.BatchSecurityContextInitializer;
 import com.pcis.batch.claims.domain.ApprovedReserveRow;
 import com.pcis.batch.claims.infrastructure.ApprovedReserveReader;
 import com.pcis.batch.claims.infrastructure.ClaimPaymentWriter;
-import com.pcis.batch.claims.job.RunLogTasklet;
 import com.pcis.batch.common.BatchExitCodeJobListener;
+import com.pcis.batch.common.BatchJobRunLogSupport;
+import com.pcis.batch.common.BatchRunLogTasklet;
 import com.pcis.batch.common.OutboxEventWriter;
 import com.pcis.observability.metrics.BatchJobExitCodeListener;
 import javax.sql.DataSource;
@@ -64,16 +65,9 @@ public class ClaimPaymentJobConfig {
   Step claimPaymentRunLogStep(
       JobRepository jobRepository,
       PlatformTransactionManager transactionManager,
-      RunLogTasklet claimPaymentRunLogTasklet) {
-    return new StepBuilder("claimPaymentRunLogStep", jobRepository)
-        .tasklet(claimPaymentRunLogTasklet, transactionManager)
-        .build();
-  }
-
-  @Bean
-  RunLogTasklet claimPaymentRunLogTasklet(
-      JdbcTemplate jdbcTemplate, ClaimPaymentProperties properties) {
-    return new RunLogTasklet(jdbcTemplate, properties);
+      @Qualifier("claimPaymentRunLogTasklet") BatchRunLogTasklet claimPaymentRunLogTasklet) {
+    return BatchJobRunLogSupport.runLogStep(
+        "claimPaymentRunLogStep", jobRepository, transactionManager, claimPaymentRunLogTasklet);
   }
 
   @Bean

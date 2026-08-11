@@ -3,6 +3,8 @@ package com.pcis.premium.batch.prm005b.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pcis.batch.auth.BatchSecurityContextInitializer;
 import com.pcis.batch.common.BatchExitCodeJobListener;
+import com.pcis.batch.common.BatchJobRunLogSupport;
+import com.pcis.batch.common.BatchRunLogTasklet;
 import com.pcis.batch.common.OutboxEventWriter;
 import com.pcis.observability.metrics.BatchJobExitCodeListener;
 import com.pcis.premium.batch.prm005b.domain.DelinquencyCandidateRow;
@@ -10,7 +12,6 @@ import com.pcis.premium.batch.prm005b.domain.DelinquencyDecision;
 import com.pcis.premium.batch.prm005b.infrastructure.DelinquencyAgingProcessor;
 import com.pcis.premium.batch.prm005b.infrastructure.DelinquencyAgingWriter;
 import com.pcis.premium.batch.prm005b.infrastructure.DelinquencyCandidateReader;
-import com.pcis.premium.batch.prm005b.job.DelinquencyRunLogTasklet;
 import javax.sql.DataSource;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -75,16 +76,12 @@ public class DelinquencyAgingJobConfig {
   Step delinquencyAgingRunLogStep(
       JobRepository jobRepository,
       PlatformTransactionManager transactionManager,
-      DelinquencyRunLogTasklet delinquencyRunLogTasklet) {
-    return new StepBuilder("delinquencyAgingRunLogStep", jobRepository)
-        .tasklet(delinquencyRunLogTasklet, transactionManager)
-        .build();
-  }
-
-  @Bean
-  DelinquencyRunLogTasklet delinquencyRunLogTasklet(
-      JdbcTemplate jdbcTemplate, DelinquencyAgingProperties properties) {
-    return new DelinquencyRunLogTasklet(jdbcTemplate, properties);
+      @Qualifier("delinquencyAgingRunLogTasklet") BatchRunLogTasklet delinquencyAgingRunLogTasklet) {
+    return BatchJobRunLogSupport.runLogStep(
+        "delinquencyAgingRunLogStep",
+        jobRepository,
+        transactionManager,
+        delinquencyAgingRunLogTasklet);
   }
 
   @Bean

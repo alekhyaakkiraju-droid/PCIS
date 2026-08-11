@@ -1,6 +1,10 @@
 spring:
   flyway:
     enabled: true
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
   security:
     oauth2:
       resourceserver:
@@ -8,6 +12,10 @@ spring:
           issuer-uri: http://localhost/test-issuer
 
 pcis:
+  classification:
+    registry-location: classpath:pcis-data-classification-test.yaml
+    drift-detection-enabled: false
+    loader-enabled: false
   premium:
     referral-threshold: 75000.00
 

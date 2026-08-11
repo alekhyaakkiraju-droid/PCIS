@@ -118,7 +118,8 @@ public class BillingGenerationWriter implements ItemWriter<BillingInstallmentDec
     if (stepExecution == null || delta == 0) {
       return;
     }
-    long current = stepExecution.getExecutionContext().getLong(key, 0L);
-    stepExecution.getExecutionContext().putLong(key, current + delta);
+    var jobContext = stepExecution.getJobExecution().getExecutionContext();
+    long current = jobContext.getLong(key, 0L);
+    jobContext.putLong(key, current + delta);
   }
 }
