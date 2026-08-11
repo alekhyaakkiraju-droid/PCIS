@@ -7,6 +7,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
@@ -52,6 +53,10 @@ public class PolicyEntity extends AuditableEntity {
   @JdbcTypeCode(SqlTypes.CHAR)
   private String billFreq;
 
+  @Version
+  @Column(name = "version", nullable = false)
+  private Long version;
+
   @OneToMany(mappedBy = "policy")
   private Set<CoverageEntity> coverages = new LinkedHashSet<>();
 
@@ -90,6 +95,7 @@ public class PolicyEntity extends AuditableEntity {
   public void setRenewalOfPol(String renewalOfPol) { this.renewalOfPol = renewalOfPol; }
   public String getBillFreq() { return billFreq; }
   public void setBillFreq(String billFreq) { this.billFreq = billFreq; }
+  public Long getVersion() { return version; }
   public Set<CoverageEntity> getCoverages() { return coverages; }
   public Set<PolicyPropertyEntity> getProperties() { return properties; }
   public Set<PolicyVehicleEntity> getVehicles() { return vehicles; }

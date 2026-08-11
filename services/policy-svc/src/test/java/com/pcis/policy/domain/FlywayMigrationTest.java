@@ -32,7 +32,7 @@ class FlywayMigrationTest {
   private static final List<String> EXPECTED_TABLES =
       List.of(
           "policy", "coverage", "coverage_type", "deductible", "policy_history",
-          "policy_property", "policy_vehicle", "endorsement", "billing_plan");
+          "policy_property", "policy_vehicle", "endorsement", "billing_plan", "outbox_events");
 
   @Test
   void billingPlanNotNullConstraintExists() {

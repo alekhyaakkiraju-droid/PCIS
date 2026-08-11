@@ -65,3 +65,32 @@ logging:
   level:
     root: INFO
     com.pcis.policy: INFO
+
+pcis:
+  outbox:
+    relay-enabled: ${PCIS_OUTBOX_RELAY_ENABLED:false}
+    kafka-topic: ${PCIS_OUTBOX_KAFKA_TOPIC:pcis.domain.events}
+  authz-svc:
+    url: ${AUTHZ_SVC_URL:http://authz-svc:8083}
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+    instances:
+      authz-svc:
+        baseConfig: default
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 5s
+    instances:
+      authz-svc:
+        baseConfig: default
+
+spring.cloud.openfeign.circuitbreaker.enabled: true
