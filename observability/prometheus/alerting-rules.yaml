@@ -24,7 +24,7 @@ groups:
           team: platform
         annotations:
           summary: "API read p95 latency high for {{ $labels.service }} (threshold 500ms)"
-          runbook_url: "docs/runbooks/api-latency.md#api-read-latency-high"
+          runbook_url: "observability/runbooks/api-read-latency-high.md"
 
       - alert: ApiWriteLatencyHigh
         expr: |
@@ -37,7 +37,7 @@ groups:
           team: platform
         annotations:
           summary: "API write p95 latency high for {{ $labels.service }} (threshold 1000ms)"
-          runbook_url: "docs/runbooks/api-latency.md#api-write-latency-high"
+          runbook_url: "observability/runbooks/api-write-latency-high.md"
 
       - alert: ErrorRateHigh
         expr: |
@@ -55,7 +55,7 @@ groups:
           team: platform
         annotations:
           summary: "5xx error rate above 1% for {{ $labels.service }} over 5 minutes"
-          runbook_url: "docs/runbooks/error-rate-high.md"
+          runbook_url: "observability/runbooks/error-rate-high.md"
 
   - name: pcis-batch-alerts
     interval: 30s
@@ -75,7 +75,7 @@ groups:
           team: platform
         annotations:
           summary: "Batch job {{ $labels.job_name }} failed with non-zero exit code"
-          runbook_url: "docs/runbooks/batch-job-failure.md"
+          runbook_url: "observability/runbooks/batch-job-failed.md"
 
       - alert: BatchWindowBreached
         expr: |
@@ -86,7 +86,7 @@ groups:
           team: platform
         annotations:
           summary: "Batch job {{ $labels.job_name }} exceeded 75% of configured window (ASSUMPTION threshold)"
-          runbook_url: "docs/runbooks/batch-window-overrun.md"
+          runbook_url: "observability/runbooks/batch-window-breached.md"
 
   - name: pcis-audit-alerts
     interval: 30s
@@ -107,7 +107,7 @@ groups:
           team: platform
         annotations:
           summary: "Audit outbox lag above 30s for {{ $labels.service }}"
-          runbook_url: "docs/runbooks/audit-outbox-backlog.md#lag-high"
+          runbook_url: "observability/runbooks/audit-outbox-lag-high.md"
 
       - alert: AuditOutboxBacklog
         expr: pcis:audit_outbox_pending_count > 100
@@ -117,7 +117,7 @@ groups:
           team: platform
         annotations:
           summary: "Audit outbox backlog above 100 pending events for {{ $labels.service }}"
-          runbook_url: "docs/runbooks/audit-outbox-backlog.md#backlog"
+          runbook_url: "observability/runbooks/audit-outbox-backlog.md"
 
   - name: pcis-infra-alerts
     interval: 60s
@@ -130,7 +130,7 @@ groups:
           team: platform
         annotations:
           summary: "TLS certificate for {{ $labels.service }} expires in less than 14 days"
-          runbook_url: "docs/runbooks/certificate-expiry.md"
+          runbook_url: "observability/runbooks/certificate-expiry-soon.md"
 
       - alert: SecretRotationOverdue
         expr: (time() - pcis_secret_last_rotation_timestamp_seconds) > 7776000
@@ -140,4 +140,4 @@ groups:
           team: platform
         annotations:
           summary: "Secret {{ $labels.secret_name }} for {{ $labels.service }} not rotated in 90 days"
-          runbook_url: "docs/runbooks/secret-rotation.md"
+          runbook_url: "observability/runbooks/secret-rotation-overdue.md"

@@ -13,7 +13,7 @@
       },
       "annotations": {
         "summary": "Batch job commission-calc-job failed with non-zero exit code",
-        "runbook_url": "docs/runbooks/batch-job-failure.md",
+        "runbook_url": "observability/runbooks/batch-job-failed.md",
         "value": "2",
         "threshold": "0"
       },
@@ -33,7 +33,7 @@
   },
   "commonAnnotations": {
     "summary": "Batch job commission-calc-job failed with non-zero exit code",
-    "runbook_url": "docs/runbooks/batch-job-failure.md",
+    "runbook_url": "observability/runbooks/batch-job-failed.md",
     "value": "2",
     "threshold": "0"
   },
