@@ -1,0 +1,20 @@
+schemaVersion: "2.0.0"
+metadataTest:
+  user: "nonroot"
+  entrypoint:
+    - java
+    - -javaagent:/opt/otel/opentelemetry-javaagent.jar
+    - -jar
+fileExistenceTests:
+  - name: "otel java agent present"
+    path: /opt/otel/opentelemetry-javaagent.jar
+    shouldExist: true
+  - name: "no /bin/sh (distroless)"
+    path: /bin/sh
+    shouldExist: false
+  - name: "no /bin/bash"
+    path: /bin/bash
+    shouldExist: false
+  - name: "no busybox shell"
+    path: /busybox/sh
+    shouldExist: false
