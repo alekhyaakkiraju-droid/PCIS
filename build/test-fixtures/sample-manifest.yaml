@@ -1,0 +1,50 @@
+---
+generation_timestamp: "2026-01-01T00:00:00Z"
+generator_version: 1.0.0
+repository_root: Property_Casualty_Insurance_System
+total_file_count: 6
+files:
+  - path: AUDLOG01
+    type: cobol
+    status: missing-callee
+    line_count: 0
+    sha256_checksum: null
+    dependencies: []
+  - path: fixtures/SCREEN1.dspf
+    type: dds
+    status: shipped
+    line_count: 10
+    sha256_checksum: aaa111
+    dependencies: []
+  - path: fixtures/SCREEN2.dspf
+    type: dds
+    status: shipped
+    line_count: 10
+    sha256_checksum: aaa222
+    dependencies: []
+  - path: fixtures/PGM001A.cbl
+    type: cobol
+    status: shipped
+    line_count: 50
+    sha256_checksum: bbb111
+    dependencies:
+      - target_name: SCREEN1
+        relationship_type: binds-dds
+      - target_name: AUDLOG01
+        relationship_type: calls
+  - path: fixtures/PGM002B.cbl
+    type: cobol
+    status: shipped
+    line_count: 50
+    sha256_checksum: bbb222
+    dependencies:
+      - target_name: PGM001A
+        relationship_type: calls
+  - path: fixtures/JOB001.clle
+    type: cl
+    status: shipped
+    line_count: 20
+    sha256_checksum: ccc111
+    dependencies:
+      - target_name: PGM002B
+        relationship_type: calls
