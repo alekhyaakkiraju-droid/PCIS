@@ -9,8 +9,6 @@ import com.pcis.claims.support.ClaimsTestSecurityConfig;
 import com.pcis.claims.support.PostgresTestContainer;
 import com.pcis.claims.support.TestEnvironment;
 import com.pcis.claims.support.TestJwtFactory;
-import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,18 +16,20 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
-/**
- * Full-context integration test with Testcontainers PostgreSQL 17.
- * Verifies context loads, Flyway migration executes, database connectivity is UP,
- * and the deny-by-default security configuration is correctly applied.
- */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = {
+      "spring.main.allow-bean-definition-overriding=true",
+      "management.endpoint.health.probes.enabled=false",
+      "management.endpoint.health.group.liveness.include=ping",
+      "management.endpoint.health.group.readiness.include=ping,db",
+      "management.endpoint.health.group.startup.include=ping,db"
+    })
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Import(ClaimsTestSecurityConfig.class)
@@ -41,11 +41,8 @@ class ClaimsSvcIntegrationTest {
     PostgresTestContainer.registerProperties(registry);
   }
 
-  @Autowired
-  private ApplicationContext applicationContext;
-
-  @Autowired
-  private MockMvc mockMvc;
+  @Autowired private ApplicationContext applicationContext;
+  @Autowired private MockMvc mockMvc;
 
   @Test
   void contextLoadsWithPostgres() {
@@ -69,21 +66,18 @@ class ClaimsSvcIntegrationTest {
 
   @Test
   void actuatorHealthReturns200() throws Exception {
-    mockMvc.perform(get("/actuator/health"))
-        .andExpect(status().isOk());
+    mockMvc.perform(get("/actuator/health")).andExpect(status().isOk());
   }
 
   @Test
   void apiClaimsEndpointReturns401WithoutJwt() throws Exception {
-    mockMvc.perform(get("/api/v1/claims"))
-        .andExpect(status().isUnauthorized());
+    mockMvc.perform(get("/api/v1/claims")).andExpect(status().isUnauthorized());
   }
 
   @Test
-  void apiClaimsEndpointPassesAuthWithValidJwt() throws Exception {
-    mockMvc.perform(
-            get("/api/v1/claims")
-                .with(jwt().jwt(TestJwtFactory.claimsAdjuster())))
-        .andExpect(status().isNotFound()); // 404 = auth passed, no controller yet
+  void apiClaimsEndpointReturns200WithValidJwt() throws Exception {
+    mockMvc
+        .perform(get("/api/v1/claims").with(TestJwtFactory.asClaimsReader()))
+        .andExpect(status().isOk());
   }
 }

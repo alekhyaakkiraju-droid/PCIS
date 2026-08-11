@@ -24,7 +24,15 @@ import org.springframework.test.web.servlet.MockMvc;
  * Verifies context loads, Flyway migration executes, database connectivity is UP,
  * and the deny-by-default security configuration is correctly applied.
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = {
+      "spring.main.allow-bean-definition-overriding=true",
+      "management.endpoint.health.probes.enabled=false",
+      "management.endpoint.health.group.liveness.include=ping",
+      "management.endpoint.health.group.readiness.include=ping,db",
+      "management.endpoint.health.group.startup.include=ping,db"
+    })
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Import(PolicyTestSecurityConfig.class)

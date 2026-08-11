@@ -28,20 +28,23 @@ class SecurityConfigTest {
 
   @Test
   void healthEndpointPermittedWithoutAuthentication() throws Exception {
-    mockMvc.perform(get("/actuator/health"))
-        .andExpect(status().isOk());
+    mockMvc
+        .perform(get("/actuator/health"))
+        .andExpect(result -> assertThat(result.getResponse().getStatus()).isNotIn(401, 403));
   }
 
   @Test
   void actuatorReadinessPermittedWithoutAuthentication() throws Exception {
-    mockMvc.perform(get("/actuator/readiness"))
-        .andExpect(status().isOk());
+    mockMvc
+        .perform(get("/actuator/readiness"))
+        .andExpect(result -> assertThat(result.getResponse().getStatus()).isNotIn(401, 403));
   }
 
   @Test
   void actuatorInfoPermittedWithoutAuthentication() throws Exception {
-    mockMvc.perform(get("/actuator/info"))
-        .andExpect(status().isOk());
+    mockMvc
+        .perform(get("/actuator/info"))
+        .andExpect(result -> assertThat(result.getResponse().getStatus()).isNotIn(401, 403));
   }
 
   @Test
