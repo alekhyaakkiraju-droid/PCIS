@@ -1,0 +1,55 @@
+### Create claim
+POST {{baseUrl}}/api/v1/claims
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "polNbr": "POL000000001",
+  "custId": 1001,
+  "lossDate": "2026-04-01",
+  "claimType": "PRP",
+  "description": "FNOL from storm damage"
+}
+
+### Get claim detail
+GET {{baseUrl}}/api/v1/claims/{{claimNbr}}
+Authorization: Bearer {{token}}
+
+### Create reserve
+POST {{baseUrl}}/api/v1/claims/{{claimNbr}}/reserves
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "reserveType": "PRO",
+  "approvedAmt": 5000.00
+}
+
+### Create approval (supervisor)
+POST {{baseUrl}}/api/v1/claims/{{claimNbr}}/approvals
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "reserveId": 1
+}
+
+### Initiate payment (adjuster)
+POST {{baseUrl}}/api/v1/claims/{{claimNbr}}/payments
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "reserveId": 1,
+  "amount": 2500.00,
+  "payeeId": 1001
+}
+
+### Add note
+POST {{baseUrl}}/api/v1/claims/{{claimNbr}}/notes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "noteText": "Adjuster site visit completed."
+}

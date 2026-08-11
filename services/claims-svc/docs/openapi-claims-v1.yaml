@@ -1,0 +1,33 @@
+openapi: 3.1.0
+info:
+  title: PCIS Claims Service API
+  version: 1.0.0
+paths:
+  /api/v1/claims:
+    get:
+      summary: List claims
+    post:
+      summary: Create claim (FNOL)
+  /api/v1/claims/{claimNbr}:
+    get:
+      summary: Get claim detail with reserves, payments, and notes
+    put:
+      summary: Update claim with optimistic locking (If-Match)
+  /api/v1/claims/{claimNbr}/reserves:
+    get:
+      summary: List reserves
+    post:
+      summary: Create reserve
+  /api/v1/claims/{claimNbr}/payments:
+    get:
+      summary: List payments
+    post:
+      summary: Initiate payment
+  /api/v1/claims/{claimNbr}/approvals:
+    get:
+      summary: List approvals
+    post:
+      summary: Create approval
+  /api/v1/claims/{claimNbr}/notes:
+    post:
+      summary: Create claim note
