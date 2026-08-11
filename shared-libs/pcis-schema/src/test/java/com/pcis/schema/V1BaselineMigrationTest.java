@@ -99,7 +99,7 @@ class V1BaselineMigrationTest {
     }
 
     @Test
-    void createsAllSequencesStartingAt100000() throws SQLException {
+    void createsAllSequencesStartingAt10000000() throws SQLException {
         try (Connection conn = openConnection()) {
             Set<String> sequences = new HashSet<>();
             try (ResultSet rs = conn.createStatement().executeQuery(
@@ -115,7 +115,8 @@ class V1BaselineMigrationTest {
                 long startValue = queryLong(conn,
                         "SELECT start_value FROM pg_sequences WHERE sequencename = ?",
                         seq.toLowerCase());
-                assertEquals(100000L, startValue, seq + " should START WITH 100000");
+                assertEquals(10000000L, startValue,
+                        seq + " should START WITH 10000000 for parallel-run safety (WO-155)");
             }
         }
     }
