@@ -40,3 +40,14 @@ keycloak_db_host                = "REPLACE_KEYCLOAK_DB_HOST"
 keycloak_enable_realm_import    = true
 keycloak_create_secret_shells   = true
 
+# ECR registry (WO-134)
+production_account_id              = "222233334444"
+ecr_repository_names = [
+  "customer-svc", "claims-svc", "policy-svc", "premium-svc",
+  "billing-svc", "reporting-svc", "authz-svc", "audit-svc",
+  "pcis-base-java21",
+]
+ecr_cross_account_pull_enabled     = true
+ecr_tagged_image_retention_count   = 30
+ecr_untagged_image_expiration_days = 7
+
