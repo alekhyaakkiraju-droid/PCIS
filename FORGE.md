@@ -84,3 +84,10 @@
 - **Files:** 2 (+808/-0)
 - **Duration:** 372ss
 - **Approach:** Created the authoritative Db2-for-i to PostgreSQL SQL construct translation reference document (docs/db2-to-postgresql-translation.md) and a companion Testcontainers integration test class (SqlTranslationValidationTest.java). The reference document covers all 10 translation categories from the WO with before/after SQL examples, affected COBOL program inventory, and appendix tables. The test class has 20 test methods running against PostgreSQL 17 via Testcontainers — no V1 migration required since all tests are self-contained (use temp tables or literal expressions). Placed in com.pcis.migration package under pcis-schema since that module already has the Testcontainers/JUnit infrastructure needed.
+
+## WO-178: User Story: WO-178 - Wire Golden-Output Regression into CI Pipeline
+- **Status:** completed
+- **Commit:** `f05521e`
+- **Files:** 3 (+400/-0)
+- **Duration:** 440ss
+- **Approach:** Created forge-pipeline.yaml as the Forge Shipping declarative pipeline with a fail-closed golden-output gate in the build:maven stage. The gate runs all @Tag('GoldenOutput') tests via Maven Surefire with failIfNoTests=true (fail-closed: missing tests or infrastructure failure → BUILD FAIL), forkedProcessTimeoutInSeconds=300, and reportsDirectory pointing to golden/reports/. Artifact retention configuration publishes golden/reports/*.json and golden/reports/*.txt on failure. A nightly cron (0 2 * * *) runs the full suite with per-class and suite-total duration metadata. Updated the parent pom.xml with a golden-output profile (Surefire configuration) and a jacoco profile (JaCoCo 90% LINE coverage rule scoped to com.pcis/*/calc and com.pcis/*/payment packages via <includes> filter). Also added pluginManagement for surefire 3.5.3 and jacoco 0.8.13, and three configurable properties (golden.surefire.timeout=300, golden.test.timeout.per.class=120, golden.coverage.minimum=0.90). Created ops/golden-pipeline.md documenting fail-closed semantics, timeout/threshold configuration, retained artifacts, nightly schedule, new-test onboarding, and troubleshooting.
