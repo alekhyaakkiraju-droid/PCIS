@@ -300,7 +300,187 @@ def gen_bil() -> None:
 
 
 # --- CLM006B -----------------------------------------------------------------
+def clm_reserves(rows: list[dict]) -> dict:
+    return {
+        "businessKeys": ["CLAIM_ID", "RESERVE_ID"],
+        "columns": [
+            col("CLAIM_ID", "STRING"),
+            col("RESERVE_ID", "STRING"),
+            col("RESERVE_STATUS", "STATUS"),
+            col("RESERVE_AMT", "NUMERIC(11,2)"),
+            col("AUTHORITY_LIMIT", "NUMERIC(11,2)"),
+        ],
+        "rows": rows,
+        "tableName": "CLAIM_RESERVE_T",
+    }
+
+
+def clm_payments(rows: list[dict]) -> dict:
+    return {
+        "businessKeys": ["CLAIM_ID", "PAYMENT_AMT"],
+        "columns": [
+            col("PAYMENT_ID", "SURROGATE"),
+            col("CLAIM_ID", "STRING"),
+            col("PAYMENT_AMT", "NUMERIC(11,2)"),
+            col("CREATED_AT", "TIMESTAMP"),
+        ],
+        "rows": rows,
+        "tableName": "CLAIM_PAYMENT_T",
+    }
+
+
+def clm_recovery(rows: list[dict]) -> dict:
+    return {
+        "businessKeys": ["CLAIM_ID", "RECOVERY_AMT"],
+        "columns": [
+            col("RECOVERY_ID", "SURROGATE"),
+            col("CLAIM_ID", "STRING"),
+            col("RECOVERY_AMT", "NUMERIC(11,2)"),
+            col("RECOVERY_STATUS", "STATUS"),
+            col("RECOVERY_DATE", "DATE"),
+        ],
+        "rows": rows,
+        "tableName": "RECOVERY_T",
+    }
+
+
+def clm_runlog(rows: int, *, rec_selected: int | None = None, rec_errors: int = 0) -> dict:
+    return bil_runlog(
+        "CLM006B",
+        "COMPLETED",
+        rows,
+        rec_selected=rec_selected if rec_selected is not None else rows,
+        rec_updated=rows,
+        rec_errors=rec_errors,
+    )
+
+
+def gen_clm_wo180() -> None:
+    """WO-180 named CLM006B reserve drawdown golden scenarios."""
+    scenarios = [
+        (
+            "single-reserve-payment",
+            "PAYMENT CLM0001001 1500.00",
+            1,
+            [("CLM0001001", "RSV001", "PD", "1500.00", "5000.00")],
+            [("CLM0001001", "1500.00", "SEQ_001")],
+            [],
+        ),
+        (
+            "multiple-reserves",
+            "PAYMENTS=3",
+            3,
+            [
+                ("CLM0002001", "RSV001", "PD", "2500.00", "5000.00"),
+                ("CLM0002002", "RSV002", "PD", "75000.00", "10000.00"),
+                ("CLM0002003", "RSV003", "PD", "500.00", "5000.00"),
+            ],
+            [
+                ("CLM0002001", "2500.00", "SEQ_001"),
+                ("CLM0002002", "75000.00", "SEQ_002"),
+                ("CLM0002003", "500.00", "SEQ_003"),
+            ],
+            [],
+        ),
+        (
+            "zero-payable",
+            "PAYMENTS=0",
+            0,
+            [
+                ("CLM0003001", "RSV001", "PD", "1000.00", "5000.00"),
+                ("CLM0003002", "RSV002", "OP", "2000.00", "5000.00"),
+            ],
+            [],
+            [],
+        ),
+        (
+            "authority-limit-exceeded",
+            "PAYMENT CLM0004001 75000.00",
+            1,
+            [("CLM0004001", "RSV001", "PD", "75000.00", "10000.00")],
+            [("CLM0004001", "75000.00", "SEQ_001")],
+            [],
+        ),
+        (
+            "cession-below-threshold",
+            "PAYMENT CLM0005001 99999.99",
+            1,
+            [("CLM0005001", "RSV001", "PD", "99999.99", "150000.00")],
+            [("CLM0005001", "99999.99", "SEQ_001")],
+            [],
+        ),
+        (
+            "cession-at-threshold",
+            "PAYMENT CLM0006001 100000.00",
+            1,
+            [("CLM0006001", "RSV001", "PD", "100000.00", "150000.00")],
+            [("CLM0006001", "100000.00", "SEQ_001")],
+            [],
+        ),
+        (
+            "cession-above-threshold",
+            "PAYMENT CLM0007001 100000.01 RECOVERY=1",
+            1,
+            [("CLM0007001", "RSV001", "PD", "100000.01", "150000.00")],
+            [("CLM0007001", "100000.01", "SEQ_001")],
+            [("CLM0007001", "100000.01", "SEQ_001", "REF", REF)],
+        ),
+    ]
+    for scen, display_line, rows, reserve_rows, payment_rows, recovery_rows in scenarios:
+        reserves = [
+            {
+                "AUTHORITY_LIMIT": auth,
+                "CLAIM_ID": cid,
+                "RESERVE_AMT": amt,
+                "RESERVE_ID": rid,
+                "RESERVE_STATUS": st,
+            }
+            for cid, rid, st, amt, auth in reserve_rows
+        ]
+        payments = [
+            {
+                "CLAIM_ID": cid,
+                "CREATED_AT": "NORMALIZED_TS",
+                "PAYMENT_AMT": amt,
+                "PAYMENT_ID": pid,
+            }
+            for cid, amt, pid in payment_rows
+        ]
+        recoveries = [
+            {
+                "CLAIM_ID": cid,
+                "RECOVERY_AMT": amt,
+                "RECOVERY_DATE": ref,
+                "RECOVERY_ID": rid,
+                "RECOVERY_STATUS": st,
+            }
+            for cid, amt, rid, st, ref in recovery_rows
+        ]
+        dump(
+            "clm006b",
+            scen,
+            base(
+                "CLM006B",
+                scen,
+                "COMPLETED",
+                f"CLM006B START REF={REF}\n{display_line}\nCLM006B END\n",
+                rows,
+                [
+                    clm_reserves(reserves),
+                    clm_payments(payments),
+                    clm_recovery(recoveries),
+                    clm_runlog(rows),
+                ],
+            ),
+        )
+
+
 def gen_clm() -> None:
+    """Legacy scenario-01..03 superseded by gen_clm_wo180() named scenarios."""
+    return
+
+
+def _gen_clm_legacy_scenarios() -> None:
     # scenario-01: pay AP reserve 1500.00, status → PD
     dump(
         "clm006b",
@@ -827,6 +1007,7 @@ def main() -> int:
     gen_bil()
     gen_bil_wo179()
     gen_clm()
+    gen_clm_wo180()
     gen_aud()
     gen_cmm()
     gen_pol()

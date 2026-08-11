@@ -23,6 +23,7 @@ allow:
   surrogates:
     - LOG_ID
     - PAYMENT_ID
+    - RECOVERY_ID
     - INSTALLMENT_ID
     - COMMISSION_ID
     - RUN_ID
