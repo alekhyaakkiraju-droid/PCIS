@@ -1,0 +1,9 @@
+{
+  "authenticated": true,
+  "user": {
+    "sub": "underwriter-uma",
+    "name": "Uma Underwriter",
+    "email": "uma.underwriter@pcis.example.com",
+    "roles": ["UNDERWRITER"]
+  }
+}
