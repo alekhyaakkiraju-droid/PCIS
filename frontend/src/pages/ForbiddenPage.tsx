@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import { MENUMD1_ERROR_91 } from '../auth/errors'
 
 export function ForbiddenPage() {
@@ -9,6 +10,9 @@ export function ForbiddenPage() {
       </p>
       <p>
         Contact your supervisor if you believe you should have access to this menu option.
+      </p>
+      <p>
+        <Link to="/">Return to dashboard</Link>
       </p>
     </section>
   )

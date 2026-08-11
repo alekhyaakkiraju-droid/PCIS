@@ -35,3 +35,10 @@
 - **Files:** 0 (+0/-0)
 - **Duration:** 48ss
 - **Approach:** WO-245 is an orphan-commit scope review work order with near-identical scope to WO-244. All required artifacts were already present in the repository. The single difference from WO-244 is AC7's explicit requirement for semicolon-termination checking and AC9's requirement that all validation scripts exit 0 on committed artifacts — both already satisfied (validate_sql_syntax.sh line 63 checks for semicolon termination; running the script against committed files outputs all-OK and exits 0).
+
+## WO-246: User Story: WO-246 - Implement OIDC PKCE Authentication and Role-Based Navigation Gating in React Frontend
+- **Status:** completed
+- **Commit:** `82f678e`
+- **Files:** 1 (+4/-0)
+- **Duration:** 197ss
+- **Approach:** Almost all WO-246 artifacts were already committed (AuthProvider, ProtectedRoute, LoginCallback, role-menu-config, Sidebar role filtering, session fixtures, OIDC config, test suite). The single gap was AC5: ForbiddenPage was missing its return-to-dashboard link. Added `<Link to="/">Return to dashboard</Link>` via react-router Link, satisfying the accessible navigation requirement equivalent to MENUMD1-91 error handling.
