@@ -1,0 +1,34 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: claim-payment-batch
+  labels:
+    app: claims-batch
+    job: claimPaymentJob
+spec:
+  schedule: "0 2 * * *"  # placeholder — set after Phase 0 baseline measurement
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: claims-batch
+              image: pcis/claims-batch:latest
+              args: ["--spring.batch.job.name=claimPaymentJob"]
+              envFrom:
+                - configMapRef:
+                    name: claims-batch-config
+                - secretRef:
+                    name: claims-batch-secrets
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 1Gi
+                limits:
+                  cpu: "1"
+                  memory: 2Gi
