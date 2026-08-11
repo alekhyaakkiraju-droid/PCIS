@@ -13,6 +13,24 @@ public final class TestJwtGenerator {
 
   private TestJwtGenerator() {}
 
+  public static Jwt withScopes(String subject, String... scopes) {
+    return Jwt.withTokenValue("test-token-" + subject)
+        .header("alg", "none")
+        .subject(subject)
+        .claim("scope", String.join(" ", scopes))
+        .issuedAt(Instant.now())
+        .expiresAt(Instant.now().plusSeconds(3600))
+        .build();
+  }
+
+  public static Jwt customerWriter(String subject) {
+    return withScopes(subject, "customer:write");
+  }
+
+  public static Jwt duplicateOverride(String subject) {
+    return withScopes(subject, "customer:write", "customer:duplicate-override");
+  }
+
   public static Jwt withRoles(String subject, String... roles) {
     return Jwt.withTokenValue("test-token-" + subject)
         .header("alg", "none")

@@ -31,6 +31,15 @@ public class CustomerDomainService {
   @Transactional
   public CustomerEntity create(CreateCustomerCommand command) {
     assertTaxIdAvailable(command.taxId(), null);
+    return persistNewCustomer(command);
+  }
+
+  @Transactional
+  public CustomerEntity createIgnoringDuplicateCheck(CreateCustomerCommand command) {
+    return persistNewCustomer(command);
+  }
+
+  private CustomerEntity persistNewCustomer(CreateCustomerCommand command) {
     CustomerEntity customer = new CustomerEntity();
     customer.setTaxId(normalizeTaxId(command.taxId()));
     customer.setCustName(command.custName());
@@ -68,7 +77,11 @@ public class CustomerDomainService {
     if (!StringUtils.hasText(normalized)) return;
     customerRepository.findByTaxId(normalized)
         .filter(existing -> existingCustId == null || !existing.getCustId().equals(existingCustId))
-        .ifPresent(existing -> { throw new DuplicateTaxIdException(normalized); });
+        .ifPresent(existing -> { throw new DuplicateTaxIdException(normalized, toCandidate(existing)); });
+  }
+
+  private static DuplicateCandidate toCandidate(CustomerEntity existing) {
+    return new DuplicateCandidate(existing.getCustId(), existing.getCustName(), existing.getCustStatus());
   }
 
   private static String normalizeTaxId(String taxId) { return StringUtils.hasText(taxId) ? taxId.trim() : null; }

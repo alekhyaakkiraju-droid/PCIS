@@ -5,6 +5,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.pcis.customer.application.CustomerApplicationService;
 import com.pcis.customer.support.TestJwtGenerator;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,9 @@ class SecurityConfigTest {
 
   @MockBean
   private JwtDecoder jwtDecoder;
+
+  @MockBean
+  private CustomerApplicationService customerApplicationService;
 
   @Test
   void healthEndpointPermittedWithoutAuthentication() throws Exception {
@@ -60,7 +64,7 @@ class SecurityConfigTest {
     mockMvc.perform(
             get("/api/v1/customers")
                 .with(jwt().jwt(TestJwtGenerator.customerAgent("test-agent"))))
-        .andExpect(status().isNotFound()); // 404 = no handler, not 401/403 = authentication passed
+        .andExpect(status().isMethodNotAllowed()); // 405 = handler exists, auth passed; no GET mapped
   }
 
   @Test
