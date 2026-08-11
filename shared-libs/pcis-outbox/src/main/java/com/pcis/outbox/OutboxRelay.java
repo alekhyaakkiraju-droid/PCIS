@@ -47,9 +47,12 @@ public class OutboxRelay {
 
   @Transactional
   public void relaySingleEvent(OutboxEvent event) {
+    Instant start = Instant.now();
     try {
       publisher.publish(event);
       markPublished(event);
+      outboxMetrics.ifAvailable(
+          metrics -> metrics.recordPublished(Duration.between(start, Instant.now())));
     } catch (KafkaOutboxEventPublisher.OutboxPublishException ex) {
       handlePublishFailure(event, ex);
     }
@@ -63,6 +66,7 @@ public class OutboxRelay {
   }
 
   private void handlePublishFailure(OutboxEvent event, Exception ex) {
+    outboxMetrics.ifAvailable(OutboxMetrics::recordRelayError);
     int nextAttempt = event.getAttemptCount() + 1;
     event.setAttemptCount(nextAttempt);
     event.setLastError(truncate(ex.getMessage(), 500));
@@ -70,6 +74,7 @@ public class OutboxRelay {
 
     if (nextAttempt >= properties.getRelayMaxRetries()) {
       event.setStatus(OutboxEventStatus.DEAD_LETTER);
+      outboxMetrics.ifAvailable(OutboxMetrics::recordDeadLetter);
       log.error(
           "Outbox event id={} idempotencyKey={} moved to DEAD_LETTER after {} attempts: {}",
           event.getId(),

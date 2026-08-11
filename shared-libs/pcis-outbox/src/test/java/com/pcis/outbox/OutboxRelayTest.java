@@ -66,6 +66,7 @@ class OutboxRelayTest {
     assertThat(event.getUpdatedBy()).isEqualTo("TESTRLY");
     verify(repository).save(event);
     verify(outboxMetrics).refreshMetrics();
+    verify(outboxMetrics).recordPublished(org.mockito.ArgumentMatchers.any());
   }
 
   @Test
@@ -82,6 +83,7 @@ class OutboxRelayTest {
     assertThat(event.getLastError()).contains("kafka down");
     assertThat(event.getNextAttemptAt()).isAfter(Instant.now());
     verify(repository).save(event);
+    verify(outboxMetrics).recordRelayError();
   }
 
   @Test
@@ -97,6 +99,8 @@ class OutboxRelayTest {
     assertThat(event.getStatus()).isEqualTo(OutboxEventStatus.DEAD_LETTER);
     assertThat(event.getAttemptCount()).isEqualTo(3);
     verify(repository).save(event);
+    verify(outboxMetrics).recordRelayError();
+    verify(outboxMetrics).recordDeadLetter();
   }
 
   @Test

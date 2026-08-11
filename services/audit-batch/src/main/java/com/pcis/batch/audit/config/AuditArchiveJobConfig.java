@@ -5,6 +5,7 @@ import com.pcis.batch.auth.BatchSecurityContextInitializer;
 import com.pcis.batch.audit.domain.AuditLogRow;
 import com.pcis.batch.audit.infrastructure.ArchiveWriter;
 import com.pcis.batch.audit.infrastructure.ExpiredAuditLogReader;
+import com.pcis.batch.audit.job.ArchiveJobSummaryListener;
 import com.pcis.batch.audit.job.PartitionDetachTasklet;
 import com.pcis.batch.audit.job.VerificationTasklet;
 import com.pcis.batch.common.BatchExitCodeJobListener;
@@ -116,11 +117,13 @@ public class AuditArchiveJobConfig {
       @Qualifier("detachPartitionStep") Step detachPartitionStep,
       @Qualifier("runLogStep") Step runLogStep,
       BatchExitCodeJobListener batchExitCodeJobListener,
+      ArchiveJobSummaryListener archiveJobSummaryListener,
       ObjectProvider<BatchJobExitCodeListener> batchJobExitCodeListener,
       ObjectProvider<BatchSecurityContextInitializer> batchSecurityContextInitializer) {
     JobBuilder builder =
         new JobBuilder("auditArchiveJob", jobRepository)
-            .listener(batchExitCodeJobListener);
+            .listener(batchExitCodeJobListener)
+            .listener(archiveJobSummaryListener);
     batchJobExitCodeListener.ifAvailable(builder::listener);
     batchSecurityContextInitializer.ifAvailable(builder::listener);
     return builder.start(archiveStep).next(verifyStep).next(detachPartitionStep).next(runLogStep).build();

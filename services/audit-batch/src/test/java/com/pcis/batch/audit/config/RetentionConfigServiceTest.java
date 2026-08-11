@@ -47,4 +47,30 @@ class RetentionConfigServiceTest {
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("365");
   }
+
+  @Test
+  void resolvesTierRetentionDays() {
+    TunableResolver resolver = Mockito.mock(TunableResolver.class);
+    Mockito.when(resolver.getInt(TunableKey.AUDIT_RETENTION_DAYS))
+        .thenThrow(new TunableNotFoundException("audit.retention.days"));
+    AuditArchiveProperties properties = new AuditArchiveProperties();
+
+    RetentionConfigService service = new RetentionConfigService(resolver, properties);
+
+    assertThat(service.getRetentionDaysForTier("CONFIDENTIAL")).isEqualTo(730);
+    assertThat(service.getRetentionDaysForTier("RESTRICTED")).isEqualTo(2555);
+  }
+
+  @Test
+  void rejectsTierRetentionBelowPolicyMinimum() {
+    TunableResolver resolver = Mockito.mock(TunableResolver.class);
+    AuditArchiveProperties properties = new AuditArchiveProperties();
+    properties.getRetention().setPublicDays(180);
+
+    RetentionConfigService service = new RetentionConfigService(resolver, properties);
+
+    assertThatThrownBy(() -> service.getRetentionDaysForTier("PUBLIC"))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("365");
+  }
 }

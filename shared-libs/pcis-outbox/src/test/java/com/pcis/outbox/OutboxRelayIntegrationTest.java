@@ -49,7 +49,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers(disabledWithoutDocker = true)
 @EmbeddedKafka(
     partitions = 1,
-    topics = {"pcis.domain.events"},
+    topics = {"audit-events"},
     brokerProperties = {"listeners=PLAINTEXT://localhost:0", "port=0"})
 @SpringBootTest(classes = {OutboxTestApplication.class, OutboxRelayIntegrationTest.IntegrationConfig.class})
 @ImportAutoConfiguration(exclude = KafkaAutoConfiguration.class)
@@ -107,7 +107,7 @@ class OutboxRelayIntegrationTest {
     OutboxEvent saved = repository.saveAndFlush(event);
 
     try (Consumer<String, String> consumer = createConsumer()) {
-      embeddedKafka.consumeFromAnEmbeddedTopic(consumer, "pcis.domain.events");
+      embeddedKafka.consumeFromAnEmbeddedTopic(consumer, "audit-events");
 
       outboxRelay.relaySingleEvent(repository.findById(saved.getId()).orElseThrow());
       repository.flush();

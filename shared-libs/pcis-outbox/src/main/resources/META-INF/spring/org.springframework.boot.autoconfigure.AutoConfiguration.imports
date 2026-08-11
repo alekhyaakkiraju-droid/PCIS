@@ -1,1 +1,2 @@
+com.pcis.outbox.KafkaProducerConfig
 com.pcis.outbox.OutboxAutoConfiguration

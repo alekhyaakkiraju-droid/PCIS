@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 public class PartitionDetachTasklet implements Tasklet {
 
   public static final String DETACHED_PARTITION_COUNT_KEY = "detachedPartitionCount";
+  static final String DETACHED_COUNT_KEY = DETACHED_PARTITION_COUNT_KEY;
 
   private final PartitionRetentionService partitionRetentionService;
   private final RetentionConfigService retentionConfigService;
@@ -34,11 +35,9 @@ public class PartitionDetachTasklet implements Tasklet {
     Instant cutoff =
         Instant.now(clock).minus(retentionConfigService.getRetentionDays(), ChronoUnit.DAYS);
     int detached = partitionRetentionService.detachFullyExpiredPartitions(cutoff);
-    chunkContext
-        .getStepContext()
-        .getStepExecution()
-        .getExecutionContext()
-        .putInt(DETACHED_PARTITION_COUNT_KEY, detached);
+    var jobContext =
+        chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext();
+    jobContext.putInt(DETACHED_PARTITION_COUNT_KEY, detached);
     return RepeatStatus.FINISHED;
   }
 }
