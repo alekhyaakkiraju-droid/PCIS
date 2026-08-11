@@ -1,0 +1,16 @@
+spring:
+  flyway:
+    enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost/test-issuer
+
+pcis:
+  premium:
+    referral-threshold: 75000.00
+
+logging:
+  level:
+    com.pcis.premium: DEBUG

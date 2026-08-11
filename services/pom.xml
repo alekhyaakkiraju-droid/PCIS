@@ -24,5 +24,6 @@
     <module>customer-svc</module>
     <module>policy-svc</module>
     <module>claims-svc</module>
+    <module>premium-svc</module>
   </modules>
 </project>
