@@ -25,3 +25,8 @@ enable_external_secrets        = false
 create_secret_rotation_lambda  = true
 secret_rotation_days           = 90
 eso_chart_version              = "0.9.20"
+
+# S3 Object Lock audit archives (WO-133)
+object_lock_retention_days    = 365
+glacier_transition_days       = 90
+deep_archive_transition_days  = 365
