@@ -1,0 +1,9 @@
+{
+  "calculationId": "calc-renewal-001",
+  "returnCode": "00",
+  "underwritingDecision": "APPROVE",
+  "baseRate": "1200.00",
+  "ratingFactor": "1.0500",
+  "basePremium": "1260.00",
+  "finalPremium": "1323.00"
+}

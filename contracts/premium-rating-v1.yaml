@@ -1,0 +1,295 @@
+openapi: 3.1.0
+info:
+  title: PCIS Premium Rating Service
+  version: v1
+  description: |
+    Frozen additive-only v1 contract for premium-svc (WO-191).
+    Superset of POL001A and POL006B PRMCLC01 parameter shapes.
+    Contract path: contracts/premium-rating-v1.yaml
+  contact:
+    name: PCIS Platform
+servers:
+  - url: /api/v1/premium
+    description: Premium rating API base path
+tags:
+  - name: calculations
+    description: Premium calculation lifecycle
+paths:
+  /calculations:
+    post:
+      operationId: createCalculation
+      tags: [calculations]
+      summary: Create a premium calculation
+      description: |
+        Initiates a premium rating calculation. Returns the full breakdown on success,
+        underwriting decline (return code 02), or caller input error (return code 99).
+      security:
+        - bearerAuth: [premium:rate]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCalculationRequest'
+            examples:
+              homeownersIssuance:
+                $ref: '#/components/examples/homeownersIssuanceRequest'
+              renewalRerate:
+                $ref: '#/components/examples/renewalRerateRequest'
+      responses:
+        '200':
+          description: Calculation completed (including underwriting decline)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PremiumCalculationResponse'
+        '400':
+          description: Caller input validation failure
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '401':
+          description: Unauthenticated
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '501':
+          description: Rating path not yet implemented
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+  /calculations/{calculationId}:
+    get:
+      operationId: getCalculation
+      tags: [calculations]
+      summary: Retrieve a persisted calculation snapshot
+      security:
+        - bearerAuth: [premium:read]
+      parameters:
+        - name: calculationId
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 36
+      responses:
+        '200':
+          description: Calculation snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PremiumCalculationResponse'
+        '401':
+          description: Unauthenticated
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '404':
+          description: Calculation not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '501':
+          description: Rating path not yet implemented
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    CreateCalculationRequest:
+      type: object
+      required: [policyType, state]
+      additionalProperties: false
+      properties:
+        policyType:
+          type: string
+          maxLength: 4
+          description: Policy type (POL001A WS-PRM-POLICY-TYPE PIC X(4))
+          example: HOME
+        coverageType:
+          type: string
+          maxLength: 4
+          description: Coverage type from POL001A issuance shape
+          example: HO3
+        territory:
+          type: string
+          maxLength: 3
+          description: Rating territory code
+          example: TX
+        state:
+          type: string
+          maxLength: 2
+          description: US state code (POL006B renewal shape)
+          example: TX
+        limit:
+          type: string
+          format: decimal
+          pattern: '^-?\d+(\.\d{1,2})?$'
+          description: Coverage limit NUMERIC(11,2) as exact decimal string
+          example: '250000.00'
+        oldPremium:
+          type: string
+          format: decimal
+          pattern: '^-?\d+(\.\d{1,2})?$'
+          description: Prior premium for renewal re-rate (POL006B shape)
+          example: '1260.00'
+        policyNumber:
+          type: string
+          maxLength: 12
+          description: Existing policy number when re-rating
+          example: 'HO1234567890'
+    PremiumCalculationResponse:
+      type: object
+      required:
+        - calculationId
+        - returnCode
+        - underwritingDecision
+        - baseRate
+        - ratingFactor
+        - basePremium
+        - finalPremium
+      additionalProperties: false
+      properties:
+        calculationId:
+          type: string
+          maxLength: 36
+          description: Immutable calculation snapshot identifier
+        returnCode:
+          $ref: '#/components/schemas/ReturnCode'
+        underwritingDecision:
+          $ref: '#/components/schemas/UnderwritingDecision'
+        compositeRiskScore:
+          type: string
+          format: decimal
+          pattern: '^-?\d+(\.\d{1,4})?$'
+          description: Composite risk score NUMERIC(7,4)
+        riskTier:
+          type: string
+          maxLength: 10
+        baseRate:
+          type: string
+          format: decimal
+          pattern: '^-?\d+(\.\d{1,2})?$'
+          description: Base rate NUMERIC(9,2), HALF_UP rounding
+        ratingFactor:
+          type: string
+          format: decimal
+          pattern: '^-?\d+(\.\d{1,4})?$'
+          description: Combined rating factor NUMERIC(7,4)
+        basePremium:
+          type: string
+          format: decimal
+          pattern: '^-?\d+(\.\d{1,2})?$'
+          description: baseRate * ratingFactor rounded to scale 2
+        factors:
+          type: array
+          items:
+            $ref: '#/components/schemas/RatingComponentLine'
+        discounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/RatingComponentLine'
+        surcharges:
+          type: array
+          items:
+            $ref: '#/components/schemas/RatingComponentLine'
+        taxes:
+          type: array
+          items:
+            $ref: '#/components/schemas/RatingComponentLine'
+        finalPremium:
+          type: string
+          format: decimal
+          pattern: '^-?\d+(\.\d{1,2})?$'
+          description: Final annual premium NUMERIC(11,2)
+        matchedRuleId:
+          type: integer
+          format: int64
+          description: UW rule identifier when decline or refer
+        matchedRuleText:
+          type: string
+          maxLength: 200
+    RatingComponentLine:
+      type: object
+      required: [code, factor, amount]
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+          maxLength: 20
+        factor:
+          type: string
+          format: decimal
+          pattern: '^-?\d+(\.\d{1,4})?$'
+        amount:
+          type: string
+          format: decimal
+          pattern: '^-?\d+(\.\d{1,2})?$'
+    ReturnCode:
+      type: string
+      enum: ['00', '02', '99']
+      description: |
+        '00' success, '02' underwriting decline, '99' caller input error
+    UnderwritingDecision:
+      type: string
+      enum: [APPROVE, REFER, DECLINE]
+    ProblemDetail:
+      type: object
+      required: [type, title, status, detail, code]
+      additionalProperties: true
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        code:
+          type: string
+          description: Stable PCIS reason code
+        correlation_id:
+          type: string
+  examples:
+    homeownersIssuanceRequest:
+      summary: POL001A homeowners issuance shape
+      value:
+        policyType: HOME
+        coverageType: HO3
+        territory: TX
+        state: TX
+        limit: '250000.00'
+    renewalRerateRequest:
+      summary: POL006B renewal re-rate shape
+      value:
+        policyType: HOME
+        state: TX
+        oldPremium: '1260.00'
+        policyNumber: HO1234567890

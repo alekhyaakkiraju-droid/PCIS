@@ -37,6 +37,35 @@ class RateTableRepositoryTest {
     assertThat(factors.getFirst().factorCode()).isEqualTo("OCCUPANCY");
   }
 
+  @Test
+  void findsEffectiveBaseRateForPolicyTypeAndTerritory() {
+    var rateTable = repository.findEffectiveRateTable("HOME", "TX");
+    assertThat(rateTable).isPresent();
+    assertThat(rateTable.get().baseRate()).isEqualByComparingTo("1200.00");
+    assertThat(rateTable.get().policyType()).isEqualTo("HOME");
+    assertThat(rateTable.get().territory()).isEqualTo("TX");
+  }
+
+  @Test
+  void loadsFactorsForSpecificRateTable() {
+    var rateTableId = repository.findEffectiveRateTable("HOME", "TX").orElseThrow().rateTableId();
+    var factors = repository.loadFactorsForRateTable(rateTableId);
+    assertThat(factors).hasSize(1);
+    assertThat(factors.getFirst().factorValue()).isEqualByComparingTo("1.0500");
+  }
+
+  @Test
+  void lookupBaseRateAndFactorsEndToEnd() {
+    var rateTable = repository.findEffectiveRateTable("HOME", "TX").orElseThrow();
+    var factors = repository.loadFactorsForRateTable(rateTable.rateTableId());
+    var combined =
+        factors.stream()
+            .map(RateTableRepository.RateFactorRow::factorValue)
+            .reduce(java.math.BigDecimal.ONE, java.math.BigDecimal::multiply);
+    var basePremium = rateTable.baseRate().multiply(combined).setScale(2, java.math.RoundingMode.HALF_UP);
+    assertThat(basePremium).isEqualByComparingTo("1260.00");
+  }
+
   private static void applyMigrationsAndFixtures(JdbcClient jdbcClient) throws Exception {
     String migration =
         StreamUtils.copyToString(
