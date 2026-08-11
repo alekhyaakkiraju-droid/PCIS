@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """
-PCIS Data Dictionary Builder (WO-128)
+PCIS Data Dictionary Builder (WO-128, WO-150)
 
 Reconciles PCIS_Database_Design.md (55 tables) against COBOL host variables
 from baseline/cobol-baseline.yaml (WOREF-002) or Property_Casualty_Insurance_System/*.cbl.
+
+WO-150 extends entries with classification tiers, PII flags, drift notes (G-06),
+and code-witnessed Flyway extras (COMMISSION_LEDGER_T, outbox_events).
 
 Stdlib only — no PyYAML.
 """
@@ -24,6 +27,12 @@ DEFAULT_DDL = REPO_ROOT / "Property_Casualty_Insurance_System" / "PCIS_Database_
 DEFAULT_BASELINE = REPO_ROOT / "baseline" / "cobol-baseline.yaml"
 DEFAULT_COBOL_DIR = REPO_ROOT / "Property_Casualty_Insurance_System"
 DEFAULT_OUTPUT = REPO_ROOT / "docs" / "data-dictionary.yaml"
+DEFAULT_FLYWAY = (
+    REPO_ROOT / "shared-libs" / "pcis-schema" / "db" / "migration" / "V1__baseline_schema.sql"
+)
+
+from classification_registry import column_classification, table_tier  # noqa: E402
+from flyway_schema_parser import parse_flyway_schema  # noqa: E402
 
 # Table aliases: COBOL SQL table → DDL design table
 TABLE_ALIASES = {
@@ -65,6 +74,7 @@ CRITICAL_RESOLUTIONS: dict[tuple[str, str], dict[str, str]] = {
         "resolution_rationale": (
             "G-06: DDL DOB vs COBOL CUST_DOB; canonical snake_case cust_dob for PostgreSQL"
         ),
+        "drift_note": "G-06: design DOB vs COBOL CUST_DOB",
     },
     ("CUSTOMER_T", "TAX_ID"): {
         "cobol_host_variable": "CUST_SSN_TAXID",
@@ -117,18 +127,21 @@ CRITICAL_RESOLUTIONS: dict[tuple[str, str], dict[str, str]] = {
         "match_status": "mismatch",
         "resolution": "due_amt",
         "resolution_rationale": "Shipped code authoritative: BIL003B/PRM005B write DUE_AMT",
+        "drift_note": "G-06: design AMT_DUE vs COBOL DUE_AMT (BIL003B)",
     },
     ("BILLING_SCHEDULE_T", "AMT_PAID"): {
         "cobol_host_variable": "PAID_AMT",
         "match_status": "mismatch",
         "resolution": "paid_amt",
         "resolution_rationale": "Shipped code authoritative: uses PAID_AMT not AMT_PAID",
+        "drift_note": "G-06: design AMT_PAID vs COBOL PAID_AMT",
     },
     ("BILLING_SCHEDULE_T", "SCHED_STATUS"): {
         "cobol_host_variable": "BILL_STATUS",
         "match_status": "mismatch",
         "resolution": "bill_status",
         "resolution_rationale": "Code domain D/L/P via BILL_STATUS; design SCHED_STATUS O/P/V discarded",
+        "drift_note": "G-06: design SCHED_STATUS vs COBOL BILL_STATUS domain D/L/P",
     },
     ("BILLING_SCHEDULE_T", "COMM_CALC_FLAG"): {
         "cobol_host_variable": "COMM_CALC_FLAG",
@@ -189,6 +202,69 @@ CRITICAL_RESOLUTIONS: dict[tuple[str, str], dict[str, str]] = {
         "match_status": "mismatch",
         "resolution": "log_timestamp",
         "resolution_rationale": "AUD002B filters LOG_TIMESTAMP; prefer over CRT_TIMESTAMP synonym",
+        "drift_note": "G-06: AUD002B cutoff host vs CRT_TIMESTAMP synonym",
+    },
+    ("RPT_RUN_LOG_T", "RUN_LOG_ID"): {
+        "cobol_host_variable": "",
+        "match_status": "ddl-only",
+        "resolution": "run_log_id",
+        "resolution_rationale": "WO-237 identity PK; no COBOL host (generated on INSERT)",
+    },
+    ("RPT_RUN_LOG_T", "PGM_NAME"): {
+        "cobol_host_variable": "WS-RL-PGM-NAME",
+        "match_status": "mismatch",
+        "resolution": "pgm_name",
+        "resolution_rationale": "WO-237: design PROGRAM_NAME vs COBOL WS-RL-PGM-NAME / PGM_NAME",
+        "drift_note": "G-06: legacy design PROGRAM_NAME discarded for PGM_NAME",
+    },
+    ("RPT_RUN_LOG_T", "RUN_DATE"): {
+        "cobol_host_variable": "WS-RL-RUN-DATE",
+        "match_status": "mismatch",
+        "resolution": "run_date",
+        "resolution_rationale": "Batch run date from WS-RL-RUN-DATE working storage",
+    },
+    ("RPT_RUN_LOG_T", "REC_SELECTED"): {
+        "cobol_host_variable": "WS-RL-SELECTED",
+        "match_status": "mismatch",
+        "resolution": "rec_selected",
+        "resolution_rationale": "WO-237: design ROWS_PROCESSED replaced by REC_SELECTED counter",
+        "drift_note": "G-06: ROWS_PROCESSED design column superseded by REC_SELECTED",
+    },
+    ("RPT_RUN_LOG_T", "REC_UPDATED"): {
+        "cobol_host_variable": "WS-RL-UPDATED",
+        "match_status": "mismatch",
+        "resolution": "rec_updated",
+        "resolution_rationale": "Batch programs write WS-RL-UPDATED into REC_UPDATED",
+    },
+    ("RPT_RUN_LOG_T", "REC_ERRORS"): {
+        "cobol_host_variable": "WS-RL-ERRORS",
+        "match_status": "mismatch",
+        "resolution": "rec_errors",
+        "resolution_rationale": "Batch programs write WS-RL-ERRORS into REC_ERRORS",
+    },
+    ("RPT_RUN_LOG_T", "REC_DELINQUENT"): {
+        "cobol_host_variable": "WS-RL-DELINQUENT",
+        "match_status": "mismatch",
+        "resolution": "rec_delinquent",
+        "resolution_rationale": "PRM005B-only delinquency counter; nullable in Flyway",
+    },
+    ("RPT_RUN_LOG_T", "START_TIMESTAMP"): {
+        "cobol_host_variable": "WS-START-TIMESTAMP",
+        "match_status": "mismatch",
+        "resolution": "start_timestamp",
+        "resolution_rationale": "WO-237 wall-clock timing captured at batch initialize",
+    },
+    ("RPT_RUN_LOG_T", "END_TIMESTAMP"): {
+        "cobol_host_variable": "WS-END-TIMESTAMP",
+        "match_status": "mismatch",
+        "resolution": "end_timestamp",
+        "resolution_rationale": "WO-237 wall-clock timing captured at 8000-WRITE-RUN-LOG",
+    },
+    ("RPT_RUN_LOG_T", "CRT_TIMESTAMP"): {
+        "cobol_host_variable": "",
+        "match_status": "ddl-only",
+        "resolution": "crt_timestamp",
+        "resolution_rationale": "Row create timestamp; default CURRENT_TIMESTAMP in Flyway",
     },
 }
 
@@ -769,6 +845,14 @@ class ReconciliationEngine:
             refs = cobol_by_table.get(tname, [])
             used_cobol: set[str] = set()
             columns_out: list[dict[str, Any]] = []
+            tier_value = table_tier(tname, ddl.domain)
+
+            def emit(**kwargs: Any) -> dict[str, Any]:
+                return self._column_entry(
+                    table_name=tname,
+                    table_tier_value=tier_value,
+                    **kwargs,
+                )
 
             # Apply critical cobol-only keys that use synthetic ddl names
             for (mt, key), res in self.manual.items():
@@ -777,7 +861,7 @@ class ReconciliationEngine:
                 if res.get("match_status") == "cobol-only":
                     # ensure present even if not in DDL
                     if not any(c.name == key for c in ddl.columns):
-                        entry = self._column_entry(
+                        entry = emit(
                             ddl_column_name="",
                             cobol_host_variable=res.get("cobol_host_variable") or key,
                             ddl_data_type="",
@@ -785,6 +869,7 @@ class ReconciliationEngine:
                             match_status="cobol-only",
                             resolution=res["resolution"],
                             resolution_rationale=res["resolution_rationale"],
+                            drift_note=res.get("drift_note", ""),
                         )
                         columns_out.append(entry)
                         counts["cobol-only"] += 1
@@ -793,9 +878,12 @@ class ReconciliationEngine:
             for col in ddl.columns:
                 manual = self.manual.get((tname, col.name))
                 if manual and manual.get("match_status") == "cobol-only":
-                    continue  # already emitted
+                    # Pure cobol-only rows without a DDL column were emitted above.
+                    if not col.name:
+                        continue
 
                 cobol_match = self._find_cobol(col.name, refs, used_cobol)
+                drift_note = ""
                 if manual:
                     status = manual["match_status"]
                     hv = manual.get("cobol_host_variable") or (
@@ -803,6 +891,7 @@ class ReconciliationEngine:
                     )
                     resolution = manual["resolution"]
                     rationale = manual["resolution_rationale"]
+                    drift_note = manual.get("drift_note", "")
                     if cobol_match:
                         used_cobol.add(cobol_match.host_variable.upper())
                         if cobol_match.sql_column:
@@ -845,9 +934,11 @@ class ReconciliationEngine:
                             + (f" / {cobol_match.sql_column}" if cobol_match.sql_column else "")
                             + f"; canonical {resolution}"
                         )
+                        if status == "mismatch":
+                            drift_note = f"G-06: {col.name} vs COBOL {hv}"
 
                 target_pg = self.target_pg_type(col.data_type, pic)
-                entry = self._column_entry(
+                entry = emit(
                     ddl_column_name=col.name,
                     cobol_host_variable=hv,
                     ddl_data_type=col.data_type,
@@ -856,6 +947,7 @@ class ReconciliationEngine:
                     resolution=resolution,
                     resolution_rationale=rationale,
                     target_pg_type=target_pg,
+                    drift_note=drift_note,
                 )
                 columns_out.append(entry)
                 counts[status] = counts.get(status, 0) + 1
@@ -892,7 +984,7 @@ class ReconciliationEngine:
                 resolution = self._suggest_resolution("", r.host_variable)
                 rationale = "COBOL reference with no DDL column; review for schema add/exclude"
                 status = "cobol-only"
-                entry = self._column_entry(
+                entry = emit(
                     ddl_column_name="",
                     cobol_host_variable=r.host_variable,
                     ddl_data_type="",
@@ -910,6 +1002,7 @@ class ReconciliationEngine:
                 {
                     "table_name": tname,
                     "domain": ddl.domain,
+                    "classification_tier": tier_value,
                     "column_count": len(columns_out),
                     "columns": columns_out,
                 }
@@ -920,9 +1013,10 @@ class ReconciliationEngine:
         return {
             "generation_timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "generator": "docs/build_data_dictionary.py",
-            "woref": "WO-128",
+            "woref": "WO-150",
             "source_ddl": str(DEFAULT_DDL.relative_to(REPO_ROOT)),
             "source_baseline": "baseline/cobol-baseline.yaml",
+            "source_flyway": str(DEFAULT_FLYWAY.relative_to(REPO_ROOT)),
             "table_count": len(tables_out),
             "summary": {
                 "tables": len(tables_out),
@@ -991,10 +1085,16 @@ class ReconciliationEngine:
         resolution: str,
         resolution_rationale: str,
         target_pg_type: str = "",
+        table_name: str = "",
+        table_tier_value: str = "Internal",
+        drift_note: str = "",
     ) -> dict[str, Any]:
         if not target_pg_type:
             target_pg_type = self.target_pg_type(ddl_data_type, cobol_pic)
-        return {
+        class_info = column_classification(
+            table_name, ddl_column_name, resolution, table_tier_value
+        )
+        entry: dict[str, Any] = {
             "ddl_column_name": ddl_column_name,
             "cobol_host_variable": cobol_host_variable,
             "data_type": ddl_data_type,
@@ -1005,7 +1105,12 @@ class ReconciliationEngine:
             "resolution": resolution,
             "target_pg_type": target_pg_type,
             "resolution_rationale": resolution_rationale,
+            "pii": class_info["pii"],
+            "mask_strategy": class_info["mask_strategy"],
         }
+        if drift_note:
+            entry["drift_note"] = drift_note
+        return entry
 
     @staticmethod
     def _hv_plain(hv: str) -> str:
@@ -1133,16 +1238,51 @@ class ReconciliationEngine:
 # Orchestration
 # ---------------------------------------------------------------------------
 
+# Flyway-only tables not in the 55-table design inventory (WO-149 / WO-150).
+FLYWAY_EXTRA_TABLES = frozenset({"COMMISSION_LEDGER_T", "OUTBOX_EVENTS"})
+
+
+def merge_flyway_tables(
+    ddl_tables: dict[str, DdlTable],
+    flyway_path: Path,
+) -> dict[str, DdlTable]:
+    if not flyway_path.is_file():
+        return ddl_tables
+    flyway = parse_flyway_schema(flyway_path)
+    merged = dict(ddl_tables)
+    for tname, ft in flyway.items():
+        if tname in merged:
+            existing = {c.name for c in merged[tname].columns}
+            for fc in ft.columns:
+                if fc.name not in existing:
+                    merged[tname].columns.append(DdlColumn(fc.name, fc.data_type))
+            continue
+        if tname not in FLYWAY_EXTRA_TABLES:
+            continue
+        domain = {
+            "COMMISSION_LEDGER_T": "AGT",
+            "OUTBOX_EVENTS": "Shared",
+        }.get(tname, "")
+        table = DdlTable(name=tname, domain=domain, source="flyway")
+        for fc in ft.columns:
+            table.columns.append(DdlColumn(fc.name, fc.data_type))
+        merged[tname] = table
+    return merged
+
+
 def build_dictionary(
     ddl_path: Path,
     baseline_path: Path,
     cobol_dir: Path,
     output_path: Path,
+    flyway_path: Optional[Path] = None,
 ) -> dict[str, Any]:
     ddl_tables = DdlParser().parse(ddl_path)
-    if len(ddl_tables) != 55:
+    flyway = flyway_path or DEFAULT_FLYWAY
+    ddl_tables = merge_flyway_tables(ddl_tables, flyway)
+    if len(ddl_tables) < 55:
         print(
-            f"WARNING: expected 55 DDL tables, found {len(ddl_tables)}",
+            f"WARNING: expected at least 55 DDL tables, found {len(ddl_tables)}",
             file=sys.stderr,
         )
     extractor = BaselineColumnExtractor()
@@ -1156,16 +1296,19 @@ def build_dictionary(
 
 
 def main(argv: Optional[list[str]] = None) -> int:
-    ap = argparse.ArgumentParser(description="Build PCIS data dictionary (WO-128)")
+    ap = argparse.ArgumentParser(description="Build PCIS data dictionary (WO-150)")
     ap.add_argument("--ddl", type=Path, default=DEFAULT_DDL)
     ap.add_argument("--baseline", type=Path, default=DEFAULT_BASELINE)
     ap.add_argument("--cobol-dir", type=Path, default=DEFAULT_COBOL_DIR)
+    ap.add_argument("--flyway", type=Path, default=DEFAULT_FLYWAY)
     ap.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     args = ap.parse_args(argv)
     if not args.ddl.is_file():
         print(f"DDL design not found: {args.ddl}", file=sys.stderr)
         return 1
-    doc = build_dictionary(args.ddl, args.baseline, args.cobol_dir, args.output)
+    doc = build_dictionary(
+        args.ddl, args.baseline, args.cobol_dir, args.output, args.flyway
+    )
     summary = doc["summary"]
     print(
         f"Wrote {args.output} — tables={doc['table_count']} "
