@@ -13,6 +13,7 @@
 
   <modules>
     <module>shared-libs</module>
+    <module>services</module>
   </modules>
 
   <properties>

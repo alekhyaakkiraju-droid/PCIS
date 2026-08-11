@@ -1,0 +1,66 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api-gateway
+  labels:
+    app.kubernetes.io/name: api-gateway
+    app.kubernetes.io/instance: api-gateway
+    app.kubernetes.io/part-of: pcis
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: api-gateway
+      app.kubernetes.io/instance: api-gateway
+      app: api-gateway
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: istio-system
+      ports:
+        - protocol: TCP
+          port: 8080
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: customer-svc
+        - podSelector:
+            matchLabels:
+              app: claims-svc
+        - podSelector:
+            matchLabels:
+              app: policy-svc
+        - podSelector:
+            matchLabels:
+              app: premium-svc
+        - podSelector:
+            matchLabels:
+              app: billing-svc
+        - podSelector:
+            matchLabels:
+              app: reporting-svc
+        - podSelector:
+            matchLabels:
+              app: authz-svc
+        - podSelector:
+            matchLabels:
+              app: audit-svc
+      ports:
+        - protocol: TCP
+          port: 8080
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+    - ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 8080
