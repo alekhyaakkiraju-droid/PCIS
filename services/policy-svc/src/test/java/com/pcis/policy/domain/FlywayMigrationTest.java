@@ -32,7 +32,7 @@ class FlywayMigrationTest {
   private static final List<String> EXPECTED_TABLES =
       List.of(
           "policy", "coverage", "coverage_type", "deductible", "policy_history",
-          "policy_property", "policy_vehicle", "endorsement");
+          "policy_property", "policy_vehicle", "endorsement", "billing_plan");
 
   @Test
   void allPolicyDomainTablesExist() {
@@ -74,10 +74,11 @@ class FlywayMigrationTest {
   }
 
   @Test
-  void policyNbrSequenceExists() {
+  void billingPlanRequiresPolicy() {
     Integer count =
         jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM information_schema.sequences WHERE sequence_name = 'seq_policy_nbr'",
+            "SELECT COUNT(*) FROM information_schema.table_constraints "
+                + "WHERE table_name = 'billing_plan' AND constraint_name = 'fk_billing_plan_policy'",
             Integer.class);
     assertThat(count).isEqualTo(1);
   }

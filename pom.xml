@@ -140,5 +140,34 @@
         </plugins>
       </build>
     </profile>
+
+    <!-- WO-221: OpenAPI contract diff gate (requires oasdiff on PATH) -->
+    <profile>
+      <id>openapi-contract-gate</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>3.5.0</version>
+            <executions>
+              <execution>
+                <id>openapi-diff-gate</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>bash</executable>
+                  <arguments>
+                    <argument>${maven.multiModuleProjectDirectory}/scripts/openapi-diff-gate.sh</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 </project>

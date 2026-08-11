@@ -3,7 +3,9 @@ package com.pcis.policy.domain.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -65,6 +67,9 @@ public class PolicyEntity extends AuditableEntity {
   @OneToMany(mappedBy = "policy")
   private Set<PolicyHistoryEntity> history = new LinkedHashSet<>();
 
+  @OneToOne(mappedBy = "policy", fetch = FetchType.LAZY, optional = false)
+  private BillingPlanEntity billingPlan;
+
   public String getPolNbr() { return polNbr; }
   public void setPolNbr(String polNbr) { this.polNbr = polNbr; }
   public Integer getCustId() { return custId; }
@@ -90,4 +95,6 @@ public class PolicyEntity extends AuditableEntity {
   public Set<PolicyVehicleEntity> getVehicles() { return vehicles; }
   public Set<EndorsementEntity> getEndorsements() { return endorsements; }
   public Set<PolicyHistoryEntity> getHistory() { return history; }
+  public BillingPlanEntity getBillingPlan() { return billingPlan; }
+  public void setBillingPlan(BillingPlanEntity billingPlan) { this.billingPlan = billingPlan; }
 }

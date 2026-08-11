@@ -47,7 +47,7 @@ class CustomerApplicationServiceTest {
     when(customerDomainService.create(command)).thenReturn(created);
 
     assertThat(customerApplicationService.create(command)).isSameAs(created);
-    verify(customerOutboxWriter, never()).writeAuditEvent(any(), any(), any());
+    verify(customerOutboxWriter, never()).writeDomainEvent(any(), any(), any(), any());
   }
 
   @Test
@@ -68,7 +68,7 @@ class CustomerApplicationServiceTest {
             });
 
     verify(customerOutboxWriter)
-        .writeAuditEvent(eq("1"), eq("DuplicateTaxIdDetected"), any(Map.class));
+        .writeDomainEvent(eq("1"), eq("DuplicateTaxIdDetected"), any(Map.class), any());
     verify(customerDomainService, never()).create(any());
   }
 
@@ -91,7 +91,7 @@ class CustomerApplicationServiceTest {
 
     assertThat(result.getCustId()).isEqualTo(42);
     verify(customerOutboxWriter)
-        .writeAuditEvent(eq("42"), eq("DuplicateTaxIdOverride"), any(Map.class));
+        .writeDomainEvent(eq("42"), eq("DuplicateTaxIdOverride"), any(Map.class), any());
   }
 
   @Test

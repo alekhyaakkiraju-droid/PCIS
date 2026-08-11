@@ -1,6 +1,8 @@
 package com.pcis.batch.common;
 
+import com.pcis.batch.common.metrics.PcisBatchMetrics;
 import com.pcis.observability.metrics.BatchJobExitCodeListener;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.boot.ExitCodeGenerator;
@@ -53,6 +55,13 @@ public class BatchCommonAutoConfiguration {
       org.springframework.beans.factory.ObjectProvider<com.pcis.config.TunableResolver> tunableResolver,
       BatchRunLogProperties batchRunLogProperties) {
     return new BatchRunLogConfigService(tunableResolver, batchRunLogProperties);
+  }
+
+  @Bean
+  @ConditionalOnBean(MeterRegistry.class)
+  @ConditionalOnMissingBean
+  PcisBatchMetrics pcisBatchMetrics(MeterRegistry meterRegistry) {
+    return new PcisBatchMetrics(meterRegistry);
   }
 
   public static final class BatchProcessExitCode implements ExitCodeGenerator {

@@ -57,13 +57,13 @@ class FlywayMigrationTest {
   }
 
   @Test
-  void outboxEventsPrimaryKeyIsUuid() {
+  void outboxEventsPrimaryKeyIsBigintIdentity() {
     String dataType =
         jdbcTemplate.queryForObject(
             "SELECT data_type FROM information_schema.columns "
                 + "WHERE table_schema = 'public' AND table_name = 'outbox_events' "
                 + "AND column_name = 'id'",
             String.class);
-    assertThat(dataType).isEqualTo("uuid");
+    assertThat(dataType).isEqualTo("bigint");
   }
 }
