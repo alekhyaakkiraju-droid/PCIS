@@ -6,7 +6,8 @@ import com.pcis.observability.metrics.OutboxMetrics;
 import com.pcis.outbox.OutboxProperties;
 import io.micrometer.core.instrument.MeterRegistry;
 import javax.sql.DataSource;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -15,7 +16,7 @@ import org.springframework.core.env.Environment;
 
 @Configuration
 @EnableConfigurationProperties(OutboxProperties.class)
-@ConditionalOnBean({DataSource.class, MeterRegistry.class})
+@AutoConfigureAfter(MetricsAutoConfiguration.class)
 public class ClaimsOutboxMetricsConfig {
 
   @Bean

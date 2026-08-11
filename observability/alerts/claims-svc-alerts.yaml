@@ -1,0 +1,87 @@
+groups:
+  - name: claims-svc-operational
+    interval: 30s
+    rules:
+      - alert: ClaimsBatchJobFailed
+        expr: |
+          (
+            kube_job_status_failed{namespace=~"pcis-.*", job_name=~"claim-payment.*"} > 0
+          )
+          or
+          (
+            pcis:batch_job_exit_code{job_name=~"claimPaymentJob|claim-payment.*"} != 0
+          )
+        for: 0m
+        labels:
+          severity: critical
+          service: claims-svc
+          priority: P1
+        annotations:
+          summary: Claims batch job failed with non-zero exit code
+          description: Job {{ $labels.job_name }} failed in namespace {{ $labels.namespace }}.
+          runbook_url: observability/runbooks/claims-svc-runbook.md
+
+      - alert: ClaimsOutboxLagHigh
+        expr: claims_outbox_lag_seconds{service="claims-svc"} > 30
+        for: 2m
+        labels:
+          severity: critical
+          service: claims-svc
+          priority: P1
+        annotations:
+          summary: Claims outbox lag exceeds 30s SLO
+          description: Oldest unpublished claims outbox event is {{ $value }}s old.
+          runbook_url: observability/runbooks/claims-svc-runbook.md
+
+      - alert: ClaimsApiErrorRateHigh
+        expr: |
+          (
+            sum(rate(claims_api_error_rate{service="claims-svc"}[5m]))
+            /
+            sum(rate(claims_api_request_duration_seconds_count{service="claims-svc"}[5m]))
+          ) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+          service: claims-svc
+          priority: P2
+        annotations:
+          summary: Claims API error rate above 1% over 5 minutes
+          description: Error rate is {{ $value | humanizePercentage }} for claims-svc.
+          runbook_url: observability/runbooks/claims-svc-runbook.md
+
+      - alert: ClaimsApiReadLatencyHigh
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le) (
+              rate(claims_api_request_duration_seconds_bucket{service="claims-svc", method=~"GET|HEAD"}[5m])
+            )
+          ) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          service: claims-svc
+          priority: P2
+        annotations:
+          summary: Claims API read p95 latency above 500ms
+          description: Read p95 latency is {{ $value }}s for claims-svc.
+          runbook_url: observability/runbooks/claims-svc-runbook.md
+
+      - alert: ClaimsApiWriteLatencyHigh
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le) (
+              rate(claims_api_request_duration_seconds_bucket{service="claims-svc", method=~"POST|PUT|PATCH|DELETE"}[5m])
+            )
+          ) > 1.0
+        for: 5m
+        labels:
+          severity: warning
+          service: claims-svc
+          priority: P2
+        annotations:
+          summary: Claims API write p95 latency above 1000ms
+          description: Write p95 latency is {{ $value }}s for claims-svc.
+          runbook_url: observability/runbooks/claims-svc-runbook.md

@@ -46,6 +46,10 @@ spring:
         enable.idempotence: true
 
 pcis:
+  observability:
+    enabled: true
+    trace-sample-rate: ${PCIS_TRACE_SAMPLE_RATE:0.1}
+    environment: ${PCIS_ENVIRONMENT:local}
   outbox:
     relay-enabled: ${PCIS_OUTBOX_RELAY_ENABLED:true}
     relay-interval-ms: ${PCIS_OUTBOX_POLL_INTERVAL_MS:5000}
@@ -58,7 +62,17 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,readiness,info,prometheus
+        include: health,readiness,info,prometheus,metrics
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.95, 0.99
+  prometheus:
+    metrics:
+      export:
+        enabled: true
   endpoint:
     health:
       probes:
@@ -81,3 +95,16 @@ logging:
   level:
     root: INFO
     com.pcis.claims: INFO
+
+otel:
+  service:
+    name: claims-svc
+  exporter:
+    otlp:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4317}
+  traces:
+    sampler: parentbased_traceidratio
+  metrics:
+    exporter: none
+  logs:
+    exporter: none
