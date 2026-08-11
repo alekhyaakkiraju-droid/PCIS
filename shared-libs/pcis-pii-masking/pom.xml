@@ -14,7 +14,7 @@
   <artifactId>pcis-pii-masking</artifactId>
   <packaging>jar</packaging>
   <name>PCIS PII Masking</name>
-  <description>Metadata-driven PII masking library with Jackson integration (WO-161)</description>
+  <description>Metadata-driven PII masking library with Jackson and Logback integration (WO-161, WO-162)</description>
 
   <properties>
     <java.version>21</java.version>
@@ -49,6 +49,10 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-json</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
     </dependency>
 
     <dependency>

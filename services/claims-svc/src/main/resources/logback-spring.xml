@@ -3,7 +3,7 @@
 
   <!-- PII masking converter: SSN, phone, email, tax ID redaction before log persistence -->
   <conversionRule conversionWord="piiMask"
-                  converterClass="com.pcis.claims.logging.PiiMaskingConverter"/>
+                  converterClass="com.pcis.masking.logback.ClassificationLogMaskingConverter"/>
 
   <!-- Production / default: structured JSON via logstash-logback-encoder -->
   <springProfile name="!test">

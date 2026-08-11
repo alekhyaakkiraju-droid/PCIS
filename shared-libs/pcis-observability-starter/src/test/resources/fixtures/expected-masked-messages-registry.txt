@@ -1,0 +1,5 @@
+Customer tax id 6789 contacted at example.com phone 4567
+Plain SSN 4321 and email pcis.example
+Mixed: SSN 3333 PHONE 0100 EMAIL acme.org
+Exception payload contains 4444 and mail.test
+No PII in this operational heartbeat message

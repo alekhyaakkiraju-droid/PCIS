@@ -40,6 +40,14 @@ entities:
         tier: Restricted
         pii: true
         mask_strategy: EMAIL_DOMAIN_ONLY
+      - column: PHONE
+        tier: Restricted
+        pii: true
+        mask_strategy: PHONE_LAST_FOUR
+      - column: DOB
+        tier: Restricted
+        pii: true
+        mask_strategy: DATE_YEAR_ONLY
       - column: FIRST_NAME
         tier: Restricted
         pii: true
