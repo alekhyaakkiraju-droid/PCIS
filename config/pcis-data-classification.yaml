@@ -381,6 +381,11 @@ entities:
         pii: false
         mask_strategy: NONE
         rationale: "AUD002B filters LOG_TIMESTAMP; prefer over CRT_TIMESTAMP synonym"
+      - column: CORRELATION_ID
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "Distributed trace correlation token from X-Correlation-ID (WO-222)"
       - column: CRT_USER
         tier: Confidential
         pii: false

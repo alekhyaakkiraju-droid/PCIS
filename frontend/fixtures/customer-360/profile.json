@@ -1,0 +1,28 @@
+{
+  "custId": 100001,
+  "taxId": "123-45-6789",
+  "custName": "Alice Johnson",
+  "custType": "I",
+  "custStatus": "A",
+  "addresses": [
+    {
+      "addrId": 1,
+      "addressLine1": "742 Evergreen Terrace",
+      "addressLine2": null,
+      "city": "Springfield",
+      "stateCode": "IL",
+      "zipCode": "62704",
+      "addrType": "PRM"
+    }
+  ],
+  "contacts": [
+    {
+      "contactId": 1,
+      "firstName": "Alice",
+      "lastName": "Johnson",
+      "phoneNbr": "217-555-0101",
+      "emailAddr": "alice.johnson@example.com",
+      "contactType": "OWN"
+    }
+  ]
+}

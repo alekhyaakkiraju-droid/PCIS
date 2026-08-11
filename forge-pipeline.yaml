@@ -65,6 +65,11 @@ stages:
         failClosed: true
         run: bash scripts/openapi-contract-gate.sh
 
+      - id: wcag-gate
+        name: Frontend WCAG Accessibility Gate
+        failClosed: true
+        run: bash scripts/run-wcag-gate.sh
+
       - id: golden-output-gate
         name: Golden-Output Regression Gate
         # fail-closed: build fails if no GoldenOutput tests are found OR if any diverge

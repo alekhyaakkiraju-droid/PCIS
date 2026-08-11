@@ -34,7 +34,9 @@ describe('withRetry', () => {
         .fn()
         .mockResolvedValueOnce(makeResponse(502))
         .mockResolvedValueOnce(makeResponse(200))
-      const response = await withRetry(fn, 'GET', INSTANT_CONFIG)
+      const responsePromise = withRetry(fn, 'GET', INSTANT_CONFIG)
+      await vi.runAllTimersAsync()
+      const response = await responsePromise
       expect(response.status).toBe(200)
       expect(fn).toHaveBeenCalledTimes(2)
     })
@@ -44,7 +46,9 @@ describe('withRetry', () => {
         .fn()
         .mockResolvedValueOnce(makeResponse(503))
         .mockResolvedValueOnce(makeResponse(200))
-      const response = await withRetry(fn, 'GET', INSTANT_CONFIG)
+      const responsePromise = withRetry(fn, 'GET', INSTANT_CONFIG)
+      await vi.runAllTimersAsync()
+      const response = await responsePromise
       expect(response.status).toBe(200)
       expect(fn).toHaveBeenCalledTimes(2)
     })
@@ -54,14 +58,18 @@ describe('withRetry', () => {
         .fn()
         .mockResolvedValueOnce(makeResponse(504))
         .mockResolvedValueOnce(makeResponse(200))
-      const response = await withRetry(fn, 'GET', INSTANT_CONFIG)
+      const responsePromise = withRetry(fn, 'GET', INSTANT_CONFIG)
+      await vi.runAllTimersAsync()
+      const response = await responsePromise
       expect(response.status).toBe(200)
       expect(fn).toHaveBeenCalledTimes(2)
     })
 
     it('exhausts maxAttempts and returns final failed response', async () => {
       const fn = vi.fn().mockResolvedValue(makeResponse(502))
-      const response = await withRetry(fn, 'GET', INSTANT_CONFIG)
+      const responsePromise = withRetry(fn, 'GET', INSTANT_CONFIG)
+      await vi.runAllTimersAsync()
+      const response = await responsePromise
       expect(response.status).toBe(502)
       expect(fn).toHaveBeenCalledTimes(3)
     })

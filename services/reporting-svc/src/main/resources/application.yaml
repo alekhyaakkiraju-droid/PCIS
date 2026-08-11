@@ -3,6 +3,16 @@ server:
 spring:
   application:
     name: reporting-svc
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: reporting-svc-notification
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      enable-auto-commit: false
+    listener:
+      ack-mode: record
 management:
   endpoints:
     web:
@@ -19,6 +29,13 @@ management:
     readinessstate:
       enabled: true
 pcis:
+  outbox:
+    kafka-topic: ${PCIS_OUTBOX_KAFKA_TOPIC:pcis.domain.events}
   reporting:
     replica-lag:
       poll-interval-ms: 15000
+  notification:
+    kafka:
+      consumer-enabled: false
+      consumer-group: reporting-svc-notification
+      notification-event-prefix: Notification

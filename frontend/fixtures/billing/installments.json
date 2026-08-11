@@ -1,0 +1,6 @@
+[
+  { "id": "INST-001", "policyId": "POL-3001", "dueDate": "2026-05-01", "amount": 355.13, "status": "Open" },
+  { "id": "INST-002", "policyId": "POL-3002", "dueDate": "2026-04-01", "amount": 245, "status": "Paid" },
+  { "id": "INST-003", "policyId": "POL-3006", "dueDate": "2026-05-10", "amount": 1350, "status": "Open" },
+  { "id": "INST-004", "policyId": "POL-3008", "dueDate": "2026-05-20", "amount": 68.75, "status": "Open" }
+]

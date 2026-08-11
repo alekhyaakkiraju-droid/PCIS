@@ -98,7 +98,7 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
     return candidate;
   }
 
-  static boolean isSafeCorrelationId(String value) {
+  public static boolean isSafeCorrelationId(String value) {
     if (!StringUtils.hasText(value)) {
       return false;
     }

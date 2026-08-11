@@ -42,3 +42,51 @@ INSERT INTO CLAIM_RESERVE_T (CLM_NBR, RESERVE_AMT) VALUES
     ('CLM000000001', 15000.00);
 INSERT INTO RPT_RUN_LOG_T (PGM_NAME, RUN_DATE, REC_SELECTED, REC_UPDATED, REC_ERRORS, START_TIMESTAMP, END_TIMESTAMP, CRT_USER)
 VALUES ('RPT001A', DATE '2026-01-31', 1200, 0, 0, TIMESTAMP '2026-01-31 02:00:00', TIMESTAMP '2026-01-31 02:05:12', 'BATCH');
+
+CREATE TABLE IF NOT EXISTS recon_break (
+    break_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    domain VARCHAR(32) NOT NULL,
+    break_class VARCHAR(32) NOT NULL,
+    entity_name VARCHAR(64) NOT NULL,
+    business_key VARCHAR(64) NOT NULL,
+    column_name VARCHAR(64),
+    legacy_value TEXT,
+    target_value TEXT,
+    first_seen TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_seen TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    approved_decision_id BIGINT
+);
+INSERT INTO recon_break (domain, break_class, entity_name, business_key, column_name, legacy_value, target_value)
+VALUES ('billing', 'AMOUNT', 'INVOICE_T', 'INV0000001', 'AMOUNT_DUE', '100.00', '100.01');
+
+CREATE TABLE IF NOT EXISTS audit_archive_export_t (
+    export_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    s3_bucket VARCHAR(256) NOT NULL,
+    s3_key VARCHAR(1024) NOT NULL,
+    kms_key_arn VARCHAR(512) NOT NULL,
+    tier VARCHAR(20) NOT NULL,
+    partition_name VARCHAR(128),
+    exported_at TIMESTAMPTZ NOT NULL,
+    retention_days INTEGER NOT NULL,
+    purge_scheduled BOOLEAN NOT NULL DEFAULT FALSE,
+    crt_timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+INSERT INTO audit_archive_export_t (s3_bucket, s3_key, kms_key_arn, tier, exported_at, retention_days, purge_scheduled)
+VALUES
+    ('pcis-audit-archive-test', 'archives/2025/part-001.parquet', 'arn:aws:kms:us-east-1:123:key/abc', 'WORM', TIMESTAMPTZ '2026-01-15 08:00:00+00', 2555, FALSE),
+    ('pcis-audit-archive-test', 'archives/2024/part-002.parquet', 'arn:aws:kms:us-east-1:123:key/abc', 'WORM', TIMESTAMPTZ '2025-12-01 08:00:00+00', 2555, TRUE);
+
+CREATE TABLE IF NOT EXISTS archive_run_log (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    job_name VARCHAR(64) NOT NULL,
+    start_time TIMESTAMPTZ NOT NULL,
+    end_time TIMESTAMPTZ,
+    partitions_processed INTEGER NOT NULL DEFAULT 0,
+    rows_archived BIGINT NOT NULL DEFAULT 0,
+    verification_status VARCHAR(20),
+    exit_code INTEGER,
+    error_message TEXT,
+    crt_timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+INSERT INTO archive_run_log (job_name, start_time, end_time, partitions_processed, rows_archived, verification_status, exit_code)
+VALUES ('audit-archive', TIMESTAMPTZ '2026-01-31 03:00:00+00', TIMESTAMPTZ '2026-01-31 03:15:00+00', 4, 120000, 'VERIFIED', 0);

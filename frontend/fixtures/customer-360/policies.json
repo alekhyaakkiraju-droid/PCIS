@@ -1,0 +1,17 @@
+{
+  "activeCount": 2,
+  "items": [
+    {
+      "policyId": "POL-3001",
+      "policyType": "Homeowners",
+      "status": "Active",
+      "premium": 1420.5
+    },
+    {
+      "policyId": "POL-3008",
+      "policyType": "Umbrella",
+      "status": "Active",
+      "premium": 1240
+    }
+  ]
+}

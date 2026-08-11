@@ -1,0 +1,28 @@
+spring:
+  main:
+    web-application-type: none
+  batch:
+    job:
+      enabled: false
+  autoconfigure:
+    exclude:
+      - com.pcis.batch.auth.config.BatchAuthAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+pcis:
+  reconciliation:
+    minimum-clean-days: 2
+  classification:
+    registry-location: classpath:pcis-data-classification-test.yaml
+    drift-detection-enabled: false
+    loader-enabled: false
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: false

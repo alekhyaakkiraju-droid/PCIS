@@ -1,0 +1,95 @@
+{
+  "title": "PCIS Reporting & Notification",
+  "uid": "pcis-reporting-notification",
+  "tags": ["pcis", "reporting", "notification", "wo-236"],
+  "timezone": "utc",
+  "refresh": "30s",
+  "panels": [
+    {
+      "type": "row",
+      "title": "Reporting API",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "collapsed": false
+    },
+    {
+      "type": "stat",
+      "title": "Replica lag (seconds)",
+      "gridPos": {"h": 6, "w": 8, "x": 0, "y": 1},
+      "targets": [
+        {
+          "expr": "pcis_reporting_replica_lag_seconds{service=\"reporting-svc\"}",
+          "legendFormat": "replica lag"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 60},
+              {"color": "red", "value": 300}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "row",
+      "title": "Notification Consumer",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 7},
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Notifications dispatched / sec",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "targets": [
+        {
+          "expr": "sum(rate(notification_events_dispatched_total{service=\"reporting-svc\"}[5m])) by (event_type)",
+          "legendFormat": "{{event_type}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Notification skips and duplicates / sec",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "targets": [
+        {
+          "expr": "sum(rate(notification_events_skipped_total{service=\"reporting-svc\"}[5m])) by (reason)",
+          "legendFormat": "skipped {{reason}}"
+        },
+        {
+          "expr": "rate(notification_events_duplicate_total{service=\"reporting-svc\"}[5m])",
+          "legendFormat": "duplicates"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Notification failures (5m rate)",
+      "gridPos": {"h": 6, "w": 8, "x": 0, "y": 16},
+      "targets": [
+        {
+          "expr": "sum(rate(notification_events_failed_total{service=\"reporting-svc\"}[5m]))",
+          "legendFormat": "failures"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "red", "value": 0.01}
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "schemaVersion": 39,
+  "version": 1
+}

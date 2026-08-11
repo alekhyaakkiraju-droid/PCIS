@@ -9,6 +9,15 @@ export type Approval = components['schemas']['Approval']
 export type ClaimPage = components['schemas']['ClaimPage']
 export type InitiatePaymentRequest = components['schemas']['InitiatePaymentRequest']
 
+export type CreateClaimRequest = {
+  claimNbr?: string
+  polNbr: string
+  custId: number
+  lossDate: string
+  claimType: string
+  description?: string
+}
+
 export interface ListClaimsParams {
   status?: 'O' | 'C' | 'D'
   polNbr?: string
@@ -43,5 +52,9 @@ export const claimsApi = {
       `/v1/claims/${encodeURIComponent(claimNbr)}/payments`,
       request,
     )
+  },
+
+  async create(request: CreateClaimRequest): Promise<Claim> {
+    return apiClient.post<Claim>('/v1/claims', request)
   },
 }

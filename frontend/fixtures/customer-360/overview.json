@@ -1,0 +1,9 @@
+{
+  "custId": 100001,
+  "custName": "Alice Johnson",
+  "custStatus": "A",
+  "activePolicies": 2,
+  "premiumInForce": 2660.5,
+  "openClaims": 1,
+  "balanceDue": 355.13
+}

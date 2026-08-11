@@ -1,4 +1,4 @@
-# OpenAPI contract snapshot registry (WO-221).
+# OpenAPI contract snapshot registry (WO-221, WO-287/288/289).
 # Each entry binds a committed snapshot to the live generated spec source.
 # Update snapshots intentionally when additive contract changes ship:
 #   bash scripts/openapi-contract-gate.sh --update-snapshots
@@ -8,3 +8,23 @@ apis:
     snapshot: contracts/snapshots/customer-api.yaml
     generated: frontend/specs/customer-svc.yaml
     description: Customer service v1 REST contract for web UI and downstream consumers
+
+  - id: claims-api
+    snapshot: contracts/snapshots/claims-api.yaml
+    generated: frontend/specs/claims-svc.yaml
+    description: Claims service v1 REST contract
+
+  - id: policy-api
+    snapshot: contracts/snapshots/policy-api.yaml
+    generated: services/policy-svc/docs/openapi-policy-v1.yaml
+    description: Policy service v1 REST contract
+
+  - id: billing-api
+    snapshot: contracts/snapshots/billing-api.yaml
+    generated: services/billing-svc/src/main/resources/openapi/billing-svc-v1.yaml
+    description: Billing service v1 REST contract
+
+  - id: premium-rating-v1
+    snapshot: contracts/snapshots/premium-rating-v1.yaml
+    generated: contracts/premium-rating-v1.yaml
+    description: Premium rating v1 frozen contract for premium-svc

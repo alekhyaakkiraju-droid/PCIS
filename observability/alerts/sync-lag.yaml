@@ -1,0 +1,47 @@
+groups:
+  - name: sync-agent-operational
+    interval: 30s
+    rules:
+      - alert: SyncAgentRunFailed
+        expr: increase(pcis_sync_runs{status="failed"}[15m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          service: sync-agent
+          priority: P1
+        annotations:
+          summary: Sync agent run failed for domain {{ $labels.domain }}
+          description: At least one sync run failed in the last 15 minutes for domain {{ $labels.domain }}.
+          runbook_url: observability/runbooks/batch-operations-overview.md
+
+      - alert: SyncAgentLagHigh
+        expr: |
+          (
+            time() - sync_watermark_last_run_timestamp_seconds{service="sync-agent"}
+          ) > 900
+        for: 5m
+        labels:
+          severity: warning
+          service: sync-agent
+          priority: P2
+        annotations:
+          summary: Sync agent watermark lag exceeds 15 minutes
+          description: Domain {{ $labels.domain }} last successful sync is {{ $value | humanizeDuration }} behind real time.
+          runbook_url: observability/runbooks/batch-operations-overview.md
+
+      - alert: SyncAgentExtractUpsertDivergence
+        expr: |
+          (
+            sum by (domain) (rate(pcis_sync_rows_extracted[10m]))
+            -
+            sum by (domain) (rate(pcis_sync_rows_upserted[10m]))
+          ) > 1
+        for: 10m
+        labels:
+          severity: warning
+          service: sync-agent
+          priority: P2
+        annotations:
+          summary: Sync extract/upsert divergence detected
+          description: Domain {{ $labels.domain }} extracted rows are not being upserted at the same rate.
+          runbook_url: observability/runbooks/batch-operations-overview.md

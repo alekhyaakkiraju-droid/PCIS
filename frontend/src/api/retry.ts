@@ -63,7 +63,7 @@ export async function withRetry(
     const isLastAttempt = attempt === attempts - 1
     if (!isLastAttempt) {
       const waitMs = config.backoffMs[attempt] ?? config.backoffMs[config.backoffMs.length - 1]
-      await delay(waitMs)
+      await delay(waitMs ?? 0)
     }
   }
 

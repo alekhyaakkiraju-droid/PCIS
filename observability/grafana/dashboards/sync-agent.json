@@ -1,0 +1,77 @@
+{
+  "title": "PCIS Sync Agent",
+  "uid": "pcis-sync-agent",
+  "tags": ["pcis", "sync-agent", "wo-218"],
+  "timezone": "utc",
+  "refresh": "30s",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Sync runs (success / failed)",
+      "gridPos": {"h": 6, "w": 8, "x": 0, "y": 0},
+      "targets": [
+        {
+          "expr": "sum(increase(pcis_sync_runs{status=\"success\"}[24h]))",
+          "legendFormat": "success"
+        },
+        {
+          "expr": "sum(increase(pcis_sync_runs{status=\"failed\"}[24h]))",
+          "legendFormat": "failed"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Rows extracted vs upserted",
+      "gridPos": {"h": 8, "w": 16, "x": 8, "y": 0},
+      "targets": [
+        {
+          "expr": "sum(rate(pcis_sync_rows_extracted[5m])) by (domain)",
+          "legendFormat": "extracted {{domain}}"
+        },
+        {
+          "expr": "sum(rate(pcis_sync_rows_upserted[5m])) by (domain)",
+          "legendFormat": "upserted {{domain}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Sync failures by domain",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6},
+      "targets": [
+        {
+          "expr": "sum(increase(pcis_sync_failures[1h])) by (domain)",
+          "legendFormat": "{{domain}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "red", "value": 1}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "table",
+      "title": "Watermark lag indicators",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6},
+      "targets": [
+        {
+          "expr": "time() - sync_watermark_last_run_timestamp_seconds",
+          "legendFormat": "{{domain}} lag (s)",
+          "format": "table"
+        }
+      ],
+      "description": "Requires sync_watermark_last_run_timestamp_seconds metric from sync-agent health export or custom metric bridge."
+    }
+  ],
+  "schemaVersion": 39,
+  "version": 1
+}

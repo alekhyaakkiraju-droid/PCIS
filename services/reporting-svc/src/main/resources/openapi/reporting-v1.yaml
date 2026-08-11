@@ -1,0 +1,82 @@
+openapi: 3.1.0
+info:
+  title: PCIS Reporting Service API
+  version: 1.0.0
+  description: Read-only operational reporting endpoints backed by the PostgreSQL read replica (WO-234).
+paths:
+  /api/v1/reports/operational/summary:
+    get:
+      summary: Operational batch and reconciliation summary
+      operationId: getOperationalSummary
+      tags: [OperationalReports]
+      responses:
+        '200':
+          description: Aggregated run counts and open reconciliation breaks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationalSummaryResponse'
+  /api/v1/reports/operational/audit-archive:
+    get:
+      summary: Audit archive export and job statistics
+      operationId: getAuditArchiveStats
+      tags: [OperationalReports]
+      responses:
+        '200':
+          description: Archive export counts and latest job run metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditArchiveStatsResponse'
+components:
+  schemas:
+    OperationalSummaryResponse:
+      type: object
+      required:
+        - batchRunCount
+        - batchRunsWithErrors
+        - openReconciliationBreaks
+        - reconciliationTablePresent
+      properties:
+        batchRunCount:
+          type: integer
+          format: int64
+        batchRunsWithErrors:
+          type: integer
+          format: int64
+        lastBatchRunDate:
+          type: string
+          format: date
+          nullable: true
+        openReconciliationBreaks:
+          type: integer
+          format: int64
+        reconciliationTablePresent:
+          type: boolean
+    AuditArchiveStatsResponse:
+      type: object
+      required:
+        - exportCount
+        - exportsPendingPurge
+        - archiveJobRunCount
+        - archiveTablesPresent
+      properties:
+        exportCount:
+          type: integer
+          format: int64
+        exportsPendingPurge:
+          type: integer
+          format: int64
+        lastExportAt:
+          type: string
+          format: date-time
+          nullable: true
+        archiveJobRunCount:
+          type: integer
+          format: int64
+        lastArchiveJobStart:
+          type: string
+          format: date-time
+          nullable: true
+        archiveTablesPresent:
+          type: boolean

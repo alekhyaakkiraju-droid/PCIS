@@ -1,0 +1,56 @@
+groups:
+  - name: reporting-notification-operational
+    interval: 30s
+    rules:
+      - alert: ReportingReplicaLagHigh
+        expr: pcis_reporting_replica_lag_seconds{service="reporting-svc"} > 300
+        for: 5m
+        labels:
+          severity: warning
+          service: reporting-svc
+          priority: P2
+        annotations:
+          summary: Reporting read replica lag exceeds 300 seconds
+          description: Replica lag is {{ $value }}s for reporting-svc.
+
+      - alert: NotificationDispatchFailureRateHigh
+        expr: |
+          sum(rate(notification_events_failed_total{service="reporting-svc"}[5m])) > 0
+        for: 2m
+        labels:
+          severity: critical
+          service: reporting-svc
+          priority: P1
+        annotations:
+          summary: Notification consumer dispatch failures detected
+          description: Notification dispatch failure rate is {{ $value }}/s for reporting-svc.
+
+      - alert: NotificationDuplicateSpike
+        expr: |
+          rate(notification_events_duplicate_total{service="reporting-svc"}[5m]) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: reporting-svc
+          priority: P2
+        annotations:
+          summary: Elevated duplicate notification events
+          description: Duplicate notification rate is {{ $value }}/s — check outbox relay idempotency.
+
+      - alert: NotificationConsumerStalled
+        expr: |
+          (
+            sum(rate(notification_events_dispatched_total{service="reporting-svc"}[15m])) == 0
+          )
+          and
+          (
+            sum(rate(notification_events_skipped_total{service="reporting-svc", reason="not_notification"}[15m])) > 0
+          )
+        for: 15m
+        labels:
+          severity: warning
+          service: reporting-svc
+          priority: P2
+        annotations:
+          summary: Notification consumer receiving events but dispatching none
+          description: Consumer is active but has not dispatched notifications in 15 minutes.

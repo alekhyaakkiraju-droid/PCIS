@@ -1,0 +1,10 @@
+{
+  "openClaimCount": 1,
+  "items": [
+    {
+      "claimId": "CLM000000001",
+      "status": "O",
+      "reserveAmount": 5000
+    }
+  ]
+}

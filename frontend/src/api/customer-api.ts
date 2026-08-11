@@ -1,4 +1,5 @@
 import { apiClient } from './client'
+import type { Customer360Response } from './customer360-types'
 import type { components } from './generated/customer-svc'
 
 export type Customer = components['schemas']['Customer']
@@ -34,5 +35,9 @@ export const customerApi = {
 
   async create(data: CreateCustomerRequest): Promise<Customer> {
     return apiClient.post<Customer>('/v1/customers', data)
+  },
+
+  async get360(id: number): Promise<Customer360Response> {
+    return apiClient.get<Customer360Response>(`/v1/customers/${id}/360`)
   },
 }

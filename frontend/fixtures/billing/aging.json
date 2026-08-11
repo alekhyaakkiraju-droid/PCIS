@@ -1,0 +1,7 @@
+[
+  { "bucket": "Current", "invoiceCount": 12, "amountDue": 4820.5 },
+  { "bucket": "1-30 days", "invoiceCount": 4, "amountDue": 1102.16 },
+  { "bucket": "31-60 days", "invoiceCount": 2, "amountDue": 502.1 },
+  { "bucket": "61-90 days", "invoiceCount": 1, "amountDue": 422.1 },
+  { "bucket": "90+ days", "invoiceCount": 0, "amountDue": 0 }
+]

@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: reconciliation-batch
+  batch:
+    job:
+      name: reconciliationJob
+    jdbc:
+      initialize-schema: always
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/pcis_recon}
+    username: ${DATABASE_USERNAME:pcis}
+    password: ${DATABASE_PASSWORD:}
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+    validate-migration-naming: true
+
+pcis:
+  reconciliation:
+    program-name: RECON001
+    business-date: ${RECON_BUSINESS_DATE:}
+    minimum-clean-days: ${RECON_MIN_CLEAN_DAYS:30}
+    read-replica:
+      url: ${RECON_READ_REPLICA_URL:${DATABASE_URL:jdbc:postgresql://localhost:5432/pcis_recon}}
+      username: ${RECON_READ_REPLICA_USERNAME:${DATABASE_USERNAME:pcis}}
+      password: ${RECON_READ_REPLICA_PASSWORD:${DATABASE_PASSWORD:}}
+    rollback:
+      domain: ${RECON_ROLLBACK_DOMAIN:}
+  batch:
+    oauth2:
+      token-uri: ${PCIS_BATCH_OAUTH2_TOKEN_URI:}
+      client-id: ${PCIS_BATCH_OAUTH2_CLIENT_ID:batch-reconciliation}
+      client-secret: ${PCIS_BATCH_OAUTH2_CLIENT_SECRET:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.pcis.batch.reconciliation: INFO

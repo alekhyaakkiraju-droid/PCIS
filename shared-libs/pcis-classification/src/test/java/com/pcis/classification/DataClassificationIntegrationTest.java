@@ -103,7 +103,7 @@ class DataClassificationIntegrationTest {
 
   @Test
   void loadsRegistryAndMatchesTierCounts() {
-    assertThat(registry.size()).isEqualTo(544);
+    assertThat(registry.size()).isEqualTo(545);
 
     Map<DataTier, Long> registryCounts = registry.countByTier();
     Map<String, Integer> dbCounts =

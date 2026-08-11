@@ -1,0 +1,16 @@
+[
+  {
+    "id": "AUD-001",
+    "timestamp": "2026-03-15T14:22:00Z",
+    "action": "CUSTOMER_UPDATE",
+    "actor": "csr-carol",
+    "detail": "Updated mailing address"
+  },
+  {
+    "id": "AUD-002",
+    "timestamp": "2026-02-01T09:10:00Z",
+    "action": "POLICY_VIEW",
+    "actor": "underwriter-bob",
+    "detail": "Viewed policy POL-3001"
+  }
+]

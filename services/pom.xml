@@ -20,6 +20,7 @@
     <module>authz-svc</module>
     <module>audit-svc</module>
     <module>audit-batch</module>
+    <module>reconciliation-batch</module>
     <module>claims-batch</module>
     <module>policy-batch</module>
     <module>billing-svc</module>

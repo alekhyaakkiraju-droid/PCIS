@@ -2,11 +2,14 @@ package com.pcis.outbox;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pcis.observability.MdcKeys;
+import com.pcis.observability.propagation.ObservabilityHeaders;
 import java.nio.charset.StandardCharsets;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.util.StringUtils;
@@ -51,6 +54,14 @@ public class KafkaOutboxEventPublisher {
         .add(new RecordHeader("event-type", bytes(event.getEventType())))
         .add(new RecordHeader("aggregate-type", bytes(event.getAggregateType())))
         .add(new RecordHeader("idempotency-key", bytes(event.getIdempotencyKey().toString())));
+    String correlationId = MDC.get(MdcKeys.CORRELATION_ID);
+    if (StringUtils.hasText(correlationId)) {
+      record
+          .headers()
+          .add(
+              new RecordHeader(
+                  ObservabilityHeaders.KAFKA_CORRELATION_ID, bytes(correlationId)));
+    }
     if (retryCount != null) {
       record
           .headers()

@@ -164,15 +164,15 @@ export class ApiClient {
   }
 
   post<T = unknown>(path: string, body?: unknown, options?: RequestInit): Promise<T> {
-    return this.request<T>('POST', path, { ...options, body })
+    return this.request<T>('POST', path, { ...options, body } as RequestInit & { body?: unknown })
   }
 
   put<T = unknown>(path: string, body?: unknown, options?: RequestInit): Promise<T> {
-    return this.request<T>('PUT', path, { ...options, body })
+    return this.request<T>('PUT', path, { ...options, body } as RequestInit & { body?: unknown })
   }
 
   patch<T = unknown>(path: string, body?: unknown, options?: RequestInit): Promise<T> {
-    return this.request<T>('PATCH', path, { ...options, body })
+    return this.request<T>('PATCH', path, { ...options, body } as RequestInit & { body?: unknown })
   }
 
   delete<T = unknown>(path: string, options?: RequestInit): Promise<T> {

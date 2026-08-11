@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.pcis.reporting.config.ReadOnlyViolationException;
 import com.pcis.reporting.config.ReportingDataSourceConfig;
+import com.pcis.reporting.support.IntegrationTestDataSourceConfig;
 import com.pcis.reporting.support.PostgresTestContainer;
 import com.pcis.reporting.support.TestEnvironment;
 import java.sql.DriverManager;
@@ -13,12 +14,14 @@ import org.junit.jupiter.api.condition.EnabledIf;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
 @SpringBootTest
+@Import(IntegrationTestDataSourceConfig.class)
 @ActiveProfiles("test")
 @EnabledIf("com.pcis.reporting.support.TestEnvironment#isDockerAvailable")
 class ReportingReplicaIntegrationTest {
@@ -46,7 +49,12 @@ class ReportingReplicaIntegrationTest {
 
   @Test
   void writeThroughReportingDatasourceFails() {
-    assertThatThrownBy(() -> reportingJdbc.update("INSERT INTO POLICY_T (POL_NBR, POL_TYPE, POL_STATUS, PREM_ANNUAL) VALUES ('POL999999999','HOM','A',1)"))
-        .isInstanceOf(ReadOnlyViolationException.class);
+    assertThatThrownBy(
+            () ->
+                reportingJdbc.update(
+                    "INSERT INTO POLICY_T (POL_NBR, POL_TYPE, POL_STATUS, PREM_ANNUAL) VALUES ('POL999999999','HOM','A',1)"))
+        .satisfiesAnyOf(
+            ex -> assertThat(ex).isInstanceOf(ReadOnlyViolationException.class),
+            ex -> assertThat(ex.getMessage()).containsIgnoringCase("read-only"));
   }
 }

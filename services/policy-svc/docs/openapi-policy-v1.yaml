@@ -1,0 +1,105 @@
+openapi: 3.1.0
+info:
+  title: PCIS Policy Service API
+  version: 1.0.0
+  description: REST API for the PCIS policy domain service
+
+servers:
+  - url: /api/v1
+    description: API Gateway proxy (dev default)
+
+paths:
+  /policies:
+    get:
+      operationId: listPolicies
+      summary: List policies with optional filtering
+      parameters:
+        - name: customerId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Paginated policy list
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+    post:
+      operationId: createPolicy
+      summary: Issue a new policy
+      responses:
+        "201":
+          description: Policy created
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+
+  /policies/{policyNumber}:
+    parameters:
+      - name: policyNumber
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getPolicy
+      summary: Get policy by policy number
+      responses:
+        "200":
+          description: Policy detail
+        "401":
+          description: Unauthorized
+        "404":
+          description: Policy not found
+
+  /policies/{policyNumber}/endorse:
+    parameters:
+      - name: policyNumber
+        in: path
+        required: true
+        schema:
+          type: string
+    put:
+      operationId: endorsePolicy
+      summary: Endorse an in-force policy
+      responses:
+        "200":
+          description: Endorsed policy
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+
+  /policies/{policyNumber}/cancel:
+    parameters:
+      - name: policyNumber
+        in: path
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: cancelPolicy
+      summary: Cancel a policy
+      responses:
+        "200":
+          description: Cancelled policy
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden

@@ -30,6 +30,12 @@ public class BatchCommonAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
+  BatchCorrelationIdListener batchCorrelationIdListener() {
+    return new BatchCorrelationIdListener();
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
   BatchJobExecutionListener batchJobExecutionListener(
       BatchProcessExitCode batchProcessExitCode, PcisBatchProperties properties) {
     return new BatchJobExecutionListener(batchProcessExitCode, properties);

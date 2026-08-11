@@ -2,6 +2,12 @@ pcis:
   reporting:
     replica-lag:
       poll-interval-ms: 5000
+  classification:
+    registry-location: classpath:pcis-data-classification-test.yaml
+    drift-detection-enabled: false
+    loader-enabled: false
 spring:
   flyway:
     enabled: false
+  main:
+    allow-bean-definition-overriding: true

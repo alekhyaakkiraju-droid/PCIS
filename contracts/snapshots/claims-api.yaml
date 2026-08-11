@@ -1,0 +1,315 @@
+openapi: 3.1.0
+info:
+  title: PCIS Claims Service API
+  version: 1.0.0
+  description: REST API for the PCIS claims domain service
+
+servers:
+  - url: /api/v1
+    description: API Gateway proxy (dev default)
+
+paths:
+  /claims:
+    get:
+      operationId: listClaims
+      summary: List claims with optional filtering
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [O, C, D]
+          description: "O=Open, C=Closed, D=Denied"
+        - name: polNbr
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Paginated claims list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClaimPage"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /claims/{claimNbr}:
+    parameters:
+      - name: claimNbr
+        in: path
+        required: true
+        schema:
+          type: string
+          maxLength: 12
+    get:
+      operationId: getClaim
+      summary: Get a single claim with reserves and payments
+      responses:
+        "200":
+          description: Claim detail with reserves
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClaimDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /claims/{claimNbr}/payments:
+    parameters:
+      - name: claimNbr
+        in: path
+        required: true
+        schema:
+          type: string
+          maxLength: 12
+    post:
+      operationId: initiatePayment
+      summary: Initiate a claim payment (requires CLAIMS_ADJUSTER or CLAIMS_SUPERVISOR role)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InitiatePaymentRequest"
+      responses:
+        "201":
+          description: Payment initiated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClaimPayment"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+
+components:
+  schemas:
+    Claim:
+      type: object
+      required: [claimNbr, polNbr, custId, lossDate, claimType, claimStatus]
+      properties:
+        claimNbr:
+          type: string
+          maxLength: 12
+        polNbr:
+          type: string
+          maxLength: 12
+        custId:
+          type: integer
+          format: int32
+        lossDate:
+          type: string
+          format: date
+        claimType:
+          type: string
+          maxLength: 3
+        claimStatus:
+          type: string
+          maxLength: 1
+          enum: [O, C, D]
+          description: "O=Open, C=Closed, D=Denied"
+
+    ClaimDetail:
+      allOf:
+        - $ref: "#/components/schemas/Claim"
+        - type: object
+          properties:
+            reserves:
+              type: array
+              items:
+                $ref: "#/components/schemas/ClaimReserve"
+            payments:
+              type: array
+              items:
+                $ref: "#/components/schemas/ClaimPayment"
+
+    ClaimReserve:
+      type: object
+      required: [reserveId, claimNbr, reserveType, approvedAmt, paidToDate, reserveStatus]
+      properties:
+        reserveId:
+          type: integer
+          format: int64
+        claimNbr:
+          type: string
+          maxLength: 12
+        reserveType:
+          type: string
+          maxLength: 3
+        approvedAmt:
+          type: number
+          multipleOf: 0.01
+          description: NUMERIC(11,2) — no floating point
+        paidToDate:
+          type: number
+          multipleOf: 0.01
+        reserveStatus:
+          type: string
+          maxLength: 1
+          enum: [O, C]
+
+    ClaimPayment:
+      type: object
+      required: [paymentId, claimNbr, paymentAmt, paymentStatus]
+      properties:
+        paymentId:
+          type: integer
+          format: int64
+        claimNbr:
+          type: string
+          maxLength: 12
+        paymentAmt:
+          type: number
+          multipleOf: 0.01
+        paymentStatus:
+          type: string
+          maxLength: 1
+          enum: [P, C, F]
+          description: "P=Pending, C=Completed, F=Failed"
+        payeeId:
+          type: integer
+          format: int32
+          nullable: true
+        approvalId:
+          type: integer
+          format: int64
+          nullable: true
+        adjusterId:
+          type: string
+          maxLength: 10
+          nullable: true
+
+    Approval:
+      type: object
+      required: [approvalId, claimNbr, reserveId, approverId, approvalStatus]
+      properties:
+        approvalId:
+          type: integer
+          format: int64
+        claimNbr:
+          type: string
+          maxLength: 12
+        reserveId:
+          type: integer
+          format: int64
+        approverId:
+          type: string
+          maxLength: 10
+        approvalStatus:
+          type: string
+          maxLength: 1
+          enum: [P, A, D]
+          description: "P=Pending, A=Approved, D=Denied"
+        approvalDate:
+          type: string
+          format: date-time
+          nullable: true
+
+    ClaimPage:
+      type: object
+      required: [content, page, size, totalElements, totalPages]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/Claim"
+        page:
+          type: integer
+        size:
+          type: integer
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+
+    InitiatePaymentRequest:
+      type: object
+      required: [reserveId, paymentAmt, adjusterId]
+      properties:
+        reserveId:
+          type: integer
+          format: int64
+        paymentAmt:
+          type: number
+          multipleOf: 0.01
+          description: Payment amount — partial or full outstanding reserve
+        adjusterId:
+          type: string
+          maxLength: 10
+        payeeId:
+          type: integer
+          format: int32
+          nullable: true
+
+    ProblemDetail:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+
+  responses:
+    BadRequest:
+      description: Invalid request payload
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetail"
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetail"
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetail"
+    NotFound:
+      description: Resource not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetail"
+    UnprocessableEntity:
+      description: Business rule violation (e.g. payment exceeds reserve, insufficient authority)
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetail"
