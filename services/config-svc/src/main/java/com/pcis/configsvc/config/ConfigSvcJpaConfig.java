@@ -1,0 +1,12 @@
+package com.pcis.configsvc.config;
+
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+
+@Configuration
+@Profile("server")
+@EnableJpaRepositories(basePackages = {"com.pcis.config.repository", "com.pcis.outbox"})
+@EntityScan(basePackages = {"com.pcis.config.entity", "com.pcis.outbox"})
+public class ConfigSvcJpaConfig {}

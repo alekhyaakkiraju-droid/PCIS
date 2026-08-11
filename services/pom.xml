@@ -29,5 +29,6 @@
     <module>claims-svc</module>
     <module>premium-svc</module>
     <module>sync-agent</module>
+    <module>config-svc</module>
   </modules>
 </project>
