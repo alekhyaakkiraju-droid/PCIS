@@ -1,0 +1,324 @@
+manifest_version: 1
+woref: WO-154
+source_migration: shared-libs/pcis-schema/db/migration/V1__baseline_schema.sql
+table_count: 57
+entries:
+  - table_name: AGENT_COMMISSION_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Agent commission accruals by policy
+  - table_name: AGENT_LICENSE_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+      - LICENSE_NBR
+    description: Agent licensing records
+  - table_name: AGENT_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+      - AGT_NAME
+    description: Insurance agent master data
+  - table_name: APPROVAL_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Claim reserve approval workflow
+  - table_name: AUDIT_LOG_ARCHIVE_T
+    classification_tier: CONFIDENTIAL
+    retention_days: 365
+    pii_columns:
+      - NEW_VALUE
+      - OLD_VALUE
+    description: Archived audit trail entries
+  - table_name: AUDIT_LOG_T
+    classification_tier: RESTRICTED
+    retention_days: 365
+    pii_columns:
+      - NEW_VALUE
+      - OLD_VALUE
+    description: Partitioned audit trail with before/after values
+  - table_name: BILLING_NOTICE_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+      - DELIVERY_EMAIL
+    description: Billing notice delivery tracking
+  - table_name: BILLING_PLAN_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Customer billing plan definitions
+  - table_name: BILLING_SCHEDULE_T
+    classification_tier: CONFIDENTIAL
+    retention_days: 365
+    pii_columns:
+    description: Scheduled billing amounts and due dates
+  - table_name: CANCELLATION_REASON_T
+    classification_tier: PUBLIC
+    retention_days: 90
+    pii_columns:
+    description: Reference codes for policy cancellations
+  - table_name: CLAIM_ADJUSTER_T
+    classification_tier: RESTRICTED
+    retention_days: 365
+    pii_columns:
+      - ADJ_NAME
+    description: Claim adjuster identity and authority limits
+  - table_name: CLAIM_DOCUMENT_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Claim-related document metadata
+  - table_name: CLAIM_NOTE_T
+    classification_tier: RESTRICTED
+    retention_days: 365
+    pii_columns:
+      - NOTE_TEXT
+    description: Free-text claim notes
+  - table_name: CLAIM_PAYMENT_T
+    classification_tier: CONFIDENTIAL
+    retention_days: 365
+    pii_columns:
+      - PAYEE_NAME
+    description: Claim payment transactions and payee details
+  - table_name: CLAIM_RESERVE_HISTORY_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Historical claim reserve adjustments
+  - table_name: CLAIM_RESERVE_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Current claim reserve amounts
+  - table_name: CLAIM_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Claim header and status
+  - table_name: CODE_TABLE_T
+    classification_tier: PUBLIC
+    retention_days: 90
+    pii_columns:
+    description: Generic reference code values
+  - table_name: COMMISSION_LEDGER_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Posted commission ledger entries
+  - table_name: COMMISSION_RATE_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Commission rate schedules
+  - table_name: COMMISSION_T
+    classification_tier: CONFIDENTIAL
+    retention_days: 365
+    pii_columns:
+    description: Calculated agent commissions
+  - table_name: COVERAGE_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Policy coverage line items
+  - table_name: COVERAGE_TYPE_T
+    classification_tier: PUBLIC
+    retention_days: 90
+    pii_columns:
+    description: Reference coverage type catalog
+  - table_name: CUSTOMER_ADDRESS_T
+    classification_tier: RESTRICTED
+    retention_days: 365
+    pii_columns:
+      - ADDR_LINE1
+      - ADDR_LINE2
+      - CITY
+      - POSTAL_CODE
+    description: Customer mailing and service addresses
+  - table_name: CUSTOMER_CONTACT_T
+    classification_tier: RESTRICTED
+    retention_days: 365
+    pii_columns:
+      - CONTACT_EMAIL
+      - CONTACT_PHONE
+      - CONTACT_VALUE
+    description: Customer contact methods
+  - table_name: CUSTOMER_T
+    classification_tier: RESTRICTED
+    retention_days: 365
+    pii_columns:
+      - DOB
+      - EMAIL
+      - FIRST_NAME
+      - LAST_NAME
+      - PHONE
+      - TAX_ID
+    description: Customer master with PII
+  - table_name: DEDUCTIBLE_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Coverage deductible definitions
+  - table_name: DISCOUNT_RULE_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Premium discount rules
+  - table_name: DOCUMENT_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Policy and claim document registry
+  - table_name: ENDORSEMENT_T
+    classification_tier: CONFIDENTIAL
+    retention_days: 365
+    pii_columns:
+      - ENDT_DESC
+    description: Policy endorsement history
+  - table_name: INVOICE_T
+    classification_tier: CONFIDENTIAL
+    retention_days: 365
+    pii_columns:
+    description: Customer billing invoices
+  - table_name: OUTBOX_EVENTS
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Transactional outbox for domain events
+  - table_name: PAYMENT_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Premium payment transactions
+  - table_name: POLICY_HISTORY_T
+    classification_tier: CONFIDENTIAL
+    retention_days: 365
+    pii_columns:
+      - EVENT_DESC
+    description: Policy lifecycle event history
+  - table_name: POLICY_PROPERTY_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+      - PROP_ADDR1
+      - PROP_ADDR2
+      - PROP_CITY
+      - PROP_POSTAL
+    description: Insured property locations
+  - table_name: POLICY_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Policy contract header
+  - table_name: POLICY_VEHICLE_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+      - VIN
+    description: Insured vehicle details
+  - table_name: PREMIUM_CALC_DETAIL_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Premium calculation line details
+  - table_name: PREMIUM_CALC_T
+    classification_tier: CONFIDENTIAL
+    retention_days: 365
+    pii_columns:
+    description: Premium calculation summaries
+  - table_name: QUOTE_COVERAGE_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Quoted coverage line items
+  - table_name: QUOTE_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Insurance quote header
+  - table_name: RATE_FACTOR_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Rating factor reference values
+  - table_name: RATE_TABLE_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Base rate reference tables
+  - table_name: RECOVERY_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Subrogation recovery records
+  - table_name: REFUND_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Premium refund transactions
+  - table_name: REINSURANCE_CESSION_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Reinsurance cession allocations
+  - table_name: REINSURANCE_TREATY_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Reinsurance treaty definitions
+  - table_name: RISK_SCORE_FACTOR_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Underwriting risk score factors
+  - table_name: ROLE_MENU_T
+    classification_tier: PUBLIC
+    retention_days: 90
+    pii_columns:
+    description: Security role menu mappings
+  - table_name: RPT_PARM_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Report parameter definitions
+  - table_name: RPT_RUN_LOG_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Batch report execution log
+  - table_name: SEC_USER_T
+    classification_tier: RESTRICTED
+    retention_days: 365
+    pii_columns:
+      - PASSWORD_HASH
+      - USER_NAME
+    description: Application user credentials
+  - table_name: SURCHARGE_RULE_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Premium surcharge rules
+  - table_name: TAX_TABLE_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Tax rate reference data
+  - table_name: UW_DECISION_T
+    classification_tier: RESTRICTED
+    retention_days: 365
+    pii_columns:
+      - DECISION_REASON
+    description: Underwriting decision records
+  - table_name: UW_REFERRAL_T
+    classification_tier: INTERNAL
+    retention_days: 180
+    pii_columns:
+    description: Underwriting referral queue
+  - table_name: UW_RULE_T
+    classification_tier: CONFIDENTIAL
+    retention_days: 365
+    pii_columns:
+      - RULE_EXPRESSION
+    description: Underwriting rule expressions
