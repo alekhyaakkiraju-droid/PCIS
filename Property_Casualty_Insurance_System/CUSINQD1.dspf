@@ -1,0 +1,18 @@
+     A*================================================================*
+     A* CUSINQD1 - CUSTOMER INQUIRY DISPLAY
+     A*================================================================*
+     A                                      DSPSIZ(*DS4)
+     A                                      INDARA
+     A                                      PRINT
+     A*
+     A          R CUSINQD1F
+     A                                      CA03(03 'F3=Exit')
+     A                                      CA12(12 'F12=Cancel')
+     A                                      PFILE(CUSTOMER_T)
+     A*
+     A*  Screen title
+     A                              2  2'CUSTOMER INQUIRY DISPLAY'
+     A*                                     DSPATR(HI)
+     A*
+     A  98                         24  2'F3=Exit  F12=Cancel'
+     A*
