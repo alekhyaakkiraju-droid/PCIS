@@ -1,0 +1,21 @@
+{
+  "calculationId": "calc-policy-001",
+  "returnCode": "00",
+  "underwritingDecision": "APPROVE",
+  "compositeRiskScore": "72.5000",
+  "riskTier": "STANDARD",
+  "baseRate": "1200.00",
+  "ratingFactor": "1.0500",
+  "basePremium": "1260.00",
+  "factors": [
+    {
+      "code": "OCCUPANCY",
+      "factor": "1.0500",
+      "amount": "1260.00"
+    }
+  ],
+  "discounts": [],
+  "surcharges": [],
+  "taxes": [],
+  "finalPremium": "1260.00"
+}

@@ -1,0 +1,8 @@
+{
+  "type": "https://pcis.example/problems/validation",
+  "title": "Request validation failed",
+  "status": 400,
+  "detail": "policyType is required",
+  "code": "SYS_VALIDATION",
+  "correlation_id": "corr-input-error"
+}

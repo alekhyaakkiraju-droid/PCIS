@@ -1,0 +1,11 @@
+{
+  "calculationId": "calc-billing-001",
+  "returnCode": "02",
+  "underwritingDecision": "DECLINE",
+  "baseRate": "1200.00",
+  "ratingFactor": "1.0500",
+  "basePremium": "1260.00",
+  "finalPremium": "0.00",
+  "matchedRuleId": 7,
+  "matchedRuleText": "Property ineligible for coverage"
+}
