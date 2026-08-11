@@ -1,0 +1,78 @@
+# Argo CD Notifications configuration (WO-139)
+# Apply to the argocd-notifications-cm ConfigMap or merge via Helm values.
+# Templates reference pcis-prod-* Slack channels; wire channel IDs at deploy time.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-notifications-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: argocd
+    pcis.work-order: WO-139
+data:
+  context: |
+    argocdUrl: https://argocd.pcis.example.com
+    environment: multi
+  service.slack: |
+    token: $slack-token
+  template.app-deployed: |
+    message: |
+      {{if eq .app.metadata.labels.pcis.environment "prd"}}:lock:{{else}}:rocket:{{end}}
+      *{{.app.metadata.name}}* is {{.app.status.sync.status}}/{{.app.status.health.status}}
+      Revision: {{.app.status.sync.revision | trunc 7}}
+      {{if .app.status.operationState.message}}Detail: {{.app.status.operationState.message}}{{end}}
+    slack:
+      attachments: |
+        [{
+          "title": "{{ .app.metadata.name}}",
+          "title_link": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+          "color": "#18be52",
+          "fields": [
+            {"title": "Environment", "value": "{{.app.metadata.labels.pcis.environment}}", "short": true},
+            {"title": "Sync", "value": "{{.app.status.sync.status}}", "short": true}
+          ]
+        }]
+  template.app-sync-failed: |
+    message: |
+      :x: Sync failed for *{{.app.metadata.name}}* ({{.app.metadata.labels.pcis.environment}})
+      {{.app.status.operationState.message}}
+    slack:
+      attachments: |
+        [{
+          "title": "{{ .app.metadata.name}}",
+          "title_link": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+          "color": "#E96D76"
+        }]
+  template.app-health-degraded: |
+    message: |
+      :warning: Health degraded for *{{.app.metadata.name}}* ({{.app.metadata.labels.pcis.environment}})
+    slack:
+      attachments: |
+        [{
+          "title": "{{ .app.metadata.name}}",
+          "title_link": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+          "color": "#f4c030"
+        }]
+  trigger.on-sync-running: |
+    - when: app.status.operationState.phase in ['Running'] and app.metadata.labels.pcis.environment == 'prd'
+      send: [app-deployed]
+  trigger.on-sync-succeeded: |
+    - when: app.status.operationState.phase in ['Succeeded'] and app.metadata.labels.pcis.environment == 'prd'
+      send: [app-deployed]
+  trigger.on-sync-failed: |
+    - when: app.status.operationState.phase in ['Error', 'Failed']
+      send: [app-sync-failed]
+  trigger.on-health-degraded: |
+    - when: app.status.health.status == 'Degraded'
+      send: [app-health-degraded]
+  subscriptions: |
+    - recipients:
+        - slack:pcis-prod-deployments
+      triggers:
+        - on-sync-succeeded
+        - on-sync-running
+    - recipients:
+        - slack:pcis-prod-alerts
+      triggers:
+        - on-sync-failed
+        - on-health-degraded

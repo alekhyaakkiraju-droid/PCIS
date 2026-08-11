@@ -1,0 +1,93 @@
+# PCIS microservice ApplicationSet (WO-139)
+# Matrix: 8 services × 3 environments (dev / tst / prd).
+# Dev: automated selfHeal + prune. tst/prd: manual sync (production gate on prd).
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: pcis-services
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: pcis
+    pcis.work-order: WO-139
+  annotations:
+    pcis.governance/description: >
+      Generates one Argo CD Application per microservice per environment.
+      Production (prd) applications carry approval-gate annotations; sync is
+      manual and restricted to pcis-admins (see argocd/docs/production-approval-gate.md).
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - matrix:
+        generators:
+          - list:
+              elements:
+                - service: api-gateway
+                - service: authz-svc
+                - service: audit-svc
+                - service: customer-svc
+                - service: claims-svc
+                - service: policy-svc
+                - service: premium-svc
+                - service: billing-svc
+          - list:
+              elements:
+                - env: dev
+                  namespace: pcis-dev
+                  valuesFile: values-dev.yaml
+                  automated: "true"
+                - env: tst
+                  namespace: pcis-tst
+                  valuesFile: values-dev.yaml
+                  automated: "false"
+                - env: prd
+                  namespace: pcis-prd
+                  valuesFile: values-prd.yaml
+                  automated: "false"
+  template:
+    metadata:
+      name: "pcis-{{ .service }}-{{ .env }}"
+      labels:
+        app.kubernetes.io/part-of: pcis
+        pcis.service: "{{ .service }}"
+        pcis.environment: "{{ .env }}"
+      annotations:
+        pcis.governance/sync-mode: "{{ if eq .automated \"true\" }}automated{{ else }}manual{{ end }}"
+        {{- if eq .env "prd" }}
+        pcis.governance/approval-required: "true"
+        pcis.governance/approver-group: pcis-admins
+        pcis.governance/change-ticket-required: "true"
+        notifications.argoproj.io/subscribe.on-sync-running.slack: pcis-prod-deployments
+        notifications.argoproj.io/subscribe.on-sync-succeeded.slack: pcis-prod-deployments
+        notifications.argoproj.io/subscribe.on-sync-failed.slack: pcis-prod-alerts
+        notifications.argoproj.io/subscribe.on-health-degraded.slack: pcis-prod-alerts
+        {{- end }}
+    spec:
+      project: pcis
+      source:
+        repoURL: https://github.com/alekhyaakkiraju-droid/PCIS.git
+        targetRevision: main
+        path: "helm/charts/{{ .service }}"
+        helm:
+          releaseName: "{{ .service }}"
+          valueFiles:
+            - values.yaml
+            - "{{ .valuesFile }}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{ .namespace }}"
+      revisionHistoryLimit: 5
+      {{- if eq .automated "true" }}
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=false
+          - RespectIgnoreDifferences=true
+      {{- else }}
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=false
+          - RespectIgnoreDifferences=true
+      {{- end }}
