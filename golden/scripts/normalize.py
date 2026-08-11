@@ -6,6 +6,9 @@ Transforms:
   - Surrogate/identity keys → SEQ_001, SEQ_002, … (order of appearance)
   - Rows sorted by business-key columns (or all columns if none specified)
   - NUMERIC values preserved as decimal strings (no float conversion)
+
+Monetary NUMERIC(9,2)/(11,2) and status columns are NEVER normalized
+(see golden/normalization-rules.yaml — WO-176).
 """
 
 from __future__ import annotations
@@ -15,7 +18,7 @@ import csv
 import io
 import re
 from pathlib import Path
-from typing import Iterable
+from typing import Any, Iterable
 
 TIMESTAMP_RE = re.compile(
     r"""(?x)
@@ -54,6 +57,108 @@ DEFAULT_BUSINESS_KEYS = {
     "RPT_RUN_LOG_T": ["PROGRAM_NAME", "STATUS"],
 }
 
+_RULES_CACHE: dict[str, Any] | None = None
+
+
+def _rules_path() -> Path:
+    return Path(__file__).resolve().parents[1] / "normalization-rules.yaml"
+
+
+def load_normalization_rules(path: Path | None = None) -> dict[str, Any]:
+    """Minimal YAML subset loader (no PyYAML dependency required)."""
+    global _RULES_CACHE
+    rules_file = path or _rules_path()
+    if _RULES_CACHE is not None and path is None:
+        return _RULES_CACHE
+
+    text = rules_file.read_text(encoding="utf-8")
+    deny_monetary: set[str] = set()
+    deny_status: set[str] = set()
+    status_suffixes: set[str] = set()
+    allow_ts: set[str] = set()
+    allow_sur: set[str] = set()
+    section: str | None = None
+    subsection: str | None = None
+
+    for raw in text.splitlines():
+        line = raw.split("#", 1)[0].rstrip()
+        if not line.strip():
+            continue
+        indent = len(line) - len(line.lstrip(" "))
+        stripped = line.strip()
+        if indent == 0 and stripped.endswith(":") and not stripped.startswith("-"):
+            section = stripped[:-1]
+            subsection = None
+            continue
+        if indent == 2 and stripped.endswith(":") and not stripped.startswith("-"):
+            subsection = stripped[:-1]
+            continue
+        if stripped.startswith("- "):
+            value = stripped[2:].strip().strip('"').strip("'")
+            if section == "deny" and subsection == "monetary_columns":
+                deny_monetary.add(value.upper())
+            elif section == "deny" and subsection == "status_columns":
+                deny_status.add(value.upper())
+            elif section == "deny" and subsection == "status_suffixes":
+                status_suffixes.add(value.upper())
+            elif section == "allow" and subsection == "timestamps":
+                allow_ts.add(value.upper())
+            elif section == "allow" and subsection == "surrogates":
+                allow_sur.add(value.upper())
+
+    rules = {
+        "deny_monetary": deny_monetary,
+        "deny_status": deny_status,
+        "status_suffixes": status_suffixes,
+        "allow_timestamps": allow_ts or {
+            "LOG_TIMESTAMP",
+            "ARCHIVE_DATE",
+            "RUN_STARTED",
+            "RUN_ENDED",
+            "CREATED_AT",
+            "UPDATED_AT",
+            "CRT_TIMESTAMP",
+            "UPD_TIMESTAMP",
+            "CUTOFF_DATE",
+        },
+        "allow_surrogates": allow_sur or set(DEFAULT_SURROGATE_COLUMNS),
+    }
+    if path is None:
+        _RULES_CACHE = rules
+    return rules
+
+
+class NormalizationConfigError(ValueError):
+    """Raised when monetary/status columns are added to the allow-list."""
+
+
+def validate_allow_list(proposed: Iterable[str], rules: dict[str, Any] | None = None) -> None:
+    """Reject any attempt to normalize deny-listed monetary or status columns."""
+    cfg = rules or load_normalization_rules()
+    rejected: list[str] = []
+    for col in proposed:
+        upper = col.upper()
+        if upper in cfg["deny_monetary"] or upper in cfg["deny_status"]:
+            rejected.append(upper)
+            continue
+        for suffix in cfg["status_suffixes"]:
+            if upper.endswith(suffix):
+                rejected.append(upper)
+                break
+    if rejected:
+        raise NormalizationConfigError(
+            "Normalization allow-list rejects monetary/status columns: "
+            + ", ".join(sorted(set(rejected)))
+        )
+
+
+def is_denied_column(column: str, rules: dict[str, Any] | None = None) -> bool:
+    cfg = rules or load_normalization_rules()
+    upper = column.upper()
+    if upper in cfg["deny_monetary"] or upper in cfg["deny_status"]:
+        return True
+    return any(upper.endswith(suffix) for suffix in cfg["status_suffixes"])
+
 
 def normalize_value(value: str, column: str, seq_counters: dict[str, int]) -> str:
     if value is None:
@@ -63,7 +168,14 @@ def normalize_value(value: str, column: str, seq_counters: dict[str, int]) -> st
         return ""
 
     upper_col = column.upper()
-    if upper_col in DEFAULT_SURROGATE_COLUMNS or upper_col.endswith("_SEQ"):
+    rules = load_normalization_rules()
+
+    # Monetary / status columns: never rewrite (cent-level fidelity).
+    if is_denied_column(upper_col, rules):
+        return text
+
+    surrogates = rules["allow_surrogates"] | DEFAULT_SURROGATE_COLUMNS
+    if upper_col in surrogates or upper_col.endswith("_SEQ"):
         # Preserve empty; otherwise assign stable ordinal in appearance order.
         if text == "":
             return ""
@@ -71,14 +183,7 @@ def normalize_value(value: str, column: str, seq_counters: dict[str, int]) -> st
         seq_counters[key] = seq_counters.get(key, 0) + 1
         return f"SEQ_{seq_counters[key]:03d}"
 
-    if TIMESTAMP_RE.fullmatch(text) or upper_col.endswith("_TS") or upper_col.endswith("_TIMESTAMP") or upper_col in {
-        "LOG_TIMESTAMP",
-        "ARCHIVE_DATE",
-        "RUN_STARTED",
-        "RUN_ENDED",
-        "CREATED_AT",
-        "UPDATED_AT",
-    }:
+    if TIMESTAMP_RE.fullmatch(text) or upper_col.endswith("_TS") or upper_col.endswith("_TIMESTAMP") or upper_col in rules["allow_timestamps"]:
         # Dates that look like plain ISO dates used as business keys stay as-is
         # only when column is clearly a business date (not timestamp).
         if upper_col.endswith("_DATE") and re.fullmatch(r"\d{4}-\d{2}-\d{2}", text):

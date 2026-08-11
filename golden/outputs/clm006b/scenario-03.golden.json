@@ -1,0 +1,131 @@
+{
+  "completionStatus": "COMPLETED",
+  "displayOutput": "CLM006B START REF=2024-06-15\nPAYMENTS=0\nCLM006B END\n",
+  "formatVersion": "1.0.0",
+  "program": "CLM006B",
+  "referenceDate": "2024-06-15",
+  "runLog": {
+    "programName": "CLM006B",
+    "rowsProcessed": 0,
+    "runEnded": "NORMALIZED_TS",
+    "runStarted": "NORMALIZED_TS",
+    "status": "COMPLETED"
+  },
+  "scenario": "scenario-03",
+  "tables": [
+    {
+      "businessKeys": [
+        "CLAIM_ID",
+        "RESERVE_ID"
+      ],
+      "columns": [
+        {
+          "name": "CLAIM_ID",
+          "type": "STRING"
+        },
+        {
+          "name": "RESERVE_ID",
+          "type": "STRING"
+        },
+        {
+          "name": "RESERVE_STATUS",
+          "type": "STATUS"
+        },
+        {
+          "name": "RESERVE_AMT",
+          "type": "NUMERIC(11,2)"
+        },
+        {
+          "name": "AUTHORITY_LIMIT",
+          "type": "NUMERIC(11,2)"
+        }
+      ],
+      "rows": [
+        {
+          "AUTHORITY_LIMIT": "5000.00",
+          "CLAIM_ID": "CLM0003001",
+          "RESERVE_AMT": "1000.00",
+          "RESERVE_ID": "RSV001",
+          "RESERVE_STATUS": "PD"
+        },
+        {
+          "AUTHORITY_LIMIT": "5000.00",
+          "CLAIM_ID": "CLM0003002",
+          "RESERVE_AMT": "2000.00",
+          "RESERVE_ID": "RSV002",
+          "RESERVE_STATUS": "OP"
+        }
+      ],
+      "tableName": "CLAIM_RESERVE_T"
+    },
+    {
+      "businessKeys": [
+        "CLAIM_ID",
+        "PAYMENT_AMT"
+      ],
+      "columns": [
+        {
+          "name": "PAYMENT_ID",
+          "type": "SURROGATE"
+        },
+        {
+          "name": "CLAIM_ID",
+          "type": "STRING"
+        },
+        {
+          "name": "PAYMENT_AMT",
+          "type": "NUMERIC(11,2)"
+        },
+        {
+          "name": "CREATED_AT",
+          "type": "TIMESTAMP"
+        }
+      ],
+      "rows": [],
+      "tableName": "CLAIM_PAYMENT_T"
+    },
+    {
+      "businessKeys": [
+        "PROGRAM_NAME",
+        "STATUS"
+      ],
+      "columns": [
+        {
+          "name": "RUN_ID",
+          "type": "SURROGATE"
+        },
+        {
+          "name": "PROGRAM_NAME",
+          "type": "STRING"
+        },
+        {
+          "name": "STATUS",
+          "type": "STATUS"
+        },
+        {
+          "name": "ROWS_PROCESSED",
+          "type": "INTEGER"
+        },
+        {
+          "name": "RUN_STARTED",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "RUN_ENDED",
+          "type": "TIMESTAMP"
+        }
+      ],
+      "rows": [
+        {
+          "PROGRAM_NAME": "CLM006B",
+          "ROWS_PROCESSED": 0,
+          "RUN_ENDED": "NORMALIZED_TS",
+          "RUN_ID": "SEQ_001",
+          "RUN_STARTED": "NORMALIZED_TS",
+          "STATUS": "COMPLETED"
+        }
+      ],
+      "tableName": "RPT_RUN_LOG_T"
+    }
+  ]
+}
