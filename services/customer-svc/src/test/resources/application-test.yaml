@@ -39,6 +39,16 @@ pcis:
     url: http://localhost:9999
   audit-svc:
     url: http://localhost:9998
+  policy-svc:
+    url: http://localhost:9997
+  billing-svc:
+    url: http://localhost:9996
+  claims-svc:
+    url: http://localhost:9995
+  classification:
+    registry-location: classpath:pcis-data-classification-test.yaml
+    drift-detection-enabled: false
+    loader-enabled: false
 
 logging:
   level:

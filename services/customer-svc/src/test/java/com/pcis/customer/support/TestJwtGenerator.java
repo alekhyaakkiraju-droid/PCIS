@@ -23,6 +23,10 @@ public final class TestJwtGenerator {
         .build();
   }
 
+  public static Jwt customerReader(String subject) {
+    return withScopes(subject, "customer:read");
+  }
+
   public static Jwt customerWriter(String subject) {
     return withScopes(subject, "customer:write");
   }

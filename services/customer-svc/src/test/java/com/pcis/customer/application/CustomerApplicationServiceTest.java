@@ -14,6 +14,8 @@ import com.pcis.customer.domain.DuplicateCandidate;
 import com.pcis.customer.domain.DuplicateDetectionService;
 import com.pcis.customer.domain.exception.DuplicateTaxIdException;
 import com.pcis.customer.domain.model.CreateCustomerCommand;
+import com.pcis.customer.domain.model.UpdateCustomerCommand;
+import com.pcis.customer.domain.repository.CustomerRepository;
 import com.pcis.customer.outbox.CustomerOutboxWriter;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +31,7 @@ class CustomerApplicationServiceTest {
 
   @Mock private DuplicateDetectionService duplicateDetectionService;
   @Mock private CustomerDomainService customerDomainService;
+  @Mock private CustomerRepository customerRepository;
   @Mock private CustomerOutboxWriter customerOutboxWriter;
 
   @InjectMocks private CustomerApplicationService customerApplicationService;
@@ -98,5 +101,56 @@ class CustomerApplicationServiceTest {
 
     assertThatThrownBy(() -> customerApplicationService.createWithOverride(command, "too short"))
         .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void findByIdDelegatesToDomainService() {
+    CustomerEntity customer = new CustomerEntity();
+    customer.setCustId(7);
+    when(customerDomainService.findById(7)).thenReturn(customer);
+
+    assertThat(customerApplicationService.findById(7)).isSameAs(customer);
+  }
+
+  @Test
+  void updateDelegatesToDomainService() {
+    UpdateCustomerCommand command = new UpdateCustomerCommand(7, "111", "Updated", "I", "A");
+    CustomerEntity updated = new CustomerEntity();
+    when(customerDomainService.update(command)).thenReturn(updated);
+
+    assertThat(customerApplicationService.update(command)).isSameAs(updated);
+  }
+
+  @Test
+  void searchReturnsRepositoryResults() {
+    CustomerEntity customer = new CustomerEntity();
+    when(customerRepository.search("Jane")).thenReturn(List.of(customer));
+
+    assertThat(customerApplicationService.search("Jane")).containsExactly(customer);
+  }
+
+  @Test
+  void searchRejectsBlankQuery() {
+    assertThatThrownBy(() -> customerApplicationService.search("  "))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void duplicateCheckExcludesSameCustomer() {
+    CustomerEntity customer = new CustomerEntity();
+    customer.setCustId(10);
+    customer.setTaxId("123456789");
+    DuplicateCandidate sameCustomer = new DuplicateCandidate(10, "Self", "A");
+    DuplicateCandidate otherCustomer = new DuplicateCandidate(5, "Other", "A");
+
+    when(customerDomainService.findById(10)).thenReturn(customer);
+    when(duplicateDetectionService.findByTaxId("123456789"))
+        .thenReturn(Optional.of(otherCustomer));
+
+    assertThat(customerApplicationService.duplicateCheck(10)).contains(otherCustomer);
+
+    when(duplicateDetectionService.findByTaxId("123456789"))
+        .thenReturn(Optional.of(sameCustomer));
+    assertThat(customerApplicationService.duplicateCheck(10)).isEmpty();
   }
 }
