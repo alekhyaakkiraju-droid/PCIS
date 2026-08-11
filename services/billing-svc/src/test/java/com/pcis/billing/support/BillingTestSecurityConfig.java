@@ -15,7 +15,7 @@ public class BillingTestSecurityConfig {
     return token ->
         Jwt.withTokenValue(token)
             .header("alg", "none")
-            .subject("billing-user")
+            .subject("bill-user")
             .claim("scope", List.of("billing:read", "billing:write"))
             .issuedAt(Instant.now())
             .expiresAt(Instant.now().plusSeconds(3600))

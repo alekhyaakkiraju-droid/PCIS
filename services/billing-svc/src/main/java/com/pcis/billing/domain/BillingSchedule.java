@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -48,6 +49,10 @@ public class BillingSchedule extends AuditableEntity {
 
   @Column(name = "REC_DELINQUENT")
   private Integer recDelinquent;
+
+  @Version
+  @Column(name = "VERSION", nullable = false)
+  private Long version;
 
   public Long getBillSchedId() {
     return billSchedId;
@@ -127,5 +132,9 @@ public class BillingSchedule extends AuditableEntity {
 
   public void setRecDelinquent(Integer recDelinquent) {
     this.recDelinquent = recDelinquent;
+  }
+
+  public Long getVersion() {
+    return version;
   }
 }

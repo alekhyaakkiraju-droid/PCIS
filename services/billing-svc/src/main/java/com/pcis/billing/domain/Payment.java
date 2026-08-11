@@ -20,7 +20,7 @@ public class Payment extends AuditableEntity {
   @Column(name = "PAYMENT_ID")
   private Long paymentId;
 
-  @Column(name = "PAYMENT_REF", length = 12)
+  @Column(name = "PAYMENT_REF", length = 14)
   private String paymentRef;
 
   @Column(name = "INVOICE_ID")
@@ -38,6 +38,13 @@ public class Payment extends AuditableEntity {
   @Column(name = "PAYMENT_STATUS", length = 4, columnDefinition = "char(4)")
   @JdbcTypeCode(SqlTypes.CHAR)
   private String paymentStatus;
+
+  @Column(name = "POL_NBR", length = 12)
+  private String polNbr;
+
+  @Column(name = "PAYMENT_METHOD", length = 2, columnDefinition = "char(2)")
+  @JdbcTypeCode(SqlTypes.CHAR)
+  private String paymentMethod;
 
   public Long getPaymentId() {
     return paymentId;
@@ -93,5 +100,21 @@ public class Payment extends AuditableEntity {
 
   public void setPaymentStatus(String paymentStatus) {
     this.paymentStatus = paymentStatus;
+  }
+
+  public String getPolNbr() {
+    return polNbr;
+  }
+
+  public void setPolNbr(String polNbr) {
+    this.polNbr = polNbr;
+  }
+
+  public String getPaymentMethod() {
+    return paymentMethod;
+  }
+
+  public void setPaymentMethod(String paymentMethod) {
+    this.paymentMethod = paymentMethod;
   }
 }
