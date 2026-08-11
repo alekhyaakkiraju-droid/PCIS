@@ -1,0 +1,17 @@
+-- Flyway template: copy into each owning service's db/migration directory.
+-- Creates the audit-specific transactional outbox table (distinct from domain outbox_events).
+CREATE TABLE IF NOT EXISTS audit_outbox (
+    ID BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    PAYLOAD JSONB NOT NULL,
+    IDEMPOTENCY_KEY UUID NOT NULL,
+    STATUS VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    ATTEMPT_COUNT INTEGER NOT NULL DEFAULT 0,
+    NEXT_ATTEMPT_AT TIMESTAMP,
+    CREATED_AT TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    LAST_ERROR VARCHAR(500),
+    CONSTRAINT uq_audit_outbox_idempotency UNIQUE (IDEMPOTENCY_KEY)
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_outbox_relay
+    ON audit_outbox (STATUS, NEXT_ATTEMPT_AT)
+    WHERE STATUS = 'PENDING';

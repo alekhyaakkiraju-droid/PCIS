@@ -22,7 +22,9 @@
     <module>pcis-test-support</module>
     <module>pcis-schema</module>
     <module>pcis-audit-contract</module>
+    <module>pcis-audit-outbox</module>
     <module>pcis-outbox</module>
     <module>pcis-classification</module>
+    <module>pcis-pii-masking</module>
   </modules>
 </project>
