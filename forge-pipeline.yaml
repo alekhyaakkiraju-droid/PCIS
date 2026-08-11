@@ -49,6 +49,17 @@ stages:
           mvn -B --no-transfer-progress test
           -Dexcluded.groups=GoldenOutput
 
+      - id: flyway-validation-gate
+        name: Flyway Migration Validation Gate
+        failClosed: true
+        env:
+          PCIS_USE_TESTCONTAINERS: "1"
+        run: >
+          mvn -B --no-transfer-progress test
+          -pl shared-libs/pcis-schema
+          -Dtest=FlywayMigrationValidationGateTest
+          -Dsurefire.failIfNoTests=true
+
       - id: golden-output-gate
         name: Golden-Output Regression Gate
         # fail-closed: build fails if no GoldenOutput tests are found OR if any diverge
