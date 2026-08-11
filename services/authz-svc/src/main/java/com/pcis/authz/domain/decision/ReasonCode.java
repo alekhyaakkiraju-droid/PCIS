@@ -6,5 +6,9 @@ public enum ReasonCode {
   NO_GRANT,
   APPROVAL_MISSING,
   AUTHORITY_LIMIT_EXCEEDED,
-  PAYMENT_AUTHORITY_GRANTED
+  PAYMENT_AUTHORITY_GRANTED,
+  /** Approver and disburser are the same principal (segregation-of-duties violation). */
+  SELF_APPROVAL_FORBIDDEN,
+  /** Batch service accounts may disburse but cannot create approvals. */
+  BATCH_CANNOT_APPROVE
 }

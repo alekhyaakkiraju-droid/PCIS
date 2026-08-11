@@ -32,6 +32,7 @@ class PaymentAuthorityServiceTest {
   @Mock private ApprovalRepository approvalRepository;
   @Mock private ClaimAdjusterRepository claimAdjusterRepository;
   @Mock private ClaimReserveRepository claimReserveRepository;
+  @Mock private PermissionResolver permissionResolver;
 
   private PaymentAuthorityService service;
 
@@ -39,7 +40,10 @@ class PaymentAuthorityServiceTest {
   void setUp() {
     service =
         new PaymentAuthorityService(
-            approvalRepository, claimAdjusterRepository, claimReserveRepository);
+            approvalRepository,
+            claimAdjusterRepository,
+            claimReserveRepository,
+            permissionResolver);
   }
 
   @Test
@@ -143,6 +147,101 @@ class PaymentAuthorityServiceTest {
     assertThat(result.approvalId()).isEqualTo(2001L);
     assertThat(result.approverPrincipal()).isEqualTo("ADJ1000002");
     assertThat(result.authorityLimitApplied()).isEqualByComparingTo("25000.00");
+  }
+
+  @Test
+  void deniesSelfApprovalWhenApproverEqualsDisburser() {
+    stubApprovedScenario(new BigDecimal("0.00"), new BigDecimal("25000.00"));
+    when(claimAdjusterRepository.findAuthorityByAdjusterId("ADJ1000002"))
+        .thenReturn(Optional.of(adjuster("ADJ1000002", new BigDecimal("25000.00"))));
+
+    var result =
+        service.checkPaymentAuthority(
+            CLAIM_ID, RESERVE_ID, new BigDecimal("1000.00"), "ADJ1000002");
+
+    assertThat(result.decision()).isEqualTo(AuthorizationDecision.DENY);
+    assertThat(result.reasonCode()).isEqualTo(ReasonCode.SELF_APPROVAL_FORBIDDEN);
+    assertThat(result.maskedApproverPrincipal()).isEqualTo("***0002");
+    assertThat(result.maskedDisburserPrincipal()).isEqualTo("***0002");
+  }
+
+  @Test
+  void deniesSelfApprovalCaseInsensitively() {
+    stubApprovedScenario(new BigDecimal("0.00"), new BigDecimal("25000.00"));
+    when(claimAdjusterRepository.findAuthorityByAdjusterId("adj1000002"))
+        .thenReturn(Optional.of(adjuster("adj1000002", new BigDecimal("25000.00"))));
+
+    var result =
+        service.checkPaymentAuthority(
+            CLAIM_ID, RESERVE_ID, new BigDecimal("1000.00"), "adj1000002");
+
+    assertThat(result.reasonCode()).isEqualTo(ReasonCode.SELF_APPROVAL_FORBIDDEN);
+  }
+
+  @Test
+  void permitsDifferentApproverAndDisburser() {
+    stubApprovedScenario(new BigDecimal("0.00"), new BigDecimal("25000.00"));
+
+    var result =
+        service.checkPaymentAuthority(
+            CLAIM_ID, RESERVE_ID, new BigDecimal("1000.00"), ADJUSTER_ID);
+
+    assertThat(result.decision()).isEqualTo(AuthorizationDecision.PERMIT);
+    assertThat(result.reasonCode()).isEqualTo(ReasonCode.PAYMENT_AUTHORITY_GRANTED);
+  }
+
+  @Test
+  void deniesBatchPrincipalAttemptingApprovePayment() {
+    when(permissionResolver.resolveRoleCodes("svc-claim-payment-job"))
+        .thenReturn(java.util.List.of("BATCH_SVC"));
+
+    var response =
+        service.evaluate(
+            "svc-claim-payment-job",
+            new com.pcis.authz.contract.AuthorizationRequest(
+                "claim",
+                "APPROVE_PAYMENT",
+                java.util.Map.of(
+                    "claimId", CLAIM_ID,
+                    "reserveId", RESERVE_ID,
+                    "originalRequesterId", "ADJ1000001")),
+            "corr-1");
+
+    assertThat(response.decision()).isEqualTo(AuthorizationDecision.DENY);
+    assertThat(response.reasonCode()).isEqualTo(ReasonCode.BATCH_CANNOT_APPROVE);
+  }
+
+  @Test
+  void deniesApprovePaymentWhenApproverEqualsOriginalRequester() {
+    when(permissionResolver.resolveRoleCodes("ADJ1000001"))
+        .thenReturn(java.util.List.of("SUPERVISOR"));
+
+    var response =
+        service.evaluate(
+            "ADJ1000001",
+            new com.pcis.authz.contract.AuthorizationRequest(
+                "claim",
+                "APPROVE_PAYMENT",
+                java.util.Map.of(
+                    "claimId", CLAIM_ID,
+                    "reserveId", RESERVE_ID,
+                    "originalRequesterId", "ADJ1000001")),
+            "corr-2");
+
+    assertThat(response.reasonCode()).isEqualTo(ReasonCode.SELF_APPROVAL_FORBIDDEN);
+  }
+
+  @Test
+  void permitsBatchPrincipalDisbursingAgainstDifferentUserApproval() {
+    stubApprovedScenario(new BigDecimal("0.00"), new BigDecimal("25000.00"));
+    when(claimAdjusterRepository.findAuthorityByAdjusterId("svc-claim-payment-job"))
+        .thenReturn(Optional.of(adjuster("svc-claim-payment-job", new BigDecimal("25000.00"))));
+
+    var result =
+        service.checkPaymentAuthority(
+            CLAIM_ID, RESERVE_ID, new BigDecimal("1000.00"), "svc-claim-payment-job");
+
+    assertThat(result.decision()).isEqualTo(AuthorizationDecision.PERMIT);
   }
 
   private void stubApprovedScenario(BigDecimal paidToDate, BigDecimal authorityLimit) {

@@ -53,7 +53,26 @@ public class AuthorizationDecisionOutboxWriter {
     if (!request.context().isEmpty()) {
       payload.put("context", request.context());
     }
+    appendSodFields(payload, response.evaluatedPermissions());
     return payload;
+  }
+
+  private static void appendSodFields(
+      Map<String, Object> payload, java.util.List<String> evaluatedPermissions) {
+    if (evaluatedPermissions == null) {
+      return;
+    }
+    for (String permission : evaluatedPermissions) {
+      if (permission.startsWith("sod:maskedApprover=")) {
+        payload.put("approverPrincipal", permission.substring("sod:maskedApprover=".length()));
+      } else if (permission.startsWith("sod:maskedDisburser=")) {
+        payload.put("disburserPrincipal", permission.substring("sod:maskedDisburser=".length()));
+      } else if (permission.startsWith("sod:claimId=")) {
+        payload.put("claimId", permission.substring("sod:claimId=".length()));
+      } else if (permission.startsWith("sod:reserveId=")) {
+        payload.put("reserveId", Long.parseLong(permission.substring("sod:reserveId=".length())));
+      }
+    }
   }
 
   private static String truncatePrincipal(String principalId) {
