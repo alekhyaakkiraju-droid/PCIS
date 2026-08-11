@@ -44,16 +44,22 @@ class ConfigSchemaIntegrationTest {
   }
 
   @Test
-  void seedsTwelveTunablesIncludingBatchActors() {
+  void seedsThirteenTunablesIncludingBatchRunLog() {
     Integer count =
         jdbcTemplate.queryForObject("SELECT COUNT(*) FROM config_tunable_t", Integer.class);
-    assertThat(count).isEqualTo(12);
+    assertThat(count).isEqualTo(13);
 
     String auditActor =
         jdbcTemplate.queryForObject(
             "SELECT value_text FROM config_tunable_t WHERE tunable_key = 'batch.actor.audit'",
             String.class);
     assertThat(auditActor).isEqualTo("BATCH_AUD");
+
+    String runLogEnabled =
+        jdbcTemplate.queryForObject(
+            "SELECT value_text FROM config_tunable_t WHERE tunable_key = 'batch.runLog.enabled'",
+            String.class);
+    assertThat(runLogEnabled).isEqualTo("true");
   }
 
   @Test

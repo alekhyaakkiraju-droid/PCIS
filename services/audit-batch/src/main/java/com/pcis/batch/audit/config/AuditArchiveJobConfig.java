@@ -6,9 +6,10 @@ import com.pcis.batch.audit.domain.AuditLogRow;
 import com.pcis.batch.audit.infrastructure.ArchiveWriter;
 import com.pcis.batch.audit.infrastructure.ExpiredAuditLogReader;
 import com.pcis.batch.audit.job.PartitionDetachTasklet;
-import com.pcis.batch.audit.job.RunLogTasklet;
 import com.pcis.batch.audit.job.VerificationTasklet;
 import com.pcis.batch.common.BatchExitCodeJobListener;
+import com.pcis.batch.common.BatchJobRunLogSupport;
+import com.pcis.batch.common.BatchRunLogTasklet;
 import com.pcis.batch.common.OutboxEventWriter;
 import com.pcis.observability.metrics.BatchJobExitCodeListener;
 import java.time.Clock;
@@ -97,20 +98,14 @@ public class AuditArchiveJobConfig {
   Step runLogStep(
       JobRepository jobRepository,
       PlatformTransactionManager transactionManager,
-      RunLogTasklet runLogTasklet) {
-    return new StepBuilder("runLogStep", jobRepository)
-        .tasklet(runLogTasklet, transactionManager)
-        .build();
+      BatchRunLogTasklet auditRunLogTasklet) {
+    return BatchJobRunLogSupport.runLogStep(
+        "runLogStep", jobRepository, transactionManager, auditRunLogTasklet);
   }
 
   @Bean
   VerificationTasklet verificationTasklet() {
     return new VerificationTasklet();
-  }
-
-  @Bean
-  RunLogTasklet runLogTasklet(JdbcTemplate jdbcTemplate, AuditArchiveProperties properties) {
-    return new RunLogTasklet(jdbcTemplate, properties);
   }
 
   @Bean
