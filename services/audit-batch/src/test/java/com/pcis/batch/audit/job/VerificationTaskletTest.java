@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.pcis.batch.audit.infrastructure.ArchiveWriter;
-import com.pcis.observability.metrics.BatchJobExitCodeListener;
+import com.pcis.batch.common.BatchJobExecutionListener;
 import org.junit.jupiter.api.Test;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.StepContribution;
@@ -21,8 +21,14 @@ class VerificationTaskletTest {
   @Test
   void execute_succeedsWhenCountsMatch() throws Exception {
     StepExecution stepExecution = MetaDataInstanceFactory.createStepExecution();
-    stepExecution.getExecutionContext().putLong(ArchiveWriter.ARCHIVED_COUNT_KEY, 2L);
-    stepExecution.getExecutionContext().putLong(ArchiveWriter.DELETED_COUNT_KEY, 2L);
+    stepExecution
+        .getJobExecution()
+        .getExecutionContext()
+        .putLong(ArchiveWriter.ARCHIVED_COUNT_KEY, 2L);
+    stepExecution
+        .getJobExecution()
+        .getExecutionContext()
+        .putLong(ArchiveWriter.DELETED_COUNT_KEY, 2L);
 
     RepeatStatus status =
         tasklet.execute(new StepContribution(stepExecution), chunkContext(stepExecution));
@@ -32,15 +38,21 @@ class VerificationTaskletTest {
             stepExecution
                 .getJobExecution()
                 .getExecutionContext()
-                .getLong(ArchiveWriter.ARCHIVED_COUNT_KEY))
-        .isEqualTo(2L);
+                .getString(ArchiveJobSummaryListener.VERIFICATION_STATUS_KEY))
+        .isEqualTo("PASSED");
   }
 
   @Test
   void execute_setsExitCodeTwoOnMismatch() {
     StepExecution stepExecution = MetaDataInstanceFactory.createStepExecution();
-    stepExecution.getExecutionContext().putLong(ArchiveWriter.ARCHIVED_COUNT_KEY, 2L);
-    stepExecution.getExecutionContext().putLong(ArchiveWriter.DELETED_COUNT_KEY, 1L);
+    stepExecution
+        .getJobExecution()
+        .getExecutionContext()
+        .putLong(ArchiveWriter.ARCHIVED_COUNT_KEY, 2L);
+    stepExecution
+        .getJobExecution()
+        .getExecutionContext()
+        .putLong(ArchiveWriter.DELETED_COUNT_KEY, 1L);
 
     assertThatThrownBy(
             () ->
@@ -50,8 +62,13 @@ class VerificationTaskletTest {
 
     JobExecution jobExecution = stepExecution.getJobExecution();
     assertThat(
-            jobExecution.getExecutionContext().getInt(BatchJobExitCodeListener.EXIT_CODE_CONTEXT_KEY))
+            jobExecution.getExecutionContext().getInt(BatchJobExecutionListener.EXIT_CODE_CONTEXT_KEY))
         .isEqualTo(VerificationTasklet.VERIFY_MISMATCH_EXIT_CODE);
+    assertThat(
+            jobExecution
+                .getExecutionContext()
+                .getString(ArchiveJobSummaryListener.VERIFICATION_STATUS_KEY))
+        .isEqualTo("MISMATCH");
   }
 
   private static ChunkContext chunkContext(StepExecution stepExecution) {

@@ -15,7 +15,7 @@ public class OutboxProperties {
   private int relayMaxRetries = 5;
 
   /** Kafka topic for published domain events. */
-  private String kafkaTopic = "pcis.domain.events";
+  private String kafkaTopic = "audit-events";
 
   /** Relay operator identity written to {@code UPD_USER}. */
   private String relayUser = "OUTBOXRLY";

@@ -8,11 +8,22 @@ spring:
   autoconfigure:
     exclude:
       - com.pcis.batch.auth.config.BatchAuthAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
 
 pcis:
+  classification:
+    registry-location: classpath:pcis-data-classification-test.yaml
+    drift-detection-enabled: false
+    loader-enabled: false
   audit:
     retention-days: 365
     chunk-size: 1000
+    retention:
+      public-days: 365
+      internal-days: 365
+      confidential-days: 730
+      restricted-days: 2555
   tunables:
     numeric-defaults:
       audit.retention.days: 365

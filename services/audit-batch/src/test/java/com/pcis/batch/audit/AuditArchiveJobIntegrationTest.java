@@ -68,6 +68,8 @@ class AuditArchiveJobIntegrationTest {
             jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM RPT_RUN_LOG_T WHERE PGM_NAME = 'AUD002B'", Integer.class))
         .isEqualTo(1);
+    assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM archive_run_log", Integer.class))
+        .isEqualTo(1);
   }
 
   @Test

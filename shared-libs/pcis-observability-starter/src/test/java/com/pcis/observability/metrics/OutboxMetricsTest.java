@@ -63,6 +63,19 @@ class OutboxMetricsTest {
   }
 
   @Test
+  void registersRelayCountersAndTimer() {
+    metrics.recordPublished(java.time.Duration.ofMillis(25));
+    metrics.recordRelayError();
+    metrics.recordDeadLetter();
+
+    assertThat(registry.find(OutboxMetrics.PUBLISHED_METRIC).counter().count()).isEqualTo(1.0);
+    assertThat(registry.find(OutboxMetrics.RELAYED_METRIC).counter().count()).isEqualTo(1.0);
+    assertThat(registry.find(OutboxMetrics.RELAY_ERRORS_METRIC).counter().count()).isEqualTo(1.0);
+    assertThat(registry.find(OutboxMetrics.DEAD_LETTER_METRIC).counter().count()).isEqualTo(1.0);
+    assertThat(registry.find(OutboxMetrics.PUBLISH_DURATION_METRIC).timer().count()).isEqualTo(1L);
+  }
+
+  @Test
   void registersGaugesWithServiceTag() {
     assertThat(registry.find(OutboxMetrics.PENDING_METRIC).tags("service", "audit-svc").gauge())
         .isNotNull();

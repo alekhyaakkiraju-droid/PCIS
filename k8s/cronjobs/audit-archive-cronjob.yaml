@@ -1,0 +1,56 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: audit-archive-job
+  labels:
+    app: audit-archive-job
+    app.kubernetes.io/part-of: pcis
+    pcis.batch/program: AUD002B
+spec:
+  schedule: "0 2 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        metadata:
+          labels:
+            app: audit-archive-job
+        spec:
+          serviceAccountName: audit-archive-job
+          restartPolicy: Never
+          containers:
+            - name: audit-batch
+              image: ghcr.io/pcis/audit-batch:1.0.0
+              command:
+                - java
+                - -jar
+                - /app/batch.jar
+                - --spring.batch.job.name=auditArchiveJob
+              env:
+                - name: SPRING_PROFILES_ACTIVE
+                  value: batch
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: audit-batch-db
+                      key: url
+                - name: DATABASE_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: audit-batch-db
+                      key: username
+                - name: DATABASE_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: audit-batch-db
+                      key: password
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 1Gi
+                limits:
+                  cpu: "2"
+                  memory: 2Gi
