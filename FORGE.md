@@ -56,3 +56,10 @@
 - **Files:** 8 (+507/-17)
 - **Duration:** 548ss
 - **Approach:** Updated all 15 V1 PostgreSQL SEQUENCE objects from START WITH 100000 to START WITH 10000000 (with MAXVALUE extended to 9999999999) to prevent collision with legacy Db2 for i sequence values during the Strangler Fig parallel-run period. Updated V1BaselineMigrationTest to assert the new start value. Created docs/key-generation-strategy.md with full SEQUENCE vs IDENTITY table inventory, JPA mapping patterns, allocationSize=1 rationale, and composite key exceptions. Added jakarta.persistence-api (provided scope) to pcis-schema pom.xml and created IdentityKeyEntity and SequenceKeyEntity @MappedSuperclass base classes. Created two tests: KeyGenerationStrategyTest (pure reflection, no Docker) validates base class annotations, and KeyGenerationIntegrationTest (Testcontainers PostgreSQL 17) verifies NEXTVAL on business sequences returns >= 10000000 and IDENTITY inserts produce low-range surrogates.
+
+## WO-158: User Story: WO-158 - Db2-to-PostgreSQL SQL Construct Translation Reference
+- **Status:** completed
+- **Commit:** `7707453`
+- **Files:** 2 (+808/-0)
+- **Duration:** 372ss
+- **Approach:** Created the authoritative Db2-for-i to PostgreSQL SQL construct translation reference document (docs/db2-to-postgresql-translation.md) and a companion Testcontainers integration test class (SqlTranslationValidationTest.java). The reference document covers all 10 translation categories from the WO with before/after SQL examples, affected COBOL program inventory, and appendix tables. The test class has 20 test methods running against PostgreSQL 17 via Testcontainers — no V1 migration required since all tests are self-contained (use temp tables or literal expressions). Placed in com.pcis.migration package under pcis-schema since that module already has the Testcontainers/JUnit infrastructure needed.
