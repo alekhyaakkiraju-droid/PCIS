@@ -1,0 +1,10 @@
+[
+  {
+    "id": 1,
+    "purge_type": "PARTITION_DROP",
+    "target_identifier": "audit_log_t_y2022m01",
+    "tier": "RESTRICTED",
+    "retention_days": 2555,
+    "evidence_hash": "sample-sha256-for-contract-tests-only"
+  }
+]

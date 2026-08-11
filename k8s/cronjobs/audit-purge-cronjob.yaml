@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: audit-purge-job
+  labels:
+    app: audit-batch
+    job: audit-purge
+spec:
+  schedule: "0 3 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app: audit-batch
+            job: audit-purge
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: audit-purge
+              image: pcis/audit-batch:latest
+              env:
+                - name: SPRING_BATCH_JOB_NAME
+                  value: auditPurgeJob
+                - name: PCIS_AUDIT_PURGE_ENABLED
+                  value: "true"
