@@ -2,16 +2,18 @@ package com.pcis.premium.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import com.pcis.premium.config.PremiumRatingProperties;
-import com.pcis.premium.domain.RateLookupNotFoundException;
-import com.pcis.premium.infrastructure.RateTableRepository;
-import com.pcis.premium.infrastructure.RateTableRepository.RateFactorRow;
-import com.pcis.premium.infrastructure.RateTableRepository.RateTableRow;
+import com.pcis.premium.domain.RatingOutcome;
+import com.pcis.premium.dto.CreateCalculationRequest;
+import com.pcis.premium.infrastructure.PremiumCalcRepository;
+import com.pcis.premium.model.RatingResponse;
+import com.pcis.premium.model.UnderwritingDecision;
+import com.pcis.premium.service.RatingPipelineOrchestrator;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,68 +23,63 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class PremiumRatingServiceTest {
 
-  @Mock private RateTableRepository rateTableRepository;
+  @Mock private RatingPipelineOrchestrator orchestrator;
+  @Mock private PremiumCalcRepository premiumCalcRepository;
 
   private PremiumRatingService service;
 
   @BeforeEach
   void setUp() {
-    PremiumRatingProperties properties = new PremiumRatingProperties();
-    properties.setDecimalScale(2);
-    service = new PremiumRatingService(rateTableRepository, properties);
+    service = new PremiumRatingService(orchestrator, premiumCalcRepository);
   }
 
   @Test
-  void lookupBaseRateAndFactorsMultipliesAndRoundsToConfiguredScale() {
-    var rateTable =
-        new RateTableRow(1L, "HOME", "TX", new BigDecimal("1200.00"), LocalDate.now());
-    var factors =
-        List.of(new RateFactorRow(10L, 1L, "OCCUPANCY", new BigDecimal("1.0500")));
+  void createCalculationMapsOrchestratorResponse() {
+    when(orchestrator.orchestrate(any()))
+        .thenReturn(
+            new RatingResponse(
+                "calc-1",
+                RatingOutcome.ACCEPT,
+                UnderwritingDecision.APPROVE,
+                "00",
+                new BigDecimal("35.0000"),
+                "B",
+                new BigDecimal("1200.00"),
+                new BigDecimal("1.0500"),
+                new BigDecimal("1260.00"),
+                new BigDecimal("1260.00"),
+                new BigDecimal("1260.00"),
+                new BigDecimal("1323.00"),
+                null,
+                null,
+                List.of(),
+                List.of(new BigDecimal("1323.00")),
+                false));
 
-    when(rateTableRepository.findEffectiveRateTable("HOME", "TX")).thenReturn(java.util.Optional.of(rateTable));
-    when(rateTableRepository.loadFactorsForRateTable(1L)).thenReturn(factors);
+    var response =
+        service.createCalculation(new CreateCalculationRequest("HOME", "TX", null, null, null, null, null, null));
 
-    var result = service.lookupBaseRateAndFactors("HOME", "TX");
-
-    assertThat(result.baseRate()).isEqualByComparingTo("1200.00");
-    assertThat(result.combinedFactor()).isEqualByComparingTo("1.0500");
-    assertThat(result.basePremium()).isEqualByComparingTo("1260.00");
-    assertThat(result.factors()).hasSize(1);
+    assertThat(response.calculationId()).isEqualTo("calc-1");
+    assertThat(response.returnCode()).isEqualTo("00");
+    assertThat(response.finalPremium()).isEqualByComparingTo("1323.00");
   }
 
   @Test
-  void lookupBaseRateAndFactorsCombinesMultipleFactors() {
-    var rateTable =
-        new RateTableRow(2L, "HOME", "TX", new BigDecimal("1000.00"), LocalDate.now());
-    var factors =
-        List.of(
-            new RateFactorRow(1L, 2L, "OCCUPANCY", new BigDecimal("1.0500")),
-            new RateFactorRow(2L, 2L, "CONSTRUCTION", new BigDecimal("1.0200")));
+  void getCalculationLoadsStoredSnapshot() {
+    when(premiumCalcRepository.findBySnapshotId("calc-1"))
+        .thenReturn(
+            Optional.of(
+                new PremiumCalcRepository.StoredCalculation(
+                    1L, "HO123", new BigDecimal("1323.00"), null, "calc-1")));
 
-    when(rateTableRepository.findEffectiveRateTable("HOME", "TX")).thenReturn(java.util.Optional.of(rateTable));
-    when(rateTableRepository.loadFactorsForRateTable(2L)).thenReturn(factors);
-
-    var result = service.lookupBaseRateAndFactors("HOME", "TX");
-
-    assertThat(result.combinedFactor()).isEqualByComparingTo("1.0710");
-    assertThat(result.basePremium()).isEqualByComparingTo("1071.00");
+    var response = service.getCalculation("calc-1");
+    assertThat(response.calculationId()).isEqualTo("calc-1");
+    assertThat(response.finalPremium()).isEqualByComparingTo("1323.00");
   }
 
   @Test
-  void lookupBaseRateAndFactorsThrowsWhenRateTableMissing() {
-    when(rateTableRepository.findEffectiveRateTable("AUTO", "CA"))
-        .thenReturn(java.util.Optional.empty());
-
-    assertThatThrownBy(() -> service.lookupBaseRateAndFactors("AUTO", "CA"))
-        .isInstanceOf(RateLookupNotFoundException.class)
-        .hasMessageContaining("AUTO")
-        .hasMessageContaining("CA");
-  }
-
-  @Test
-  void lookupBaseRateAndFactorsRejectsBlankTerritory() {
-    assertThatThrownBy(() -> service.lookupBaseRateAndFactors("HOME", " "))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("territory");
+  void getCalculationRejectsBlankId() {
+    assertThatThrownBy(() -> service.ensureReadPathWired(" "))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 }

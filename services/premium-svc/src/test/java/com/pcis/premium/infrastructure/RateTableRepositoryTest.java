@@ -67,6 +67,8 @@ class RateTableRepositoryTest {
   }
 
   private static void applyMigrationsAndFixtures(JdbcClient jdbcClient) throws Exception {
+    jdbcClient.sql("DROP SCHEMA IF EXISTS public CASCADE").update();
+    jdbcClient.sql("CREATE SCHEMA public").update();
     String migration =
         StreamUtils.copyToString(
             new ClassPathResource("db/migration/V1__premium_rating_tables.sql").getInputStream(),

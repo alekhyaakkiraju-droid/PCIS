@@ -1,16 +1,22 @@
 package com.pcis.premium.contract;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.pcis.premium.application.PremiumRatingService;
+import com.pcis.premium.dto.PremiumCalculationResponse;
+import com.pcis.premium.exception.GlobalExceptionHandler;
 import com.pcis.premium.support.PremiumTestSecurityConfig;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.parser.OpenAPIV3Parser;
+import java.math.BigDecimal;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -24,7 +30,8 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import({
   com.pcis.premium.config.SecurityConfig.class,
   com.pcis.premium.controller.PremiumRatingController.class,
-  PremiumTestSecurityConfig.class
+  PremiumTestSecurityConfig.class,
+  GlobalExceptionHandler.class
 })
 class PremiumRatingProviderContractTest {
 
@@ -47,7 +54,27 @@ class PremiumRatingProviderContractTest {
   }
 
   @Test
-  void providerPostCalculationReturnsContractProblemDetailWhenNotImplemented() throws Exception {
+  void providerPostCalculationReturnsContractResponseShape() throws Exception {
+    when(ratingService.createCalculation(any()))
+        .thenReturn(
+            new PremiumCalculationResponse(
+                "calc-policy-001",
+                "00",
+                "APPROVE",
+                new BigDecimal("72.5000"),
+                "STANDARD",
+                new BigDecimal("1200.00"),
+                new BigDecimal("1.0500"),
+                new BigDecimal("1260.00"),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                new BigDecimal("1260.00"),
+                null,
+                null,
+                List.of()));
+
     mockMvc
         .perform(
             post("/api/v1/premium/calculations")
@@ -57,12 +84,10 @@ class PremiumRatingProviderContractTest {
                     """
                     {"policyType":"HOME","coverageType":"HO3","territory":"TX","state":"TX","limit":"250000.00"}
                     """))
-        .andExpect(status().isNotImplemented())
-        .andExpect(jsonPath("$.type").exists())
-        .andExpect(jsonPath("$.title").exists())
-        .andExpect(jsonPath("$.status").value(501))
-        .andExpect(jsonPath("$.detail").exists())
-        .andExpect(jsonPath("$.code").value("PRM_NOT_IMPLEMENTED"))
-        .andExpect(jsonPath("$.correlation_id").exists());
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.calculationId").exists())
+        .andExpect(jsonPath("$.returnCode").value("00"))
+        .andExpect(jsonPath("$.underwritingDecision").value("APPROVE"))
+        .andExpect(jsonPath("$.finalPremium").value("1260.00"));
   }
 }
