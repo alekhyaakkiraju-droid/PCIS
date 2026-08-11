@@ -14,8 +14,6 @@ locals {
   service_namespace  = coalesce(var.service_namespace, "pcis-${var.environment_name}")
 
   writer_az = var.availability_zones[0]
-  # Multi-AZ (prd): reader in a different AZ. Single-AZ (dev/tst): colocate for cost.
-  reader_az = var.multi_az && length(var.availability_zones) > 1 ? var.availability_zones[1] : var.availability_zones[0]
 }
 
 resource "aws_db_subnet_group" "aurora" {
@@ -161,36 +159,5 @@ resource "aws_rds_cluster_instance" "writer" {
   tags = merge(local.base_tags, {
     Name = "${local.cluster_identifier}-writer"
     Role = "writer"
-  })
-}
-
-resource "aws_rds_cluster_instance" "reader" {
-  identifier         = "${local.cluster_identifier}-reader"
-  cluster_identifier = aws_rds_cluster.aurora.id
-  instance_class     = var.instance_class
-  engine             = aws_rds_cluster.aurora.engine
-  engine_version     = aws_rds_cluster.aurora.engine_version
-
-  # Never auto-promote — reporting replica stays a reader unless operators intervene.
-  promotion_tier = 15
-
-  availability_zone = local.reader_az
-
-  db_subnet_group_name = aws_db_subnet_group.aurora.name
-  publicly_accessible  = false
-
-  performance_insights_enabled          = var.performance_insights_enabled
-  performance_insights_kms_key_id       = var.performance_insights_enabled ? aws_kms_key.aurora.arn : null
-  performance_insights_retention_period = var.performance_insights_enabled ? 7 : null
-
-  monitoring_interval = var.enhanced_monitoring_interval
-  monitoring_role_arn = var.enhanced_monitoring_interval > 0 ? aws_iam_role.rds_enhanced_monitoring[0].arn : null
-
-  auto_minor_version_upgrade = true
-  apply_immediately          = var.environment_name != "prd"
-
-  tags = merge(local.base_tags, {
-    Name = "${local.cluster_identifier}-reader"
-    Role = "reader"
   })
 }

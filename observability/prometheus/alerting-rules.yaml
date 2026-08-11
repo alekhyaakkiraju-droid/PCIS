@@ -122,6 +122,28 @@ groups:
   - name: pcis-infra-alerts
     interval: 60s
     rules:
+      - alert: AuroraReplicaLagWarning
+        expr: |
+          max(pcis_reporting_replica_lag_seconds) > 60
+        for: 2m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Reporting replica lag above 60s for {{ $labels.service }}"
+          runbook_url: "docs/runbooks/aurora-replica-lag.md#aurorareplicalagwarning"
+
+      - alert: AuroraReplicaLagCritical
+        expr: |
+          max(pcis_reporting_replica_lag_seconds) > 300
+        for: 1m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Reporting replica lag above 300s for {{ $labels.service }}"
+          runbook_url: "docs/runbooks/aurora-replica-lag.md#aurorareplicalagcritical"
+
       - alert: CertificateExpirySoon
         expr: ssl_certificate_expiry_seconds < 1209600
         for: 1h

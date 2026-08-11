@@ -60,7 +60,6 @@ func TestDatabaseModuleSourceContract(t *testing.T) {
 	assert.Contains(t, main, `iam_database_authentication_enabled = true`)
 	assert.Contains(t, main, `backup_retention_period`)
 	assert.Contains(t, main, `promotion_tier = 0`)
-	assert.Contains(t, main, `promotion_tier = 15`)
 	assert.Contains(t, main, `from_port   = 5432`)
 	assert.Contains(t, main, `manage_master_user_password = true`)
 

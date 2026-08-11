@@ -1,6 +1,6 @@
 # PCIS Database Module (WO-131)
 
-Provisions an **Aurora PostgreSQL 17** cluster with a writer, a reporting read replica, customer-managed KMS encryption, TLS-only connections, 35-day automated backups (PITR), and IRSA roles for IAM database authentication.
+Provisions an **Aurora PostgreSQL 17** cluster with a writer, customer-managed KMS encryption, TLS-only connections, 35-day automated backups (PITR), and IRSA roles for IAM database authentication. The reporting read replica is provisioned by the `aurora-replica` module (WO-233).
 
 ## Layout
 
