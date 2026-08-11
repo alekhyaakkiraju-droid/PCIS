@@ -1,0 +1,6 @@
+dependencies:
+- name: pcis-common
+  repository: file://../pcis-common
+  version: 0.1.0
+digest: sha256:23cf5e3c7d68b498780f9a26f172dd2ea4cae8881abdc5eaee16c047412aa879
+generated: "2026-08-10T23:21:26.315547-05:00"
