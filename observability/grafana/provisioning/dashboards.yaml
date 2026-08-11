@@ -1,0 +1,13 @@
+apiVersion: 1
+
+providers:
+  - name: pcis-dashboards
+    orgId: 1
+    folder: PCIS
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 60
+    allowUiUpdates: false
+    options:
+      path: /etc/grafana/provisioning/dashboards/pcis
+      foldersFromFilesStructure: false
