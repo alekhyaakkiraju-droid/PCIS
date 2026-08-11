@@ -8,7 +8,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pcis.observability.metrics.BatchJobExitCodeListener;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -23,7 +22,7 @@ class BatchCommonTest {
   @Test
   void batchExitCodeJobListener_registersResolvedExitCode() {
     BatchCommonAutoConfiguration.BatchProcessExitCode exitCode =
-        new BatchCommonAutoConfiguration.BatchProcessExitCode();
+        new BatchCommonAutoConfiguration.BatchProcessExitCode(new PcisBatchProperties());
     BatchExitCodeJobListener listener = new BatchExitCodeJobListener(exitCode);
 
     JobExecution execution = mock(JobExecution.class);
@@ -32,7 +31,7 @@ class BatchCommonTest {
     when(instance.getJobName()).thenReturn("auditArchiveJob");
     when(execution.getStatus()).thenReturn(BatchStatus.FAILED);
     ExecutionContext context = new ExecutionContext();
-    context.putInt(BatchJobExitCodeListener.EXIT_CODE_CONTEXT_KEY, 2);
+    context.putInt(BatchJobExecutionListener.EXIT_CODE_CONTEXT_KEY, 2);
     when(execution.getExecutionContext()).thenReturn(context);
 
     listener.afterJob(execution);

@@ -1,18 +1,17 @@
 package com.pcis.batch.common;
 
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobExecutionListener;
+/**
+ * @deprecated Use {@link BatchJobExecutionListener} directly.
+ */
+@Deprecated
+public class BatchExitCodeJobListener extends BatchJobExecutionListener {
 
-public class BatchExitCodeJobListener implements JobExecutionListener {
-
-  private final BatchCommonAutoConfiguration.BatchProcessExitCode exitCode;
-
-  public BatchExitCodeJobListener(BatchCommonAutoConfiguration.BatchProcessExitCode exitCode) {
-    this.exitCode = exitCode;
+  public BatchExitCodeJobListener(
+      BatchCommonAutoConfiguration.BatchProcessExitCode exitCode, PcisBatchProperties properties) {
+    super(exitCode, properties);
   }
 
-  @Override
-  public void afterJob(JobExecution jobExecution) {
-    exitCode.registerFromJobExecution(jobExecution);
+  public BatchExitCodeJobListener(BatchCommonAutoConfiguration.BatchProcessExitCode exitCode) {
+    this(exitCode, new PcisBatchProperties());
   }
 }
