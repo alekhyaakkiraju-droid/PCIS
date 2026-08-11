@@ -26,5 +26,6 @@
     <module>pcis-outbox</module>
     <module>pcis-classification</module>
     <module>pcis-pii-masking</module>
+    <module>pcis-error</module>
   </modules>
 </project>

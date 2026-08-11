@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pcis.example/schemas/rfc9457-problem-detail.json",
+  "title": "PcisProblemDetail",
+  "description": "RFC 9457 Problem Details for HTTP APIs with PCIS extensions (WO-219)",
+  "type": "object",
+  "required": ["type", "title", "status", "detail", "code", "correlation_id"],
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "type": "string",
+      "format": "uri",
+      "description": "A URI reference identifying the problem type"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "status": {
+      "type": "integer",
+      "minimum": 400,
+      "maximum": 599
+    },
+    "detail": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "instance": {
+      "type": "string",
+      "format": "uri-reference"
+    },
+    "code": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
+      "description": "Stable machine-readable PCIS reason code"
+    },
+    "correlation_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "errors": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "$ref": "#/$defs/ProblemErrorEntry"
+      }
+    }
+  },
+  "$defs": {
+    "ProblemErrorEntry": {
+      "type": "object",
+      "required": ["code", "detail"],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+        },
+        "detail": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "field": {
+          "type": "string",
+          "maxLength": 120
+        }
+      }
+    }
+  }
+}
