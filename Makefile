@@ -1,6 +1,12 @@
-.PHONY: lint lint-prometheus lint-alertmanager lint-runbooks test-prometheus-rules validate-data-dictionary test-data-dictionary test-monetary-precision
+.PHONY: lint lint-prometheus lint-alertmanager lint-runbooks lint-semgrep test-prometheus-rules test-semgrep validate-data-dictionary test-data-dictionary test-monetary-precision
 
 lint: lint-prometheus lint-alertmanager lint-runbooks
+
+lint-semgrep:
+	semgrep --config semgrep/rules --error services/
+
+test-semgrep:
+	semgrep --test --config semgrep/rules semgrep/tests
 
 validate-data-dictionary:
 	python3 build/scripts/validate-data-dictionary.py
