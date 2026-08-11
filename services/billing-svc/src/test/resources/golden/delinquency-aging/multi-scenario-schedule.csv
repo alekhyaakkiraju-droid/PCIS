@@ -1,0 +1,9 @@
+pol_nbr,installment_nbr,sched_status,rec_delinquent
+POLDLQ001,1,O,0
+POLDLQ002,1,O,0
+POLDLQ003,1,O,0
+POLDLQ004,1,L,1
+POLDLQ005,1,L,2
+POLDLQ006,1,P,0
+POLDLQ007,1,L,1
+POLDLQ008,1,P,0
