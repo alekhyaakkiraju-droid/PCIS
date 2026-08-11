@@ -53,9 +53,19 @@ output "writer_instance_id" {
   value       = aws_rds_cluster_instance.writer.id
 }
 
-output "reader_instance_id" {
-  description = "Read replica instance identifier."
-  value       = aws_rds_cluster_instance.reader.id
+output "cluster_engine" {
+  description = "Aurora engine identifier."
+  value       = aws_rds_cluster.aurora.engine
+}
+
+output "cluster_engine_version" {
+  description = "Aurora PostgreSQL engine version."
+  value       = aws_rds_cluster.aurora.engine_version
+}
+
+output "enhanced_monitoring_role_arn" {
+  description = "IAM role ARN for RDS Enhanced Monitoring (null when disabled)."
+  value       = var.enhanced_monitoring_interval > 0 ? aws_iam_role.rds_enhanced_monitoring[0].arn : null
 }
 
 output "irsa_role_arns" {

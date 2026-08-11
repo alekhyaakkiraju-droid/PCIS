@@ -1,0 +1,24 @@
+server:
+  port: 8086
+spring:
+  application:
+    name: reporting-svc
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,readiness,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when_authorized
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+pcis:
+  reporting:
+    replica-lag:
+      poll-interval-ms: 15000

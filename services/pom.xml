@@ -19,5 +19,6 @@
     <module>api-gateway</module>
     <module>authz-svc</module>
     <module>audit-svc</module>
+    <module>reporting-svc</module>
   </modules>
 </project>
