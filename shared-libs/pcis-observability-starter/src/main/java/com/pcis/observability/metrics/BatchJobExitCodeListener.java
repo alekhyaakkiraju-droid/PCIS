@@ -12,7 +12,7 @@ import org.springframework.batch.core.JobExecutionListener;
  */
 public class BatchJobExitCodeListener implements JobExecutionListener {
 
-  static final String EXIT_CODE_CONTEXT_KEY = "pcis.batch.exitCode";
+  public static final String EXIT_CODE_CONTEXT_KEY = "pcis.batch.exitCode";
 
   private final BatchJobExitCodeMetrics metrics;
 
@@ -27,7 +27,7 @@ public class BatchJobExitCodeListener implements JobExecutionListener {
     metrics.recordExitCode(jobName, exitCode);
   }
 
-  static int resolveExitCode(JobExecution jobExecution) {
+  public static int resolveExitCode(JobExecution jobExecution) {
     if (jobExecution.getExecutionContext().containsKey(EXIT_CODE_CONTEXT_KEY)) {
       return jobExecution.getExecutionContext().getInt(EXIT_CODE_CONTEXT_KEY);
     }
