@@ -1,0 +1,12 @@
+[
+  { "id": "POL-3001", "customerId": "C-1001", "product": "Homeowners", "status": "Active", "premium": 1420.5 },
+  { "id": "POL-3002", "customerId": "C-1002", "product": "Auto", "status": "Active", "premium": 980 },
+  { "id": "POL-3003", "customerId": "C-1003", "product": "Auto", "status": "Cancelled", "premium": 0 },
+  { "id": "POL-3004", "customerId": "C-1004", "product": "Renters", "status": "Renewal", "premium": 320.25 },
+  { "id": "POL-3005", "customerId": "C-1005", "product": "Homeowners", "status": "Expired", "premium": 0 },
+  { "id": "POL-3006", "customerId": "C-1006", "product": "Commercial", "status": "Active", "premium": 5400 },
+  { "id": "POL-3007", "customerId": "C-1007", "product": "Auto", "status": "Active", "premium": 1105.75 },
+  { "id": "POL-3008", "customerId": "C-1008", "product": "Umbrella", "status": "Active", "premium": 275 },
+  { "id": "POL-3009", "customerId": "C-1009", "product": "Homeowners", "status": "Renewal", "premium": 1688.4 },
+  { "id": "POL-3010", "customerId": "C-1010", "product": "Auto", "status": "Cancelled", "premium": 0 }
+]
