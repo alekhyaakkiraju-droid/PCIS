@@ -8,6 +8,14 @@ CURRENT="${ROOT}/api/contracts/pcis-shared-v1.yaml"
 
 OASDIFF="${OASDIFF:-oasdiff}"
 if ! command -v "${OASDIFF}" >/dev/null 2>&1; then
+  if command -v go >/dev/null 2>&1; then
+    echo "Installing oasdiff via go install..."
+    GOBIN="${ROOT}/.tools" go install github.com/Tufin/oasdiff@latest
+    export PATH="${ROOT}/.tools:${PATH}"
+    OASDIFF="${ROOT}/.tools/oasdiff"
+  fi
+fi
+if ! command -v "${OASDIFF}" >/dev/null 2>&1; then
   echo "ERROR: oasdiff not found on PATH. Install from https://github.com/Tufin/oasdiff" >&2
   exit 1
 fi

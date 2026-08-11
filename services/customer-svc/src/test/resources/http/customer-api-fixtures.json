@@ -1,0 +1,55 @@
+{
+  "description": "WO-183 HTTP contract fixtures for customer REST API",
+  "endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/v1/customers",
+      "request": {
+        "lastName": "Smith",
+        "taxId": "111223333",
+        "custName": "Jane Smith",
+        "custStatus": "A",
+        "addresses": [],
+        "contacts": []
+      },
+      "expectedStatus": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/customers/{customerId}",
+      "expectedStatus": 200,
+      "notes": "PII masked unless customer:unmask-pii authority present"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/customers/{customerId}",
+      "request": {
+        "custName": "Jane Smith Updated",
+        "custStatus": "A"
+      },
+      "expectedStatus": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/customers/search?q=Smith",
+      "expectedStatus": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/customers/{customerId}/duplicate-check",
+      "expectedStatus": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/customers",
+      "request": {
+        "lastName": "Dup",
+        "taxId": "123456789",
+        "duplicateOverride": true,
+        "justification": "Supervisor approved branch merge scenario"
+      },
+      "expectedStatus": 201,
+      "requiredAuthority": "customer:override-duplicate-tax-id"
+    }
+  ]
+}
