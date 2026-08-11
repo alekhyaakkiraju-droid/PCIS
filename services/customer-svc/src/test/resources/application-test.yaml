@@ -1,4 +1,6 @@
 spring:
+  main:
+    allow-bean-definition-overriding: true
   jpa:
     hibernate:
       ddl-auto: validate
@@ -15,7 +17,23 @@ spring:
       circuitbreaker:
         enabled: false
 
-# Disable Feign client auto-configuration for tests that don't need service-to-service calls
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: false
+      group:
+        liveness:
+          include: ping
+        readiness:
+          include: ping,db
+        startup:
+          include: ping,db
+
 pcis:
   authz-svc:
     url: http://localhost:9999

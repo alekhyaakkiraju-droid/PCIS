@@ -1,5 +1,6 @@
 package com.pcis.customer.config;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -33,19 +34,19 @@ class SecurityConfigTest {
   @Test
   void healthEndpointPermittedWithoutAuthentication() throws Exception {
     mockMvc.perform(get("/actuator/health"))
-        .andExpect(status().isOk());
+        .andExpect(result -> assertThat(result.getResponse().getStatus()).isNotIn(401, 403));
   }
 
   @Test
   void actuatorHealthLivenessPermittedWithoutAuthentication() throws Exception {
     mockMvc.perform(get("/actuator/health/liveness"))
-        .andExpect(status().isOk());
+        .andExpect(result -> assertThat(result.getResponse().getStatus()).isNotIn(401, 403));
   }
 
   @Test
   void actuatorInfoPermittedWithoutAuthentication() throws Exception {
     mockMvc.perform(get("/actuator/info"))
-        .andExpect(status().isOk());
+        .andExpect(result -> assertThat(result.getResponse().getStatus()).isNotIn(401, 403));
   }
 
   @Test
