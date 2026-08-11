@@ -39,6 +39,16 @@
            05  WS-CNT-RECALCULATED    PIC S9(7)      COMP-3 VALUE 0.
            05  WS-CNT-ERRORS          PIC S9(7)      COMP-3 VALUE 0.
 
+      * Run-log timing and counter host variables (WO-237)
+       01  WS-START-TIMESTAMP         PIC X(26).
+       01  WS-END-TIMESTAMP           PIC X(26).
+       01  WS-RL-PGM-NAME             PIC X(10)      VALUE 'PRM005B'.
+       01  WS-RL-RUN-DATE             PIC X(10).
+       01  WS-RL-SELECTED             PIC S9(9)      COMP-3 VALUE 0.
+       01  WS-RL-UPDATED              PIC S9(9)      COMP-3 VALUE 0.
+       01  WS-RL-ERRORS               PIC S9(9)      COMP-3 VALUE 0.
+       01  WS-RL-DELINQUENT           PIC S9(9)      COMP-3 VALUE 0.
+
       * Return code and status
        01  WS-RETURN-CODE             PIC S9(4)      COMP VALUE 0.
        01  WS-SQLCODE-SAVE            PIC S9(9)      COMP VALUE 0.
@@ -80,6 +90,10 @@
 
       * Initialization
        1000-INITIALIZE.
+           EXEC SQL
+               VALUES (CURRENT TIMESTAMP)
+               INTO :WS-START-TIMESTAMP
+           END-EXEC
            MOVE 0  TO WS-CNT-READ
            MOVE 0  TO WS-CNT-UPDATED
            MOVE 0  TO WS-CNT-RECALCULATED
@@ -220,10 +234,56 @@
            MOVE 'FINALIZE' TO WS-AUD-ACTION
            MOVE 'BILLING_SCHEDULE_T' TO WS-AUD-TABLE
            CALL 'AUDLOG01' USING WS-AUDIT-PARMS
+           PERFORM 8000-WRITE-RUN-LOG
            IF WS-CNT-ERRORS > 0
                MOVE 8 TO WS-RETURN-CODE
            END-IF
            MOVE WS-RETURN-CODE TO RETURN-CODE
+           .
+
+      * Write batch run-log row with wall-clock timing (WO-237)
+       8000-WRITE-RUN-LOG.
+           EXEC SQL
+               VALUES (CURRENT TIMESTAMP)
+               INTO :WS-END-TIMESTAMP
+           END-EXEC
+           EXEC SQL
+               SELECT CHAR(CURRENT_DATE, ISO)
+               INTO   :WS-RL-RUN-DATE
+               FROM   SYSIBM.SYSDUMMY1
+           END-EXEC
+           MOVE WS-CNT-READ         TO WS-RL-SELECTED
+           MOVE WS-CNT-UPDATED      TO WS-RL-UPDATED
+           MOVE WS-CNT-ERRORS       TO WS-RL-ERRORS
+           MOVE WS-CNT-RECALCULATED TO WS-RL-DELINQUENT
+           EXEC SQL
+               INSERT INTO RPT_RUN_LOG_T
+                   (PGM_NAME,
+                    RUN_DATE,
+                    REC_SELECTED,
+                    REC_UPDATED,
+                    REC_ERRORS,
+                    REC_DELINQUENT,
+                    START_TIMESTAMP,
+                    END_TIMESTAMP,
+                    CRT_TIMESTAMP)
+               VALUES
+                   (:WS-RL-PGM-NAME,
+                    :WS-RL-RUN-DATE,
+                    :WS-RL-SELECTED,
+                    :WS-RL-UPDATED,
+                    :WS-RL-ERRORS,
+                    :WS-RL-DELINQUENT,
+                    :WS-START-TIMESTAMP,
+                    :WS-END-TIMESTAMP,
+                    CURRENT TIMESTAMP)
+           END-EXEC
+           MOVE SQLCODE TO WS-SQLCODE-SAVE
+           IF SQLCODE NOT = 0
+               DISPLAY 'PRM005B: RUN LOG INSERT ERROR SQLCODE='
+                       WS-SQLCODE-SAVE
+               ADD 1 TO WS-CNT-ERRORS
+           END-IF
            .
 
        END PROGRAM PRM005B.
