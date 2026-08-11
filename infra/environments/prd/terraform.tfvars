@@ -51,3 +51,13 @@ ecr_cross_account_pull_enabled     = false
 ecr_tagged_image_retention_count   = 30
 ecr_untagged_image_expiration_days = 7
 
+# MSK Kafka + ElastiCache Redis (WO-138)
+msk_broker_count               = 3
+msk_broker_instance_type       = "kafka.m5.large"
+msk_default_replication_factor = 3
+msk_min_insync_replicas        = 2
+redis_node_type                = "cache.r6g.large"
+redis_cluster_mode_enabled     = true
+redis_num_node_groups          = 2
+redis_replicas_per_node_group  = 2
+
