@@ -22,6 +22,7 @@ class PiiMaskingAutoConfigurationTest {
     contextRunner.run(
         context -> {
           assertThat(context).hasSingleBean(MaskingService.class);
+          assertThat(context).hasSingleBean(com.pcis.masking.logback.LogbackMaskingInitializer.class);
           ObjectMapper objectMapper = context.getBean(ObjectMapper.class);
           assertThat(objectMapper.getRegisteredModuleIds())
               .anyMatch(id -> id.toString().contains("PcisJacksonMaskingModule"));

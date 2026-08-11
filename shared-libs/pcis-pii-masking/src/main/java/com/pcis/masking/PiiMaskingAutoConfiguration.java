@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pcis.classification.DataClassificationRegistry;
 import com.pcis.masking.jackson.PcisJacksonMaskingModule;
+import com.pcis.masking.logback.LogbackMaskingInitializer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -27,5 +28,12 @@ public class PiiMaskingAutoConfiguration {
   @ConditionalOnMissingBean(name = "pcisJacksonMaskingModule")
   Module pcisJacksonMaskingModule(MaskingService maskingService) {
     return new PcisJacksonMaskingModule(maskingService);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  LogbackMaskingInitializer logbackMaskingInitializer(
+      MaskingService maskingService, DataClassificationRegistry registry) {
+    return new LogbackMaskingInitializer(maskingService, registry);
   }
 }
