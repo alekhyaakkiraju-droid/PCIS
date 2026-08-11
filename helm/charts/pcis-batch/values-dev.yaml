@@ -1,0 +1,8 @@
+namespace: pcis-batch-dev
+
+global:
+  image:
+    pullPolicy: IfNotPresent
+
+prometheusRule:
+  namespace: pcis-monitoring-dev

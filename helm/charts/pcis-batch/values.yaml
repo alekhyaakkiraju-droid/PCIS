@@ -1,0 +1,161 @@
+# PCIS batch CronJobs — schedules are PLACEHOLDERS pending Phase 0 baseline (WO-137).
+namespace: pcis-batch
+
+global:
+  image:
+    pullPolicy: IfNotPresent
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+
+batchNode:
+  tolerations:
+    - key: batch
+      operator: Equal
+      value: "true"
+      effect: NoSchedule
+  nodeSelector:
+    node-role: batch
+
+cronJobDefaults:
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 300
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  backoffLimit: 0
+  restartPolicy: Never
+
+prometheusRule:
+  enabled: true
+  namespace: pcis-monitoring
+  alertSeverity: critical
+
+# Six jobs reconciled from ops/scheduler-map.yaml kubernetes_cronjobs section.
+jobs:
+  - name: audit-archive-job
+    program: AUD002B
+    # PLACEHOLDER schedule — pending Phase 0 batch-window baseline measurement
+    schedule: "0 3 * * *"
+    image:
+      repository: ghcr.io/pcis/audit-batch
+      tag: "1.0.0"
+    command: ["java", "-jar", "/app/batch.jar", "--spring.batch.job.name=auditArchiveJob"]
+    env:
+      SPRING_PROFILES_ACTIVE: batch
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: "2"
+        memory: 2Gi
+    serviceAccount:
+      create: true
+      name: audit-archive-job
+      irsaRoleArn: ""
+
+  - name: billing-installment-job
+    program: BIL003B
+    schedule: "0 1 * * *"
+    image:
+      repository: ghcr.io/pcis/billing-batch
+      tag: "1.0.0"
+    command: ["java", "-jar", "/app/batch.jar", "--spring.batch.job.name=billingInstallmentJob"]
+    env:
+      SPRING_PROFILES_ACTIVE: batch
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: "2"
+        memory: 2Gi
+    serviceAccount:
+      create: true
+      name: billing-installment-job
+      irsaRoleArn: ""
+
+  - name: claim-payment-job
+    program: CLM006B
+    schedule: "30 2 * * *"
+    image:
+      repository: ghcr.io/pcis/claims-batch
+      tag: "1.0.0"
+    command: ["java", "-jar", "/app/batch.jar", "--spring.batch.job.name=claimPaymentJob"]
+    env:
+      SPRING_PROFILES_ACTIVE: batch
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: "2"
+        memory: 2Gi
+    serviceAccount:
+      create: true
+      name: claim-payment-job
+      irsaRoleArn: ""
+
+  - name: commission-calc-job
+    program: CMM001B
+    schedule: "0 4 * * *"
+    image:
+      repository: ghcr.io/pcis/billing-batch
+      tag: "1.0.0"
+    command: ["java", "-jar", "/app/batch.jar", "--spring.batch.job.name=commissionCalcJob"]
+    env:
+      SPRING_PROFILES_ACTIVE: batch
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: "2"
+        memory: 2Gi
+    serviceAccount:
+      create: true
+      name: commission-calc-job
+      irsaRoleArn: ""
+
+  - name: premium-processing-job
+    program: PRM005B
+    schedule: "0 2 * * *"
+    image:
+      repository: ghcr.io/pcis/premium-batch
+      tag: "1.0.0"
+    command: ["java", "-jar", "/app/batch.jar", "--spring.batch.job.name=premiumProcessingJob"]
+    env:
+      SPRING_PROFILES_ACTIVE: batch
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: "2"
+        memory: 2Gi
+    serviceAccount:
+      create: true
+      name: premium-processing-job
+      irsaRoleArn: ""
+
+  - name: policy-renewal-job
+    program: POL006B
+    schedule: "0 5 1 * *"
+    image:
+      repository: ghcr.io/pcis/policy-batch
+      tag: "1.0.0"
+    command: ["java", "-jar", "/app/batch.jar", "--spring.batch.job.name=policyRenewalJob"]
+    env:
+      SPRING_PROFILES_ACTIVE: batch
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: "2"
+        memory: 2Gi
+    serviceAccount:
+      create: true
+      name: policy-renewal-job
+      irsaRoleArn: ""

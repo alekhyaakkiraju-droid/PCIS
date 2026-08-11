@@ -187,3 +187,47 @@ scheduler_index:
     source_status: in-repo
     source_file: Property_Casualty_Insurance_System/JOBSCHD_NEW_DRIVERS.clle
     programs: [POL006B]
+
+# WO-137: authoritative Kubernetes CronJob names (kebab-case) reconciled from WO-003 map.
+# Schedules are ASSUMPTION placeholders pending Phase 0 batch-window baseline measurement.
+kubernetes_cronjobs:
+  audit-archive-job:
+    batch_program: AUD002B
+    legacy_target_name: auditArchiveJob
+    schedule: "0 3 * * *"
+    schedule_note: "ASSUMPTION placeholder — pending Phase 0 batch-window baseline"
+  billing-installment-job:
+    batch_program: BIL003B
+    legacy_target_name: billingInstallmentJob
+    schedule: "0 1 * * *"
+    schedule_note: "ASSUMPTION placeholder — pending Phase 0 batch-window baseline"
+  claim-payment-job:
+    batch_program: CLM006B
+    legacy_target_name: claimPaymentJob
+    schedule: "30 2 * * *"
+    schedule_note: "ASSUMPTION placeholder — pending Phase 0 batch-window baseline"
+  commission-calc-job:
+    batch_program: CMM001B
+    legacy_target_name: commissionCalcJob
+    schedule: "0 4 * * *"
+    schedule_note: "ASSUMPTION placeholder — pending Phase 0 batch-window baseline"
+  premium-processing-job:
+    batch_program: PRM005B
+    legacy_target_name: premiumProcessingJob
+    schedule: "0 2 * * *"
+    schedule_note: "ASSUMPTION placeholder — pending Phase 0 batch-window baseline"
+  policy-renewal-job:
+    batch_program: POL006B
+    legacy_target_name: policyRenewalJob
+    schedule: "0 5 1 * *"
+    schedule_note: "ASSUMPTION placeholder — pending Phase 0 batch-window baseline"
+
+exit_code_contract:
+  description: "Non-zero Spring Batch exit codes trigger P1 Alertmanager alerts (WO-137)."
+  codes:
+    0: success
+    1: item-error threshold breached
+    2: archive verify mismatch
+    3: cursor-open failure
+    4: audit-write failure
+    5: config failure
