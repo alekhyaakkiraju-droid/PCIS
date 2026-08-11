@@ -1,0 +1,74 @@
+{
+  "batch_bil003b_init": {
+    "action": "INIT",
+    "old_value": null,
+    "new_value": null,
+    "key": "POL-12345678901234567890123456789012",
+    "service": "billing-svc",
+    "program": "BIL003B",
+    "actor": "batchbil",
+    "resource": "BILLING_SCHEDULE_T",
+    "field_name": null,
+    "correlation_id": "11111111-1111-1111-1111-111111111111"
+  },
+  "batch_clm006b_pay": {
+    "action": "PAY",
+    "old_value": "0000000000",
+    "new_value": "0000002500",
+    "key": "CLM-2026-000012345678901234567890",
+    "service": "claims-svc",
+    "program": "CLM006B",
+    "actor": "batchclm",
+    "resource": "CLAIM_PAYMENT_T",
+    "field_name": "PAID_AMT",
+    "correlation_id": "22222222-2222-2222-2222-222222222222"
+  },
+  "batch_pol006b_renew": {
+    "action": "REN",
+    "old_value": "2025-12-31",
+    "new_value": "2026-12-31",
+    "key": "POL-9876543210",
+    "service": "policy-svc",
+    "program": "POL006B",
+    "actor": "batchren",
+    "resource": "POLICY_T",
+    "field_name": "EXPIRY_DT",
+    "correlation_id": "33333333-3333-3333-3333-333333333333"
+  },
+  "interactive_cus001a_update": {
+    "action": "C",
+    "old_value": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "new_value": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+    "key": "CUS-1234567890123456789012345678901234",
+    "service": "customer-svc",
+    "program": "CUS001A",
+    "actor": "user001",
+    "resource": "CUSTOMER_T",
+    "field_name": "CUSTOMER_NAME",
+    "correlation_id": "44444444-4444-4444-4444-444444444444"
+  },
+  "interactive_pol001a_insert": {
+    "action": "A",
+    "old_value": null,
+    "new_value": "ACTIVE",
+    "key": "POL-NEW-001",
+    "service": "policy-svc",
+    "program": "POL001A",
+    "actor": "user002",
+    "resource": "POLICY_T",
+    "field_name": "STATUS_CD",
+    "correlation_id": "55555555-5555-5555-5555-555555555555"
+  },
+  "batch_prm005b_del": {
+    "action": "DEL",
+    "old_value": "DELINQUENT",
+    "new_value": null,
+    "key": "POL-DEL-001",
+    "service": "premium-svc",
+    "program": "PRM005B",
+    "actor": "batchprm",
+    "resource": "BILLING_SCHEDULE_T",
+    "field_name": "STATUS_CD",
+    "correlation_id": "66666666-6666-6666-6666-666666666666"
+  }
+}
