@@ -1,0 +1,21 @@
+{
+  "program": "PRM005B",
+  "table": "RPT_RUN_LOG_T",
+  "insert": {
+    "PGM_NAME": "PRM005B",
+    "RUN_DATE": "2026-08-11",
+    "REC_SELECTED": 675,
+    "REC_UPDATED": 640,
+    "REC_ERRORS": 5,
+    "REC_DELINQUENT": 640,
+    "START_TIMESTAMP": "2026-08-11 05:00:00.000000",
+    "END_TIMESTAMP": "2026-08-11 05:09:44.900000",
+    "CRT_TIMESTAMP": "2026-08-11 05:09:44.905000"
+  },
+  "counter_mapping": {
+    "REC_SELECTED": "WS-CNT-READ",
+    "REC_UPDATED": "WS-CNT-UPDATED",
+    "REC_ERRORS": "WS-CNT-ERRORS",
+    "REC_DELINQUENT": "WS-CNT-RECALCULATED"
+  }
+}

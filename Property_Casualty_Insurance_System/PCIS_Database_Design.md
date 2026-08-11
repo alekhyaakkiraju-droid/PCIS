@@ -915,17 +915,22 @@ CREATE TABLE CLAIM_RESERVE_T (
 
 **Domain:** RPT
 
+**Authoritative DDL:** `baseline/ddl/RPT_RUN_LOG_T_reconciled.sql` (WO-237)
+
+**Drift rationale:** An earlier revision of this document defined `RUN_ID`, `PROGRAM_NAME`, `ROWS_PROCESSED`, `RUN_STATUS`, `CRT_USER`, `UPD_USER`, and `UPD_TIMESTAMP`. Those names never matched a shipped COBOL INSERT. The six Phase 0 batch programs (`AUD002B`, `BIL003B`, `CLM006B`, `CMM001B`, `POL006B`, `PRM005B`) previously only `DISPLAY`ed completion counters and performed **no** `INSERT` into `RPT_RUN_LOG_T`. WO-237 adds run-log instrumentation and reconciles the schema to the columns below, including wall-clock `START_TIMESTAMP` / `END_TIMESTAMP` for batch-window baselines. `REC_DELINQUENT` is nullable and written only by `PRM005B`.
+
 | Column | Type | Description |
 |--------|------|-------------|
-| RUN_ID | BIGINT | IDENTITY PK |
-| PROGRAM_NAME | VARCHAR(10) | Program |
-| RUN_DATE | DATE | Run date |
-| ROWS_PROCESSED | INTEGER | Rows |
-| RUN_STATUS | CHAR(4) | Status |
-| CRT_USER | VARCHAR(10) | Create user |
-| CRT_TIMESTAMP | TIMESTAMP | Create timestamp |
-| UPD_USER | VARCHAR(10) | Update user |
-| UPD_TIMESTAMP | TIMESTAMP | Update timestamp |
+| RUN_LOG_ID | BIGINT | GENERATED ALWAYS AS IDENTITY PK |
+| PGM_NAME | VARCHAR(10) | Batch program name |
+| RUN_DATE | DATE | Business run date |
+| REC_SELECTED | INTEGER | Records selected / read |
+| REC_UPDATED | INTEGER | Records updated / written / billed / copied |
+| REC_ERRORS | INTEGER | Error count |
+| REC_DELINQUENT | INTEGER | Nullable; delinquency count (PRM005B only) |
+| START_TIMESTAMP | TIMESTAMP(6) | Wall-clock start (captured in 1000-INITIALIZE) |
+| END_TIMESTAMP | TIMESTAMP(6) | Wall-clock end (captured in 8000-WRITE-RUN-LOG) |
+| CRT_TIMESTAMP | TIMESTAMP | Row create timestamp |
 
 ### RPT_PARM_T
 

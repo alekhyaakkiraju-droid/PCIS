@@ -1,0 +1,20 @@
+{
+  "program": "BIL003B",
+  "table": "RPT_RUN_LOG_T",
+  "insert": {
+    "PGM_NAME": "BIL003B",
+    "RUN_DATE": "2026-08-11",
+    "REC_SELECTED": 1840,
+    "REC_UPDATED": 1792,
+    "REC_ERRORS": 3,
+    "REC_DELINQUENT": null,
+    "START_TIMESTAMP": "2026-08-11 03:00:00.000000",
+    "END_TIMESTAMP": "2026-08-11 03:12:18.450000",
+    "CRT_TIMESTAMP": "2026-08-11 03:12:18.455000"
+  },
+  "counter_mapping": {
+    "REC_SELECTED": "WS-CNT-READ",
+    "REC_UPDATED": "WS-CNT-BILLED",
+    "REC_ERRORS": "WS-CNT-ERRORS"
+  }
+}

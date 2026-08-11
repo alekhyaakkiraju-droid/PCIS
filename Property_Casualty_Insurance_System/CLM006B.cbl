@@ -44,6 +44,15 @@
            05  WS-CNT-SKIPPED      PIC 9(7)  VALUE ZEROS.
            05  WS-CNT-ERRORS       PIC 9(7)  VALUE ZEROS.
       *
+      * Run-log timing and counter host variables (WO-237)
+       01  WS-START-TIMESTAMP      PIC X(26).
+       01  WS-END-TIMESTAMP        PIC X(26).
+       01  WS-RL-PGM-NAME          PIC X(10) VALUE 'CLM006B'.
+       01  WS-RL-RUN-DATE          PIC X(10).
+       01  WS-RL-SELECTED          PIC S9(9) COMP-3 VALUE 0.
+       01  WS-RL-UPDATED           PIC S9(9) COMP-3 VALUE 0.
+       01  WS-RL-ERRORS            PIC S9(9) COMP-3 VALUE 0.
+      *
        01  WS-CLAIM-RECORD.
            05  HV-CLAIM-ID         PIC 9(10).
            05  HV-POLICY-ID        PIC 9(10).
@@ -111,6 +120,10 @@
            STOP RUN.
       *
        1000-INITIALIZE.
+           EXEC SQL
+               VALUES (CURRENT TIMESTAMP)
+               INTO :WS-START-TIMESTAMP
+           END-EXEC
            MOVE 'N' TO WS-EOF-FLAG
            MOVE ZEROS TO WS-COUNTERS
            PERFORM 1100-OPEN-CURSOR
@@ -254,6 +267,48 @@
            DISPLAY '  CLAIMS PAID:    ' WS-CNT-PAID
            DISPLAY '  CLAIMS SKIPPED: ' WS-CNT-SKIPPED
            DISPLAY '  ERRORS:         ' WS-CNT-ERRORS
+           PERFORM 8000-WRITE-RUN-LOG
+           .
+      *
+       8000-WRITE-RUN-LOG.
+           EXEC SQL
+               VALUES (CURRENT TIMESTAMP)
+               INTO :WS-END-TIMESTAMP
+           END-EXEC
+           EXEC SQL
+               SELECT CHAR(CURRENT_DATE, ISO)
+               INTO   :WS-RL-RUN-DATE
+               FROM   SYSIBM.SYSDUMMY1
+           END-EXEC
+           MOVE WS-CNT-READ TO WS-RL-SELECTED
+           MOVE WS-CNT-PAID TO WS-RL-UPDATED
+           MOVE WS-CNT-ERRORS TO WS-RL-ERRORS
+           EXEC SQL
+               INSERT INTO RPT_RUN_LOG_T
+                   (PGM_NAME,
+                    RUN_DATE,
+                    REC_SELECTED,
+                    REC_UPDATED,
+                    REC_ERRORS,
+                    START_TIMESTAMP,
+                    END_TIMESTAMP,
+                    CRT_TIMESTAMP)
+               VALUES
+                   (:WS-RL-PGM-NAME,
+                    :WS-RL-RUN-DATE,
+                    :WS-RL-SELECTED,
+                    :WS-RL-UPDATED,
+                    :WS-RL-ERRORS,
+                    :WS-START-TIMESTAMP,
+                    :WS-END-TIMESTAMP,
+                    CURRENT TIMESTAMP)
+           END-EXEC
+           MOVE SQLCODE TO WS-SQL-CODE
+           IF WS-SQL-CODE NOT EQUAL ZEROS
+               DISPLAY 'CLM006B: RUN LOG INSERT ERROR SQLCODE='
+                       WS-SQL-CODE
+               ADD 1 TO WS-CNT-ERRORS
+           END-IF
            .
       *
        9100-LOG-RUN-SUMMARY.
