@@ -1,0 +1,50 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: billing-generation-batch
+  labels:
+    app: billing-svc
+    job: billingGenerationJob
+spec:
+  # Placeholder — monthly schedule assumption pending Phase 0 baseline measurement
+  schedule: "0 3 1 * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 3600
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: billing-svc
+              image: billing-svc:latest
+              args: ["--spring.batch.job.name=billingGenerationJob"]
+              envFrom:
+                - configMapRef:
+                    name: billing-svc-config
+              env:
+                - name: DATASOURCE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: billing-svc-db
+                      key: url
+                - name: DATASOURCE_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: billing-svc-db
+                      key: username
+                - name: DATASOURCE_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: billing-svc-db
+                      key: password
+              resources:
+                requests:
+                  cpu: 250m
+                  memory: 512Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi

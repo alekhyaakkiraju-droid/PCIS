@@ -8,9 +8,12 @@ import com.pcis.batch.common.BatchRunLogTasklet;
 import com.pcis.batch.common.OutboxEventWriter;
 import com.pcis.billing.batch.bil003b.domain.BillingCandidateRow;
 import com.pcis.billing.batch.bil003b.domain.BillingInstallmentDecision;
+import com.pcis.billing.batch.bil003b.exception.BusinessRuleException;
+import com.pcis.billing.batch.bil003b.exception.TemporaryException;
 import com.pcis.billing.batch.bil003b.infrastructure.BillingCandidateReader;
 import com.pcis.billing.batch.bil003b.infrastructure.BillingGenerationWriter;
 import com.pcis.billing.batch.bil003b.infrastructure.BillingInstallmentProcessor;
+import com.pcis.billing.config.BillingConfigProperties;
 import com.pcis.observability.metrics.BatchJobExitCodeListener;
 import javax.sql.DataSource;
 import org.springframework.batch.core.Job;
@@ -23,6 +26,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.dao.TransientDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -42,8 +46,9 @@ public class BillingGenerationJobConfig {
   }
 
   @Bean
-  BillingInstallmentProcessor billingInstallmentProcessor(BillingGenerationProperties properties) {
-    return new BillingInstallmentProcessor(properties);
+  BillingInstallmentProcessor billingInstallmentProcessor(
+      BillingGenerationProperties properties, BillingConfigProperties billingConfig) {
+    return new BillingInstallmentProcessor(properties, billingConfig);
   }
 
   @Bean
@@ -62,13 +67,19 @@ public class BillingGenerationJobConfig {
       BillingCandidateReader billingCandidateReader,
       BillingInstallmentProcessor billingInstallmentProcessor,
       BillingGenerationWriter billingGenerationWriter,
-      BillingGenerationProperties properties) {
+      BillingConfigProperties billingConfig) {
     return new StepBuilder("billingGenerationStep", jobRepository)
         .<BillingCandidateRow, BillingInstallmentDecision>chunk(
-            properties.getChunkSize(), transactionManager)
+            billingConfig.getChunkSize(), transactionManager)
         .reader(billingCandidateReader)
         .processor(billingInstallmentProcessor)
         .writer(billingGenerationWriter)
+        .faultTolerant()
+        .skip(BusinessRuleException.class)
+        .skipLimit(billingConfig.getErrorThreshold())
+        .retry(TemporaryException.class)
+        .retry(TransientDataAccessException.class)
+        .retryLimit(3)
         .build();
   }
 

@@ -2,6 +2,8 @@ package com.pcis.billing.batch.bil003b.infrastructure;
 
 import com.pcis.billing.batch.bil003b.config.BillingGenerationProperties;
 import com.pcis.billing.batch.bil003b.domain.BillingInstallmentDecision;
+import com.pcis.billing.batch.bil003b.exception.AuditFailureException;
+import com.pcis.batch.common.BatchJobExecutionListener;
 import com.pcis.batch.common.OutboxEventWriter;
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -14,6 +16,7 @@ import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -106,12 +109,29 @@ public class BillingGenerationWriter implements ItemWriter<BillingInstallmentDec
     payload.put("billSchedId", billSchedId);
     payload.put("timestamp", now.toString());
 
-    outboxEventWriter.write(
-        "billing-schedule",
-        decision.candidate().polNbr(),
-        "InstallmentGenerated",
-        payload,
-        UUID.randomUUID());
+    try {
+      outboxEventWriter.write(
+          "billing-schedule",
+          decision.candidate().polNbr(),
+          "InstallmentGenerated",
+          payload,
+          UUID.randomUUID());
+    } catch (DataAccessException ex) {
+      markOutboxFailure();
+      throw new AuditFailureException(
+          "InstallmentGenerated outbox write failed for policy "
+              + decision.candidate().polNbr(),
+          ex);
+    }
+  }
+
+  private void markOutboxFailure() {
+    if (stepExecution != null) {
+      stepExecution
+          .getJobExecution()
+          .getExecutionContext()
+          .put(BatchJobExecutionListener.OUTBOX_WRITE_FAILED_KEY, Boolean.TRUE);
+    }
   }
 
   private void incrementCounter(String key, int delta) {
