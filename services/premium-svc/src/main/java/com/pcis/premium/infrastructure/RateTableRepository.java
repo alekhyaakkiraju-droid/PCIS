@@ -17,6 +17,11 @@ public class RateTableRepository {
   }
 
   public Optional<RateTableRow> findEffectiveRateTable(String policyType, String territory) {
+    return findEffectiveRateTable(policyType, territory, LocalDate.now());
+  }
+
+  public Optional<RateTableRow> findEffectiveRateTable(
+      String policyType, String territory, LocalDate asOfDate) {
     return jdbcClient
         .sql(
             """
@@ -24,11 +29,13 @@ public class RateTableRepository {
             FROM rate_table_t rt
             WHERE rt.policy_type = :policyType
               AND rt.territory = :territory
+              AND rt.eff_date <= :asOfDate
             ORDER BY rt.eff_date DESC, rt.rate_table_id DESC
             LIMIT 1
             """)
         .param("policyType", policyType)
         .param("territory", territory)
+        .param("asOfDate", asOfDate)
         .query(
             (rs, rowNum) ->
                 new RateTableRow(

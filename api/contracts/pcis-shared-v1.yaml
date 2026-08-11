@@ -1,0 +1,43 @@
+openapi: 3.1.0
+info:
+  title: PCIS Shared API Components
+  version: 1.0.0
+  description: Working copy compared against baseline during CI (WO-221)
+paths:
+  /actuator/health:
+    get:
+      operationId: healthCheck
+      summary: Liveness/readiness probe
+      responses:
+        '200':
+          description: Service is UP
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    enum: [UP, DOWN]
+components:
+  schemas:
+    ProblemDetail:
+      type: object
+      required: [type, title, status]
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        correlationId:
+          type: string
+        code:
+          type: string
