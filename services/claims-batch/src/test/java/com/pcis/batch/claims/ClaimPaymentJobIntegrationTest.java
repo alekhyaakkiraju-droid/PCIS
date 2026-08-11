@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.pcis.batch.claims.support.PostgresTestContainer;
 import com.pcis.batch.claims.support.TestEnvironment;
 import java.nio.charset.StandardCharsets;
+import java.math.BigDecimal;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -41,6 +45,12 @@ class ClaimPaymentJobIntegrationTest {
 
   @BeforeEach
   void setUp() {
+    Jwt jwt =
+        Jwt.withTokenValue("batch-test-token")
+            .header("alg", "none")
+            .subject("BATCH_SVC")
+            .build();
+    SecurityContextHolder.getContext().setAuthentication(new JwtAuthenticationToken(jwt));
     jobLauncherTestUtils.setJob(claimPaymentJob);
   }
 
@@ -53,25 +63,24 @@ class ClaimPaymentJobIntegrationTest {
     assertThat(execution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
     assertThat(
             jdbcTemplate.queryForObject(
-                "SELECT RESERVE_STATUS FROM CLAIM_RESERVE_T WHERE CLAIM_ID = 'CLM0001001'",
+                "SELECT reserve_status FROM claim_reserve WHERE claim_nbr = 'CLM000000101'",
                 String.class))
-        .isEqualTo("PD");
+        .isEqualTo("P");
     assertThat(
             jdbcTemplate.queryForObject(
-                "SELECT PAYMENT_AMT FROM CLAIM_PAYMENT_T WHERE CLAIM_ID = 'CLM0001001'",
-                java.math.BigDecimal.class))
+                "SELECT payment_amt FROM claim_payment WHERE claim_nbr = 'CLM000000101'",
+                BigDecimal.class))
         .isEqualByComparingTo("1500.00");
-    assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM RECOVERY_T", Integer.class))
+    assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM recovery", Integer.class))
         .isZero();
     assertThat(
             jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM outbox_events WHERE EVENT_TYPE = 'ClaimPaymentProcessed'",
+                "SELECT COUNT(*) FROM outbox_events WHERE event_type = 'PaymentDisbursed'",
                 Integer.class))
         .isEqualTo(1);
     assertThat(
             jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM RPT_RUN_LOG_T WHERE PGM_NAME = 'CLM006B'", Integer.class))
+                "SELECT COUNT(*) FROM rpt_run_log_t WHERE pgm_name = 'CLM006B'", Integer.class))
         .isEqualTo(1);
   }
 
@@ -82,13 +91,12 @@ class ClaimPaymentJobIntegrationTest {
     JobExecution execution = jobLauncherTestUtils.launchJob();
 
     assertThat(execution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
-    assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM RECOVERY_T", Integer.class))
+    assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM recovery", Integer.class))
         .isEqualTo(1);
     assertThat(
             jdbcTemplate.queryForObject(
-                "SELECT RECOVERY_AMT FROM RECOVERY_T WHERE CLAIM_ID = 'CLM0007001'",
-                java.math.BigDecimal.class))
+                "SELECT recovery_amt FROM recovery WHERE claim_nbr = 'CLM000000701'",
+                BigDecimal.class))
         .isEqualByComparingTo("100000.01");
   }
 

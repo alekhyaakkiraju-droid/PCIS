@@ -8,18 +8,16 @@ spring:
   autoconfigure:
     exclude:
       - com.pcis.batch.auth.config.BatchAuthAutoConfiguration
-      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
 
 pcis:
   classification:
     registry-location: classpath:pcis-data-classification-test.yaml
     drift-detection-enabled: false
     loader-enabled: false
-  claims:
-    payment:
+  batch:
+    claims:
       chunk-size: 1
+      skip-limit: 100
+      batch-service-principal: BATCH_SVC
       cession-threshold: 100000.00
-  tunables:
-    numeric-defaults:
-      claims.reinsurance.cessionThreshold: 100000.00
+    skip-threshold: 100
