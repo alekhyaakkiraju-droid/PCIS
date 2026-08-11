@@ -65,10 +65,24 @@ Compositions live under `infra/environments/{dev,tst,prd}/`.
 Environments default to a **local** backend so `plan`/`validate` work before bootstrap.
 
 Remote state (S3 + DynamoDB locking) is defined in:
-- `infra/backend.s3.tf.example` — canonical S3 backend block
+- `infra/backend.tf` — canonical S3 backend + DynamoDB lock table contract
+- `infra/backend.s3.tf.example` — same contract (example alias)
 - `infra/environments/*/backend.hcl` — per-env state keys (`dev|tst|prd/network/terraform.tfstate`)
 
 Adopt remote state with `terraform init -migrate-state -backend-config=backend.hcl` after swapping in the S3 backend block.
+
+## Acceptance criteria map (WO-129)
+
+| Criterion | Evidence |
+|-----------|----------|
+| Multi-AZ public / private-app / private-data subnets | `main.tf` subnet resources; non-overlapping CIDRs in env tfvars |
+| NAT + IGW | `aws_nat_gateway`, `aws_internet_gateway`; HA via `enable_ha_nat` (prd=true) |
+| VPC flow logs → S3 (90d default) | `aws_flow_log` + `aws_s3_bucket` lifecycle |
+| Default-deny SG + ALB/mesh/DB rules | `aws_default_security_group`, `aws_security_group.{alb,mesh,database}` |
+| Remote backend S3 + DynamoDB | `infra/backend.tf` + `environments/*/backend.hcl` |
+| Env compositions | `environments/{dev,tst,prd}/network.tf` |
+| validate / plan | Terratest `TestTerraformValidateAllEnvironments`, `TestNetworkDevModulePlan` |
+| Unit tests | `infra/test/network_test.go` |
 
 ## Validate locally
 
