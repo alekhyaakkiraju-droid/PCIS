@@ -19,3 +19,9 @@ aurora_multi_az                = false
 aurora_engine_version          = "17.4"
 aurora_deletion_protection     = false
 aurora_backup_retention_period = 35
+
+# Secrets Manager + ESO (WO-132) — enable ESO after the EKS control plane exists
+enable_external_secrets        = false
+create_secret_rotation_lambda  = true
+secret_rotation_days           = 90
+eso_chart_version              = "0.9.20"
