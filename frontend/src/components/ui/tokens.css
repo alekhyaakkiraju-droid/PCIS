@@ -1,32 +1,32 @@
 /**
- * PCIS design tokens — deep teal + charcoal + warm off-white.
- * Avoid purple-on-white, cream-terracotta, and broadsheet clichés.
+ * PCIS design tokens — mono steel-blue scheme (Hackathon wireframe / industry DS).
+ * Typography: IBM Plex Sans / IBM Plex Mono per wireframe spec.
  */
 :root {
-  /* Brand / primary (deep teal) */
-  --pcis-color-primary-50: #e8f6f5;
-  --pcis-color-primary-100: #c5eae7;
-  --pcis-color-primary-200: #9fd9d4;
-  --pcis-color-primary-300: #6fc2bb;
-  --pcis-color-primary-400: #3ea39b;
-  --pcis-color-primary-500: #1f877f;
-  --pcis-color-primary-600: #0b6e6a;
-  --pcis-color-primary-700: #085853;
-  --pcis-color-primary-800: #064540;
-  --pcis-color-primary-900: #03312e;
+  /* Brand / primary (steel-blue accent ramp) */
+  --pcis-color-primary-50: #eef6ff;
+  --pcis-color-primary-100: #eef6ff;
+  --pcis-color-primary-200: #d6ebff;
+  --pcis-color-primary-300: #b5d9fd;
+  --pcis-color-primary-400: #94bce3;
+  --pcis-color-primary-500: #749dc4;
+  --pcis-color-primary-600: #5980a6;
+  --pcis-color-primary-700: #416180;
+  --pcis-color-primary-800: #2c455d;
+  --pcis-color-primary-900: #1d2d3d;
 
-  /* Neutral (charcoal scale) */
+  /* Neutral (mono scale) */
   --pcis-color-neutral-0: #ffffff;
-  --pcis-color-neutral-50: #f5f2eb;
-  --pcis-color-neutral-100: #ebe6dc;
-  --pcis-color-neutral-200: #d6cfc0;
-  --pcis-color-neutral-300: #b8b0a0;
-  --pcis-color-neutral-400: #8f8778;
-  --pcis-color-neutral-500: #6b6458;
-  --pcis-color-neutral-600: #4a453c;
-  --pcis-color-neutral-700: #322e28;
-  --pcis-color-neutral-800: #1a2332;
-  --pcis-color-neutral-900: #0f141c;
+  --pcis-color-neutral-50: #f5f5f8;
+  --pcis-color-neutral-100: #f5f5f8;
+  --pcis-color-neutral-200: #e7e7ea;
+  --pcis-color-neutral-300: #d4d4d7;
+  --pcis-color-neutral-400: #b7b7ba;
+  --pcis-color-neutral-500: #98989b;
+  --pcis-color-neutral-600: #7a7a7d;
+  --pcis-color-neutral-700: #5d5d60;
+  --pcis-color-neutral-800: #424244;
+  --pcis-color-neutral-900: #2b2b2d;
 
   /* Semantic */
   --pcis-color-success-50: #e8f7ef;
@@ -38,22 +38,22 @@
   --pcis-color-error-50: #fdecea;
   --pcis-color-error-500: #c0392b;
   --pcis-color-error-700: #8e2a1f;
-  --pcis-color-info-50: #e8f1f8;
-  --pcis-color-info-500: #1f5f8a;
-  --pcis-color-info-700: #144262;
+  --pcis-color-info-50: #eef6ff;
+  --pcis-color-info-500: #5980a6;
+  --pcis-color-info-700: #416180;
 
   /* Surfaces */
-  --pcis-color-bg: var(--pcis-color-neutral-50);
+  --pcis-color-bg: #f2f2f3;
   --pcis-color-surface: var(--pcis-color-neutral-0);
-  --pcis-color-text: var(--pcis-color-neutral-800);
-  --pcis-color-text-muted: var(--pcis-color-neutral-500);
-  --pcis-color-border: var(--pcis-color-neutral-200);
-  --pcis-color-focus: var(--pcis-color-primary-500);
+  --pcis-color-text: #1d1f20;
+  --pcis-color-text-muted: var(--pcis-color-neutral-600);
+  --pcis-color-border: color-mix(in srgb, #1d1f20 16%, transparent);
+  --pcis-color-focus: var(--pcis-color-primary-600);
 
   /* Typography */
   --pcis-font-sans: 'IBM Plex Sans', 'Segoe UI', sans-serif;
   --pcis-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
-  --pcis-font-size-xs: 0.75rem;
+  --pcis-font-size-xs: 0.6875rem;
   --pcis-font-size-sm: 0.875rem;
   --pcis-font-size-md: 1rem;
   --pcis-font-size-lg: 1.125rem;
@@ -81,16 +81,16 @@
   --pcis-space-16: 4rem;
 
   /* Radii */
-  --pcis-radius-sm: 0.25rem;
-  --pcis-radius-md: 0.375rem;
-  --pcis-radius-lg: 0.5rem;
+  --pcis-radius-sm: 2px;
+  --pcis-radius-md: 4px;
+  --pcis-radius-lg: 7px;
   --pcis-radius-xl: 0.75rem;
   --pcis-radius-full: 9999px;
 
   /* Elevation */
-  --pcis-shadow-sm: 0 1px 2px rgb(15 20 28 / 0.08);
-  --pcis-shadow-md: 0 4px 12px rgb(15 20 28 / 0.12);
-  --pcis-shadow-lg: 0 12px 28px rgb(15 20 28 / 0.16);
+  --pcis-shadow-sm: 0 1px 2px color-mix(in srgb, #2b2b2d 14%, transparent);
+  --pcis-shadow-md: 0 3px 10px color-mix(in srgb, #2b2b2d 16%, transparent);
+  --pcis-shadow-lg: 0 12px 32px color-mix(in srgb, #2b2b2d 22%, transparent);
   --pcis-shadow-xl: 0 20px 40px rgb(15 20 28 / 0.2);
 
   /* Breakpoints (reference; use in JS via tokens.ts) */

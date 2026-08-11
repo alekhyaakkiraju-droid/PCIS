@@ -1,207 +1,328 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
-import { claimsApi, type ClaimDetail, type ClaimReserve } from '@/api/claims-api'
-import { useAuth } from '@/auth/AuthContext'
-import { Button, Card, DataTable, Input, MoneyDisplay, Skeleton } from '@/components/ui'
+import {
+  Badge,
+  BlueprintCard,
+  Button,
+  DataTable,
+  Input,
+  formatMoney,
+  Select,
+  Tabs,
+  type TabItem,
+} from '@/components/ui'
+
+const AUTHORITY_LIMIT = 25000
+const PAID_TO_DATE = 20000
+const REINSURANCE_THRESHOLD = 100000
+
+const RESERVE_ROWS = [
+  { id: '1', date: '2026-06-02', reason: 'Initial FNOL reserve', amount: 10000, balance: 10000 },
+  { id: '2', date: '2026-06-20', reason: 'Increase — engineer report received', amount: 38000, balance: 48000 },
+  { id: '3', date: '2026-07-14', reason: 'Drawdown on payment CLM-PMT-0231', amount: -20000, balance: 28000 },
+]
+
+const PAYMENT_ROWS = [
+  {
+    id: 'CLM-PMT-0231',
+    date: '2026-07-14',
+    payee: 'Diego Field',
+    amount: 20000,
+    status: 'Issued',
+    approval: 'APR-004512',
+  },
+]
 
 export function ClaimsPaymentWorkspace() {
-  const { user } = useAuth()
-  const queryClient = useQueryClient()
   const [searchParams] = useSearchParams()
-  const initialClaim = searchParams.get('claimNbr') ?? ''
-  const [selectedClaimNbr, setSelectedClaimNbr] = useState(initialClaim)
-  const [reserveId, setReserveId] = useState('')
-  const [paymentAmt, setPaymentAmt] = useState('')
-  const [submitError, setSubmitError] = useState<string | null>(null)
-  const [submitting, setSubmitting] = useState(false)
+  const claimNbr = searchParams.get('claimNbr') ?? 'CLM-0004821'
+  const [payAmount, setPayAmount] = useState('10000')
+  const [payMethod, setPayMethod] = useState('ACH')
+  const [payApprovalLinked, setPayApprovalLinked] = useState(false)
+  const [payDecision, setPayDecision] = useState<string | null>(null)
+  const [approvalConfirmed, setApprovalConfirmed] = useState(false)
 
-  const claimsQuery = useQuery({
-    queryKey: ['claims', 'open'],
-    queryFn: () => claimsApi.list({ status: 'O', size: 50 }),
-  })
+  const amountNum = Number.parseFloat(payAmount.replace(/,/g, '')) || 0
+  const cumulative = PAID_TO_DATE + amountNum
+  const authorityOk = cumulative <= AUTHORITY_LIMIT
 
-  const detailQuery = useQuery({
-    queryKey: ['claims', 'detail', selectedClaimNbr],
-    queryFn: (): Promise<ClaimDetail> => claimsApi.getByClaimNbr(selectedClaimNbr),
-    enabled: Boolean(selectedClaimNbr),
-  })
-
-  const openReserves: ClaimReserve[] = useMemo(
-    () => detailQuery.data?.reserves?.filter((r) => r.reserveStatus === 'O') ?? [],
-    [detailQuery.data?.reserves],
+  const authorityCheck = useMemo(
+    () => ({
+      approvalLabel: payApprovalLinked ? 'Yes — linked' : 'None on file',
+      cumulativeLabel: `$${cumulative.toLocaleString()}${authorityOk ? ' — within limit' : ' — exceeds limit'}`,
+      aboveThreshold: amountNum > REINSURANCE_THRESHOLD,
+      exceeded: !authorityOk,
+      badge: authorityOk ? 'Cleared' : 'Blocked',
+      icon: authorityOk ? '✓' : '✕',
+    }),
+    [amountNum, authorityOk, cumulative, payApprovalLinked],
   )
 
-  const handleInitiatePayment = async (event: React.FormEvent) => {
-    event.preventDefault()
-    if (!selectedClaimNbr || !user?.sub) return
-    setSubmitting(true)
-    setSubmitError(null)
-    try {
-      await claimsApi.initiatePayment(selectedClaimNbr, {
-        reserveId: Number.parseInt(reserveId, 10),
-        paymentAmt: Number.parseFloat(paymentAmt),
-        adjusterId: user.sub,
-      })
-      await queryClient.invalidateQueries({ queryKey: ['claims', 'detail', selectedClaimNbr] })
-      setPaymentAmt('')
-      setReserveId('')
-    } catch {
-      setSubmitError('Payment initiation failed. Verify amount and reserve selection.')
-    } finally {
-      setSubmitting(false)
+  const requestPayment = () => {
+    if (!payApprovalLinked && !authorityOk) {
+      setPayDecision(
+        'Denied — no qualifying approval on file and cumulative payout exceeds the $25,000 authority limit. Reason codes: NO_QUALIFYING_APPROVAL, AUTHORITY_LIMIT_EXCEEDED.',
+      )
+    } else if (!authorityOk) {
+      setPayDecision(
+        `Denied — cumulative payout of $${cumulative.toLocaleString()} exceeds the $25,000 authority limit. Reason code: AUTHORITY_LIMIT_EXCEEDED.`,
+      )
+    } else {
+      setPayDecision('Approved — payment, reserve drawdown and audit event committed in one transaction.')
     }
   }
 
+  const tabs: TabItem[] = [
+    {
+      id: 'reserves',
+      label: 'Reserves',
+      content: (
+        <DataTable
+          aria-label="Reserve history"
+          rows={RESERVE_ROWS}
+          columns={[
+            { id: 'date', label: 'Date', accessor: (r) => r.date },
+            { id: 'reason', label: 'Reason', accessor: (r) => r.reason },
+            {
+              id: 'amount',
+              label: 'Amount',
+              accessor: (r) => r.amount,
+              render: (r) => {
+                const prefix = r.amount < 0 ? '−' : r.id === '2' ? '+' : ''
+                return (
+                  <span className="mono">
+                    {prefix}
+                    {formatMoney(Math.abs(r.amount))}
+                  </span>
+                )
+              },
+            },
+            {
+              id: 'balance',
+              label: 'Balance',
+              accessor: (r) => r.balance,
+              render: (r) => <span className="mono">{formatMoney(r.balance)}</span>,
+            },
+          ]}
+          getRowId={(r) => r.id}
+          emptyMessage="No reserves."
+        />
+      ),
+    },
+    {
+      id: 'payments',
+      label: 'Payments',
+      content: (
+        <div className="page-grid-split">
+          <DataTable
+            aria-label="Claim payments"
+            rows={PAYMENT_ROWS}
+            columns={[
+              { id: 'id', label: 'ID', accessor: (r) => r.id, render: (r) => <span className="mono">{r.id}</span> },
+              { id: 'date', label: 'Date', accessor: (r) => r.date },
+              { id: 'payee', label: 'Payee', accessor: (r) => r.payee },
+              {
+                id: 'amount',
+                label: 'Amount',
+                accessor: (r) => r.amount,
+                render: (r) => <span className="mono">{formatMoney(r.amount)}</span>,
+              },
+              {
+                id: 'status',
+                label: 'Status',
+                accessor: (r) => r.status,
+                render: (r) => <Badge status="Active">{r.status}</Badge>,
+              },
+              { id: 'approval', label: 'Approval', accessor: (r) => r.approval },
+            ]}
+            getRowId={(r) => r.id}
+            emptyMessage="No payments."
+          />
+          <BlueprintCard kicker="Authority check">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--pcis-space-2)' }}>
+              <span className="mono" style={{ fontSize: 'var(--pcis-font-size-xs)', color: 'var(--pcis-color-primary-600)' }}>
+                Authority check
+              </span>
+              <Badge status={authorityOk ? 'Active' : 'Pending'}>{authorityCheck.badge}</Badge>
+            </div>
+            <Input
+              label="Amount"
+              name="payAmount"
+              value={payAmount}
+              onChange={(e) => {
+                setPayAmount(e.target.value)
+                setPayDecision(null)
+              }}
+            />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--pcis-space-3)' }}>
+              <Input label="Payee" name="payee" value="Diego & Marta Field (insured)" readOnly />
+              <Select
+                label="Method"
+                name="payMethod"
+                value={payMethod}
+                onChange={(e) => setPayMethod(e.target.value)}
+                options={[
+                  { value: 'ACH', label: 'ACH' },
+                  { value: 'Check', label: 'Check' },
+                ]}
+              />
+            </div>
+            <div style={{ marginTop: 'var(--pcis-space-3)', display: 'flex', flexDirection: 'column', gap: 6, fontSize: 'var(--pcis-font-size-sm)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>✓ Qualifying approval on file</span>
+                <strong>{authorityCheck.approvalLabel}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>
+                  {authorityCheck.icon} Cumulative payout vs $25,000 limit
+                </span>
+                <strong>{authorityCheck.cumulativeLabel}</strong>
+              </div>
+            </div>
+            {authorityCheck.aboveThreshold ? (
+              <div
+                style={{
+                  marginTop: 'var(--pcis-space-3)',
+                  fontSize: 'var(--pcis-font-size-xs)',
+                  border: '1px solid var(--pcis-color-primary-600)',
+                  padding: 8,
+                  color: 'var(--pcis-color-primary-800)',
+                }}
+              >
+                Above $100,000 reinsurance referral threshold — a tracked recovery referral will be created.
+              </div>
+            ) : null}
+            <Button variant="primary" style={{ width: '100%', marginTop: 'var(--pcis-space-3)' }} onClick={requestPayment}>
+              Submit payment request
+            </Button>
+            {authorityCheck.exceeded ? (
+              <Button
+                variant="secondary"
+                style={{ width: '100%', marginTop: 'var(--pcis-space-2)' }}
+                onClick={() =>
+                  setPayDecision('Escalated to Claims Supervisor (limit $100,000.00) — routed to the approval queue.')
+                }
+              >
+                Escalate to my authority ($25,000)
+              </Button>
+            ) : null}
+            <Button
+              variant="ghost"
+              style={{ width: '100%', marginTop: 'var(--pcis-space-2)', fontSize: 'var(--pcis-font-size-xs)' }}
+              onClick={() =>
+                setPayDecision(
+                  'ROLLED BACK — audit outbox insert failed (constraint violation). Per BR-03, the entire transaction reverted: no payment, no reserve drawdown, no audit record. Item recorded as exception for retry.',
+                )
+              }
+            >
+              Simulate audit-outbox failure (BR-03)
+            </Button>
+            {payDecision ? (
+              <div
+                style={{
+                  marginTop: 'var(--pcis-space-3)',
+                  fontSize: 'var(--pcis-font-size-sm)',
+                  padding: '8px 10px',
+                  border: '1px solid var(--pcis-color-border)',
+                }}
+              >
+                {payDecision}
+              </div>
+            ) : null}
+          </BlueprintCard>
+        </div>
+      ),
+    },
+    {
+      id: 'approvals',
+      label: 'Approvals',
+      content: (
+        <BlueprintCard kicker="Pending approval — $10,000.00 request" style={{ maxWidth: 560 }}>
+          <p style={{ fontSize: 'var(--pcis-font-size-sm)', margin: '8px 0' }}>
+            Requested by K. Alvarez (limit $25,000, $20,000 already paid). Approval required because cumulative payout would reach $30,000.
+          </p>
+          <div style={{ display: 'flex', gap: 'var(--pcis-space-2)' }}>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setPayApprovalLinked(false)
+                setPayDecision('Denied by supervisor — escalate to higher authority or reduce request.')
+                setApprovalConfirmed(false)
+              }}
+            >
+              Deny
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => {
+                setPayApprovalLinked(true)
+                setApprovalConfirmed(true)
+              }}
+            >
+              Approve with rationale
+            </Button>
+          </div>
+          {approvalConfirmed ? (
+            <p style={{ marginTop: 'var(--pcis-space-3)', fontSize: 'var(--pcis-font-size-xs)', color: 'var(--pcis-color-primary-800)' }}>
+              Linked approval record created — disbursement can now proceed.
+            </p>
+          ) : null}
+        </BlueprintCard>
+      ),
+    },
+    {
+      id: 'notes',
+      label: 'Notes',
+      content: (
+        <div style={{ fontSize: 'var(--pcis-font-size-sm)', lineHeight: 1.7 }}>
+          <p>
+            <strong>2026-06-02, K. Alvarez</strong> — Insured reports upstairs pipe burst overnight; water damage to kitchen ceiling and hallway flooring. Emergency mitigation vendor dispatched.
+          </p>
+          <p>
+            <strong>2026-06-20, K. Alvarez</strong> — Structural engineer report received; reserve increased to reflect subfloor replacement scope.
+          </p>
+        </div>
+      ),
+    },
+  ]
+
   return (
     <section aria-labelledby="claims-payments-heading">
-      <h1 id="claims-payments-heading">Claims Payment Workspace</h1>
-      <p>
-        <Link to="/claims/fnol">Start FNOL</Link>
-      </p>
+      <h1 id="claims-payments-heading" className="visually-hidden">
+        Payment &amp; Authority
+      </h1>
 
-      <Card header={<h2>Open claims</h2>}>
-        {claimsQuery.isLoading ? (
-          <Skeleton variant="text" lines={3} />
-        ) : claimsQuery.error ? (
-          <p role="alert">Unable to load claims.</p>
-        ) : (
-          <DataTable
-            aria-label="Open claims"
-            rows={claimsQuery.data?.content ?? []}
-            columns={[
-              { id: 'claimNbr', label: 'Claim', accessor: (r) => r.claimNbr, sortable: true },
-              { id: 'polNbr', label: 'Policy', accessor: (r) => r.polNbr, sortable: true },
-              { id: 'lossDate', label: 'Loss date', accessor: (r) => r.lossDate, sortable: true },
-              {
-                id: 'select',
-                label: 'Action',
-                accessor: () => '',
-                render: (r) => (
-                  <Button
-                    size="sm"
-                    variant={selectedClaimNbr === r.claimNbr ? 'primary' : 'secondary'}
-                    onClick={() => setSelectedClaimNbr(r.claimNbr)}
-                  >
-                    {selectedClaimNbr === r.claimNbr ? 'Selected' : 'Select'}
-                  </Button>
-                ),
-              },
-            ]}
-            getRowId={(r) => r.claimNbr}
-            emptyMessage="No open claims."
-          />
-        )}
-      </Card>
-
-      {selectedClaimNbr ? (
-        <Card header={<h2>Payment initiation — {selectedClaimNbr}</h2>}>
-          {detailQuery.isLoading ? (
-            <Skeleton variant="text" lines={4} />
-          ) : detailQuery.error ? (
-            <p role="alert">Unable to load claim detail.</p>
-          ) : (
-            <>
-              <DataTable
-                aria-label="Claim reserves"
-                rows={openReserves}
-                columns={[
-                  { id: 'reserveId', label: 'Reserve ID', accessor: (r) => r.reserveId },
-                  { id: 'reserveType', label: 'Type', accessor: (r) => r.reserveType },
-                  {
-                    id: 'approvedAmt',
-                    label: 'Approved',
-                    accessor: (r) => r.approvedAmt,
-                    render: (r) => <MoneyDisplay value={r.approvedAmt} />,
-                  },
-                  {
-                    id: 'paidToDate',
-                    label: 'Paid',
-                    accessor: (r) => r.paidToDate,
-                    render: (r) => <MoneyDisplay value={r.paidToDate} />,
-                  },
-                ]}
-                getRowId={(r) => String(r.reserveId)}
-                emptyMessage="No open reserves."
-              />
-
-              <form onSubmit={handleInitiatePayment} aria-label="Initiate payment form" style={{ marginTop: '1rem' }}>
-                <SelectReserve reserveId={reserveId} setReserveId={setReserveId} reserves={openReserves} />
-                <Input
-                  label="Payment amount"
-                  name="paymentAmt"
-                  type="number"
-                  step="0.01"
-                  min="0.01"
-                  value={paymentAmt}
-                  onChange={(e) => setPaymentAmt(e.target.value)}
-                  required
-                />
-                {submitError ? (
-                  <p role="alert" style={{ color: 'var(--c-error, #da1e28)' }}>
-                    {submitError}
-                  </p>
-                ) : null}
-                <Button type="submit" loading={submitting} disabled={openReserves.length === 0}>
-                  Initiate payment
-                </Button>
-              </form>
-
-              {detailQuery.data?.payments?.length ? (
-                <section aria-label="Recent payments" style={{ marginTop: '1rem' }}>
-                  <h3>Recent payments</h3>
-                  <DataTable
-                    aria-label="Claim payments"
-                    rows={detailQuery.data.payments}
-                    columns={[
-                      { id: 'paymentId', label: 'ID', accessor: (r) => r.paymentId },
-                      {
-                        id: 'paymentAmt',
-                        label: 'Amount',
-                        accessor: (r) => r.paymentAmt,
-                        render: (r) => <MoneyDisplay value={r.paymentAmt} />,
-                      },
-                      { id: 'paymentStatus', label: 'Status', accessor: (r) => r.paymentStatus },
-                    ]}
-                    getRowId={(r) => String(r.paymentId)}
-                    emptyMessage="No payments."
-                  />
-                </section>
-              ) : null}
-            </>
-          )}
-        </Card>
-      ) : null}
-    </section>
-  )
-}
-
-function SelectReserve({
-  reserveId,
-  setReserveId,
-  reserves,
-}: {
-  reserveId: string
-  setReserveId: (value: string) => void
-  reserves: ClaimReserve[]
-}) {
-  return (
-    <label>
-      Reserve
-      <select
-        value={reserveId}
-        onChange={(e) => setReserveId(e.target.value)}
-        required
-        aria-label="Reserve"
-        style={{ display: 'block', marginBottom: '0.75rem' }}
+      <BlueprintCard
+        style={{
+          marginBottom: 'var(--pcis-space-4)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
       >
-        <option value="">Select reserve…</option>
-        {reserves.map((r) => (
-          <option key={r.reserveId} value={String(r.reserveId)}>
-            {r.reserveType} — {r.reserveId}
-          </option>
-        ))}
-      </select>
-    </label>
+        <div>
+          <div className="mono" style={{ fontSize: 'var(--pcis-font-size-xs)', color: 'var(--pcis-color-primary-600)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            Claim {claimNbr}
+          </div>
+          <div style={{ fontSize: 'var(--pcis-font-size-xl)', fontWeight: 600 }}>
+            Homeowners water damage — Diego &amp; Marta Field
+          </div>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <div className="mono" style={{ fontSize: 'var(--pcis-font-size-xs)', color: 'var(--pcis-color-text-muted)' }}>
+            Reserve remaining
+          </div>
+          <div style={{ fontSize: '1.375rem', fontWeight: 600 }}>$28,000.00</div>
+        </div>
+      </BlueprintCard>
+
+      <Tabs items={tabs} defaultTabId="payments" aria-label="Payment workspace sections" />
+
+      <p style={{ marginTop: 'var(--pcis-space-4)' }}>
+        <Link to="/claims/fnol">Start FNOL →</Link>
+        {' · '}
+        <Link to="/claims">Claim Inquiry →</Link>
+      </p>
+    </section>
   )
 }

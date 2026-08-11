@@ -1,0 +1,45 @@
+{
+  "open": [
+    {
+      "id": "CLM-0004821",
+      "name": "Diego & Marta Field",
+      "lossDate": "2026-06-02",
+      "adjuster": "K. Alvarez",
+      "reserve": "$28,000.00",
+      "status": "Open",
+      "tagClass": "outline"
+    },
+    {
+      "id": "CLM-0004798",
+      "name": "Priya Nair",
+      "lossDate": "2026-07-11",
+      "adjuster": "K. Alvarez",
+      "reserve": "$6,200.00",
+      "status": "Open",
+      "tagClass": "outline"
+    }
+  ],
+  "pending": [
+    {
+      "id": "CLM-0004821",
+      "name": "Diego & Marta Field",
+      "lossDate": "2026-06-02",
+      "adjuster": "K. Alvarez",
+      "reserve": "$28,000.00",
+      "status": "Pending approval",
+      "tagClass": "neutral"
+    }
+  ],
+  "closed": [
+    {
+      "id": "CLM-0004770",
+      "name": "Ora Whitfield",
+      "lossDate": "2026-04-19",
+      "adjuster": "T. Nguyen",
+      "reserve": "$14,500.00",
+      "status": "Closed — paid",
+      "tagClass": "accent"
+    }
+  ],
+  "escalated": []
+}

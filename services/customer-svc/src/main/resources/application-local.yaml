@@ -1,0 +1,62 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+      - io.opentelemetry.instrumentation.spring.autoconfigure.OpenTelemetryAutoConfiguration
+  datasource:
+    url: jdbc:postgresql://localhost:5434/pcis
+    username: pcis
+    password: pcis
+  kafka:
+    bootstrap-servers: localhost:9092
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/pcis
+
+pcis:
+  classification:
+    registry-location: file:config/pcis-data-classification.yaml
+    drift-detection-enabled: false
+    loader-enabled: false
+  outbox:
+    relay-enabled: false
+  authz-svc:
+    url: http://127.0.0.1:8090
+  audit-svc:
+    url: http://127.0.0.1:8091
+  policy-svc:
+    url: http://127.0.0.1:8084
+  billing-svc:
+    url: http://127.0.0.1:8085
+  claims-svc:
+    url: http://127.0.0.1:8086
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      authz-svc:
+        registerHealthIndicator: false
+      audit-svc:
+        registerHealthIndicator: false
+      policy-svc:
+        registerHealthIndicator: false
+      billing-svc:
+        registerHealthIndicator: false
+      claims-svc:
+        registerHealthIndicator: false
+
+management:
+  endpoint:
+    health:
+      validate-group-membership: false
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true

@@ -24,8 +24,23 @@ test.describe('route smoke', () => {
   })
 
   test('billing dashboard renders', async ({ page }) => {
+    await page.route('/api/auth/session', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          authenticated: true,
+          user: {
+            sub: 'compliance-sam',
+            name: 'Sam Compliance',
+            email: 'sam@pcis.example.com',
+            roles: ['COMPLIANCE'],
+          },
+        }),
+      }),
+    )
     await page.goto('/billing')
-    await expect(page.getByRole('heading', { name: 'Billing Dashboard' })).toBeVisible()
+    await expect(page.getByText('Rows compared')).toBeVisible()
   })
 
   test('FNOL wizard renders', async ({ page }) => {
@@ -45,6 +60,6 @@ test.describe('route smoke', () => {
       }),
     )
     await page.goto('/claims/fnol')
-    await expect(page.getByRole('heading', { name: 'First Notice of Loss' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Register claim' })).toBeVisible()
   })
 })

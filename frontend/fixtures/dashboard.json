@@ -1,0 +1,82 @@
+{
+  "kpis": [
+    { "label": "Open claims", "value": "142", "sub": "12 new today" },
+    { "label": "Pending approvals", "value": "8", "sub": "3 over SLA" },
+    { "label": "Renewal exceptions", "value": "23", "sub": "Due within 30 days" },
+    { "label": "Batch health", "value": "98%", "sub": "Last run 02:41" }
+  ],
+  "workQueue": {
+    "claims": [
+      {
+        "id": "CLM-0004821",
+        "name": "K. Alvarez — cumulative 48,000.00 over 25,000.00 limit",
+        "status": "Over limit",
+        "tagClass": "outline",
+        "amount": "$28,000.00 requested"
+      },
+      {
+        "id": "CLM-0004804",
+        "name": "J. Bianchi — within limit, 9,250.00 cumulative",
+        "status": "Within limit",
+        "tagClass": "accent",
+        "amount": "$9,250.00 requested"
+      },
+      {
+        "id": "CLM-0004798",
+        "name": "A. Okafor — 118,400.00, cession referral",
+        "status": "Cession referral",
+        "tagClass": "accent-2",
+        "amount": "$118,400.00 requested"
+      },
+      {
+        "id": "CLM-0004762",
+        "name": "L. Chen — cumulative 31,000.00 over 25,000.00 limit",
+        "status": "Over limit",
+        "tagClass": "outline",
+        "amount": "$27,300.00 requested"
+      }
+    ],
+    "approvals": [
+      {
+        "id": "CLM-0004821",
+        "name": "K. Alvarez — aged 1d 4h",
+        "status": "Awaiting approval",
+        "tagClass": "outline",
+        "amount": "$28,000.00"
+      },
+      {
+        "id": "CLM-0004777",
+        "name": "R. Silva — aged 3h",
+        "status": "Awaiting approval",
+        "tagClass": "neutral",
+        "amount": "$4,100.00"
+      }
+    ],
+    "renewal": [
+      {
+        "id": "POL-0079542",
+        "name": "Renewal exception — rating service non-success",
+        "status": "Exception",
+        "tagClass": "outline",
+        "amount": "exp. 2026-08-20"
+      },
+      {
+        "id": "POL-0082210",
+        "name": "Renewal exception — coverage carry-forward mismatch",
+        "status": "Exception",
+        "tagClass": "outline",
+        "amount": "exp. 2026-08-25"
+      }
+    ]
+  },
+  "jobs": [
+    { "name": "Installment billing", "window": "01:00–02:30", "tagClass": "accent" },
+    { "name": "Claims reserve rollup", "window": "02:30–03:15", "tagClass": "accent" },
+    { "name": "Audit archive", "window": "03:15–05:00", "tagClass": "neutral" }
+  ],
+  "alerts": [
+    { "text": "audit-archive-job exceeded error threshold at chunk 14. Non-zero exit raised; restart from last committed chunk." },
+    { "text": "2 payment attempts denied: NO_QUALIFYING_APPROVAL. Actor, resource and operation recorded." },
+    { "text": "Tunable billing.leadDays changed 15 → 15 (no-op) by j.reyes at 07:12. Version 8." }
+  ]
+}

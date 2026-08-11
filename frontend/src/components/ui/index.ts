@@ -16,6 +16,9 @@ export type { TextAreaProps } from './TextArea'
 export { Badge } from './Badge'
 export type { BadgeProps, BadgeStatus, ClaimStatus, PolicyStatus, BillingStatus } from './Badge'
 
+export { BlueprintCard } from './BlueprintCard'
+export type { BlueprintCardProps, BlueprintCardElevation } from './BlueprintCard'
+
 export { Card } from './Card'
 export type { CardProps } from './Card'
 
@@ -30,6 +33,9 @@ export type { TabsProps, TabItem } from './Tabs'
 
 export { Modal } from './Modal'
 export type { ModalProps } from './Modal'
+
+export { UnmaskModal } from './UnmaskModal'
+export type { UnmaskModalProps } from './UnmaskModal'
 
 export { ToastProvider, useToast } from './Toast'
 export type { ToastMessage, ToastTone } from './Toast'

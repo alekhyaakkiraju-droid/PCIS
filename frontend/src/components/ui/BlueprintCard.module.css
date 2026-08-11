@@ -1,0 +1,84 @@
+.card {
+  position: relative;
+  background: var(--pcis-color-surface);
+  border: 1px solid var(--pcis-color-border);
+  padding: var(--pcis-space-4);
+}
+
+.elevSm {
+  box-shadow: var(--pcis-elevation-sm);
+}
+
+.elevMd {
+  box-shadow: var(--pcis-elevation-md);
+}
+
+.elevLg {
+  box-shadow: var(--pcis-elevation-lg);
+}
+
+.dashed {
+  border-style: dashed;
+}
+
+.corner {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-color: var(--pcis-color-primary-400);
+  border-style: solid;
+  pointer-events: none;
+}
+
+.cornerTl {
+  composes: corner;
+  top: -1px;
+  left: -1px;
+  border-width: 2px 0 0 2px;
+}
+
+.cornerTr {
+  composes: corner;
+  top: -1px;
+  right: -1px;
+  border-width: 2px 2px 0 0;
+}
+
+.cornerBl {
+  composes: corner;
+  bottom: -1px;
+  left: -1px;
+  border-width: 0 0 2px 2px;
+}
+
+.cornerBr {
+  composes: corner;
+  bottom: -1px;
+  right: -1px;
+  border-width: 0 2px 2px 0;
+}
+
+.kicker {
+  font-size: var(--pcis-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--pcis-color-text-muted);
+  margin-bottom: var(--pcis-space-1);
+}
+
+.title {
+  font-family: var(--pcis-font-sans);
+  font-size: var(--pcis-font-size-xl);
+  font-weight: var(--pcis-font-weight-semibold);
+  margin: 0;
+}
+
+.meta {
+  font-size: var(--pcis-font-size-sm);
+  color: var(--pcis-color-text-muted);
+  margin-top: var(--pcis-space-1);
+}
+
+.body {
+  font-size: var(--pcis-font-size-sm);
+}

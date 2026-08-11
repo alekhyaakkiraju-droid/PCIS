@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: process.env.CI ? 'github' : 'list',
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:3001',
     trace: 'on-first-retry',
   },
   projects: [
@@ -20,8 +20,8 @@ export default defineConfig({
   webServer: process.env.CI
     ? undefined
     : {
-        command: 'npm run dev',
-        url: 'http://localhost:3000',
+        command: 'npm run dev -- --host 127.0.0.1 --port 3001',
+        url: 'http://127.0.0.1:3001',
         reuseExistingServer: !process.env.CI,
       },
 })

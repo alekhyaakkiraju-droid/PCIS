@@ -69,15 +69,16 @@ describe('Customer360Page', () => {
     )
   })
 
-  it('renders six tabs with independent content', async () => {
+  it('renders five tabs with independent content', async () => {
     renderPage()
-    expect(screen.getByRole('heading', { name: 'Customer 360' })).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: 'Overview' })).toBeInTheDocument()
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: profileFixture.custName })).toBeInTheDocument(),
+    )
     expect(screen.getByRole('tab', { name: 'Profile' })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Policies' })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Billing' })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Claims' })).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: 'Audit' })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Audit trail' })).toBeInTheDocument()
   })
 
   it('masks tax ID on profile tab', async () => {

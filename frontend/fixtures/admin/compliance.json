@@ -1,0 +1,37 @@
+{
+  "tunables": [
+    {
+      "key": "billing.installment.leadDays",
+      "label": "Installment lead window",
+      "legacy": "BILL_LEAD_D",
+      "value": "15",
+      "unit": "days",
+      "updated": "2026-07-01",
+      "scope": "Global",
+      "version": "v3"
+    },
+    {
+      "key": "claims.reinsurance.cessionThreshold",
+      "label": "Reinsurance referral threshold",
+      "legacy": "REIN_THR",
+      "value": "100000.00",
+      "unit": "USD",
+      "updated": "2026-08-01",
+      "scope": "Claims",
+      "version": "v12"
+    }
+  ],
+  "classificationSummary": [
+    { "tier": "Restricted", "count": "6 tables" },
+    { "tier": "Confidential", "count": "21 tables" },
+    { "tier": "Internal", "count": "24 tables" },
+    { "tier": "Public", "count": "4 tables" }
+  ],
+  "retentionRuns": [
+    { "runDate": "2026-07-31", "archived": "4,102", "purged": "3,988", "verification": "Verified" },
+    { "runDate": "2026-06-30", "archived": "3,890", "purged": "3,890", "verification": "Verified" }
+  ],
+  "changeHistory": [
+    { "key": "audit.archive.chunkSize", "change": "5,000 → 1,000", "actor": "s.mehta", "when": "2026-07-15 09:02", "version": "v5" }
+  ]
+}

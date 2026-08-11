@@ -1,0 +1,38 @@
+{
+  "custId": 19284,
+  "taxId": "512-44-4821",
+  "custName": "Marta Field",
+  "custType": "B",
+  "custStatus": "A",
+  "creditScore": 742,
+  "addresses": [
+    {
+      "addrId": 1,
+      "addressLine1": "228 Larkspur Lane",
+      "addressLine2": null,
+      "city": "Ann Arbor",
+      "stateCode": "MI",
+      "zipCode": "48104",
+      "addrType": "PRM"
+    },
+    {
+      "addrId": 2,
+      "addressLine1": "PO Box 8841",
+      "addressLine2": null,
+      "city": "Ann Arbor",
+      "stateCode": "MI",
+      "zipCode": "48105",
+      "addrType": "BIL"
+    }
+  ],
+  "contacts": [
+    {
+      "contactId": 1,
+      "firstName": "Marta",
+      "lastName": "Field",
+      "phoneNbr": "734-555-8842",
+      "emailAddr": "marta.field@example.com",
+      "contactType": "OWN"
+    }
+  ]
+}

@@ -1,11 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import auditFixture from '../../../fixtures/customer-360/audit.json'
 import billingFixture from '../../../fixtures/customer-360/billing.json'
 import claimsFixture from '../../../fixtures/customer-360/claims.json'
 import overviewFixture from '../../../fixtures/customer-360/overview.json'
+import overview19284Fixture from '../../../fixtures/customer-360/overview-19284.json'
 import policiesFixture from '../../../fixtures/customer-360/policies.json'
 import profileFixture from '../../../fixtures/customer-360/profile.json'
+import profile19284Fixture from '../../../fixtures/customer-360/profile-19284.json'
 import { customerApi } from '@/api/customer-api'
 import type {
   AuditEvent,
@@ -14,8 +16,8 @@ import type {
   Customer360PolicySection,
 } from '@/api/customer360-types'
 import type { Customer } from '@/api/customer-api'
-import { useMaskedField } from '@/hooks/useMaskedField'
-import { Badge, DataTable, MoneyDisplay, Skeleton, Tabs } from '@/components/ui'
+import { maskPiiValue } from '@/hooks/useMaskedField'
+import { Badge, BlueprintCard, DataTable, MoneyDisplay, Skeleton, Tabs, UnmaskModal } from '@/components/ui'
 import type { TabItem } from '@/components/ui'
 
 type TabPanelProps = {
@@ -36,49 +38,26 @@ function TabPanel({ loading, error, children }: TabPanelProps) {
   return <>{children}</>
 }
 
-function ContactMaskedFields({ phone, email }: { phone?: string | null; email?: string | null }) {
-  const phoneField = useMaskedField(phone, 'phone')
-  const emailField = useMaskedField(email, 'email')
+function ContactMaskedFields({
+  phone,
+  email,
+  maskPhone,
+  maskEmail,
+}: {
+  phone?: string | null
+  email?: string | null
+  maskPhone: boolean
+  maskEmail: boolean
+}) {
   return (
     <div>
-      <div>
-        Phone: {phoneField.displayValue}
-        {phoneField.canToggle ? (
-          <button type="button" onClick={phoneField.toggleReveal} style={{ marginLeft: '0.5rem' }}>
-            {phoneField.isMasked ? 'Show' : 'Hide'}
-          </button>
-        ) : null}
-      </div>
-      <div>
-        Email: {emailField.displayValue}
-        {emailField.canToggle ? (
-          <button type="button" onClick={emailField.toggleReveal} style={{ marginLeft: '0.5rem' }}>
-            {emailField.isMasked ? 'Show' : 'Hide'}
-          </button>
-        ) : null}
-      </div>
+      <div>Phone: {maskPhone ? maskPiiValue(phone, 'phone') : (phone ?? '—')}</div>
+      <div>Email: {maskEmail ? maskPiiValue(email, 'email') : (email ?? '—')}</div>
     </div>
   )
 }
 
-function MaskedField({ label, value, type }: { label: string; value?: string | null; type: 'taxId' | 'phone' | 'email' }) {
-  const { displayValue, canToggle, isMasked, toggleReveal } = useMaskedField(value, type)
-  return (
-    <div>
-      <dt>{label}</dt>
-      <dd>
-        {displayValue}
-        {canToggle ? (
-          <button type="button" onClick={toggleReveal} style={{ marginLeft: '0.5rem' }}>
-            {isMasked ? 'Show' : 'Hide'}
-          </button>
-        ) : null}
-      </dd>
-    </div>
-  )
-}
-
-function OverviewTab({ custId }: { custId: number }) {
+function OverviewTab({ custId, compact = false }: { custId: number; compact?: boolean }) {
   const { data, isLoading, error } = useQuery({
     queryKey: ['customer360', custId, 'overview'],
     queryFn: async () => {
@@ -95,10 +74,25 @@ function OverviewTab({ custId }: { custId: number }) {
           balanceDue: response.billing.data?.balanceDue ?? 0,
         }
       } catch {
-        return { ...(overviewFixture as typeof overviewFixture), custId }
+        return customerId === 19284
+          ? { ...(overview19284Fixture as typeof overviewFixture), custId: customerId }
+          : { ...(overviewFixture as typeof overviewFixture), custId }
       }
     },
   })
+
+  if (compact) {
+    if (isLoading) return <Skeleton variant="text" lines={1} />
+    if (error || !data) return null
+    return (
+      <div style={{ display: 'flex', gap: 'var(--pcis-space-6)', textAlign: 'right' }}>
+        <div><div className="mono" style={{ fontSize: 'var(--pcis-font-size-xs)' }}>Policies</div><div style={{ fontSize: 'var(--pcis-font-size-xl)', fontWeight: 600 }}>{data.activePolicies}</div></div>
+        <div><div className="mono" style={{ fontSize: 'var(--pcis-font-size-xs)' }}>Premium</div><div style={{ fontSize: 'var(--pcis-font-size-xl)', fontWeight: 600 }}><MoneyDisplay value={data.premiumInForce} /></div></div>
+        <div><div className="mono" style={{ fontSize: 'var(--pcis-font-size-xs)' }}>Open claims</div><div style={{ fontSize: 'var(--pcis-font-size-xl)', fontWeight: 600 }}>{data.openClaims}</div></div>
+        <div><div className="mono" style={{ fontSize: 'var(--pcis-font-size-xs)' }}>Balance due</div><div style={{ fontSize: 'var(--pcis-font-size-xl)', fontWeight: 600 }}><MoneyDisplay value={data.balanceDue} /></div></div>
+      </div>
+    )
+  }
 
   return (
     <TabPanel loading={isLoading} error={error}>
@@ -140,14 +134,24 @@ function OverviewTab({ custId }: { custId: number }) {
   )
 }
 
-function ProfileTab({ custId }: { custId: number }) {
+function ProfileTab({
+  custId,
+  maskTax,
+  maskEmail,
+  maskPhone,
+}: {
+  custId: number
+  maskTax: boolean
+  maskEmail: boolean
+  maskPhone: boolean
+}) {
   const { data, isLoading, error } = useQuery({
     queryKey: ['customer360', custId, 'profile'],
     queryFn: async (): Promise<Customer> => {
       try {
         return await customerApi.getById(custId)
       } catch {
-        return profileFixture as Customer
+        return custId === 19284 ? (profile19284Fixture as Customer) : (profileFixture as Customer)
       }
     },
   })
@@ -156,39 +160,114 @@ function ProfileTab({ custId }: { custId: number }) {
     <TabPanel loading={isLoading} error={error}>
       {data ? (
         <>
-          <dl style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+          <div
+            className="card-kicker"
+            style={{
+              marginBottom: 8,
+              fontSize: 10,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: 'var(--pcis-color-primary-600)',
+            }}
+          >
+            Identity
+          </div>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+              gap: 'var(--pcis-space-4)',
+              marginBottom: 'var(--pcis-space-6)',
+            }}
+          >
             <div>
-              <dt>Name</dt>
-              <dd>{data.custName}</dd>
+              <div style={{ fontSize: 11, color: 'var(--pcis-color-text-muted)' }}>Customer type</div>
+              <div style={{ fontSize: 14 }}>{data.custType === 'I' ? 'Individual (I)' : 'Business (B)'}</div>
             </div>
             <div>
-              <dt>Type</dt>
-              <dd>{data.custType === 'I' ? 'Individual' : 'Business'}</dd>
+              <div style={{ fontSize: 11, color: 'var(--pcis-color-text-muted)' }}>Tax ID</div>
+              <div style={{ fontSize: 14 }}>{maskTax ? maskPiiValue(data.taxId, 'taxId') : (data.taxId ?? '—')}</div>
             </div>
-            <MaskedField label="Tax ID" value={data.taxId} type="taxId" />
-          </dl>
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--pcis-color-text-muted)' }}>Status</div>
+              <div style={{ fontSize: 14 }}>
+                <Badge status="Active">{data.custStatus === 'A' ? 'Active' : data.custStatus}</Badge>
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--pcis-color-text-muted)' }}>Email</div>
+              <div style={{ fontSize: 14 }}>
+                {maskEmail ? maskPiiValue(data.contacts?.[0]?.emailAddr, 'email') : (data.contacts?.[0]?.emailAddr ?? '—')}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--pcis-color-text-muted)' }}>Phone</div>
+              <div style={{ fontSize: 14 }}>
+                {maskPhone ? maskPiiValue(data.contacts?.[0]?.phoneNbr, 'phone') : (data.contacts?.[0]?.phoneNbr ?? '—')}
+              </div>
+            </div>
+          </div>
           {data.addresses?.length ? (
-            <section aria-label="Addresses" style={{ marginTop: '1rem' }}>
-              <h3>Addresses</h3>
-              <ul>
-                {data.addresses.map((addr) => (
-                  <li key={addr.addrId ?? `${addr.addressLine1}-${addr.city}`}>
-                    {addr.addressLine1}, {addr.city}, {addr.stateCode} {addr.zipCode}
-                  </li>
-                ))}
-              </ul>
+            <section aria-label="Addresses">
+              <div
+                className="card-kicker"
+                style={{
+                  marginBottom: 8,
+                  fontSize: 10,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  color: 'var(--pcis-color-primary-600)',
+                }}
+              >
+                Addresses
+              </div>
+              <DataTable
+                aria-label="Customer addresses"
+                rows={data.addresses}
+                columns={[
+                  { id: 'type', label: 'Type', accessor: (r) => r.addrType ?? 'PRM', render: (r) => (r.addrType === 'PRM' ? 'Mailing' : r.addrType ?? '—') },
+                  { id: 'line1', label: 'Line 1', accessor: (r) => r.addressLine1 },
+                  { id: 'city', label: 'City', accessor: (r) => r.city },
+                  { id: 'state', label: 'State', accessor: (r) => r.stateCode },
+                  { id: 'zip', label: 'Zip', accessor: (r) => r.zipCode },
+                  {
+                    id: 'primary',
+                    label: 'Primary',
+                    accessor: (r) => r.addrType,
+                    render: (r) => (r.addrType === 'PRM' ? <Badge status="Active">Yes</Badge> : 'No'),
+                  },
+                ]}
+                getRowId={(r) => String(r.addrId ?? r.addressLine1)}
+                emptyMessage="No addresses."
+              />
             </section>
           ) : null}
           {data.contacts?.length ? (
-            <section aria-label="Contacts" style={{ marginTop: '1rem' }}>
-              <h3>Contacts</h3>
-              <ul>
+            <section aria-label="Contacts" style={{ marginTop: 'var(--pcis-space-6)' }}>
+              <div
+                className="card-kicker"
+                style={{
+                  marginBottom: 8,
+                  fontSize: 10,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  color: 'var(--pcis-color-primary-600)',
+                }}
+              >
+                Contacts
+              </div>
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
                 {data.contacts.map((contact) => (
-                  <li key={contact.contactId ?? `${contact.firstName}-${contact.lastName}`}>
+                  <li key={contact.contactId ?? `${contact.firstName}-${contact.lastName}`} style={{ marginBottom: 'var(--pcis-space-3)' }}>
                     <strong>
                       {contact.firstName} {contact.lastName}
                     </strong>
-                    <ContactMaskedFields phone={contact.phoneNbr} email={contact.emailAddr} />
+                    <ContactMaskedFields
+                      phone={contact.phoneNbr}
+                      email={contact.emailAddr}
+                      maskPhone={maskPhone}
+                      maskEmail={maskEmail}
+                    />
                   </li>
                 ))}
               </ul>
@@ -353,20 +432,94 @@ export type Customer360PageProps = {
 }
 
 export function Customer360Page({ customerId }: Customer360PageProps) {
+  const [maskTax, setMaskTax] = useState(true)
+  const [maskEmail, setMaskEmail] = useState(true)
+  const [maskPhone, setMaskPhone] = useState(true)
+  const [unmaskOpen, setUnmaskOpen] = useState(false)
+
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ['customer360', customerId, 'profile-header'],
+    queryFn: async (): Promise<Customer> => {
+      try {
+        return await customerApi.getById(customerId)
+      } catch {
+        return customerId === 19284 ? (profile19284Fixture as Customer) : (profileFixture as Customer)
+      }
+    },
+  })
+
+  const policyCount = customerId === 19284 ? 2 : undefined
+  const claimCount = customerId === 19284 ? 1 : undefined
+
   const tabs: TabItem[] = [
-    { id: 'overview', label: 'Overview', content: <OverviewTab custId={customerId} /> },
-    { id: 'profile', label: 'Profile', content: <ProfileTab custId={customerId} /> },
-    { id: 'policies', label: 'Policies', content: <PoliciesTab custId={customerId} /> },
+    {
+      id: 'profile',
+      label: 'Profile',
+      content: <ProfileTab custId={customerId} maskTax={maskTax} maskEmail={maskEmail} maskPhone={maskPhone} />,
+    },
+    { id: 'policies', label: policyCount ? `Policies (${policyCount})` : 'Policies', content: <PoliciesTab custId={customerId} /> },
     { id: 'billing', label: 'Billing', content: <BillingTab custId={customerId} /> },
-    { id: 'claims', label: 'Claims', content: <ClaimsTab custId={customerId} /> },
-    { id: 'audit', label: 'Audit', content: <AuditTab custId={customerId} /> },
+    { id: 'claims', label: claimCount ? `Claims (${claimCount})` : 'Claims', content: <ClaimsTab custId={customerId} /> },
+    { id: 'audit', label: 'Audit trail', content: <AuditTab custId={customerId} /> },
   ]
+
+  const maskedTaxId = maskTax ? maskPiiValue(profile?.taxId, 'taxId') : (profile?.taxId ?? '—')
 
   return (
     <section aria-labelledby="customer-360-heading">
-      <h1 id="customer-360-heading">Customer 360</h1>
-      <p>Customer ID: {customerId}</p>
-      <Tabs items={tabs} aria-label="Customer 360 sections" defaultTabId="overview" />
+      <UnmaskModal
+        open={unmaskOpen}
+        onClose={() => setUnmaskOpen(false)}
+        onConfirm={() => {
+          setMaskTax(false)
+          setUnmaskOpen(false)
+        }}
+      />
+
+      <BlueprintCard
+        style={{
+          marginBottom: 'var(--pcis-space-4)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+        }}
+      >
+        <div>
+          <div
+            className="mono"
+            style={{ fontSize: 'var(--pcis-font-size-xs)', color: 'var(--pcis-color-primary-600)', textTransform: 'uppercase', letterSpacing: '0.08em' }}
+          >
+            Customer CUS-{String(customerId).padStart(7, '0')}
+          </div>
+          <h1 id="customer-360-heading" style={{ fontSize: 'var(--pcis-font-size-xl)', fontWeight: 600, margin: '4px 0 0' }}>
+            {profileLoading ? '…' : (profile?.custName ?? 'Customer 360')}
+          </h1>
+          <div style={{ fontSize: 13, marginTop: 4, color: 'var(--pcis-color-text-muted)' }}>
+            Tax ID {maskedTaxId}{' '}
+            ·{' '}
+            <button
+              type="button"
+              onClick={() => {
+                if (maskTax) setUnmaskOpen(true)
+                else setMaskTax(true)
+              }}
+              style={{
+                fontSize: 12,
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                color: 'var(--pcis-color-primary-600)',
+                cursor: 'pointer',
+                textDecoration: 'underline',
+              }}
+            >
+              {maskTax ? 'Request unmask →' : 'Re-mask'}
+            </button>
+          </div>
+        </div>
+        <OverviewTab custId={customerId} compact />
+      </BlueprintCard>
+      <Tabs items={tabs} aria-label="Customer 360 sections" defaultTabId="profile" />
     </section>
   )
 }

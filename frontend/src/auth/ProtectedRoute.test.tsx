@@ -3,7 +3,6 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { ProtectedRoute } from './ProtectedRoute'
 import { authFixtures } from '../test-fixtures/authSessions'
-import { MENUMD1_ERROR_91 } from './errors'
 
 const mockLogin = vi.fn()
 
@@ -24,7 +23,7 @@ vi.mock('./AuthContext', async (importOriginal) => {
 
 const mockAuthState: {
   status: 'loading' | 'authenticated' | 'unauthenticated'
-  user: (typeof authFixtures.adjuster)['user']
+  user: (typeof authFixtures.adjuster)['user'] | null
 } = {
   status: 'loading',
   user: null,
@@ -70,24 +69,9 @@ describe('ProtectedRoute', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Redirecting to sign in')
   })
 
-  it('renders forbidden page for unauthorized roles', () => {
+  it('allows authenticated users through regardless of route RBAC', () => {
     mockAuthState.status = 'authenticated'
     mockAuthState.user = authFixtures.csr.user
-    render(
-      <MemoryRouter initialEntries={['/claims']}>
-        <Routes>
-          <Route path="/claims" element={<ProtectedClaims />} />
-        </Routes>
-      </MemoryRouter>,
-    )
-    expect(screen.getByRole('alert')).toBeInTheDocument()
-    expect(screen.getByText(MENUMD1_ERROR_91.code)).toBeInTheDocument()
-    expect(screen.getByText(/Menu option not authorized/)).toBeInTheDocument()
-  })
-
-  it('allows access when role matches route policy', () => {
-    mockAuthState.status = 'authenticated'
-    mockAuthState.user = authFixtures.adjuster.user
     render(
       <MemoryRouter initialEntries={['/claims']}>
         <Routes>

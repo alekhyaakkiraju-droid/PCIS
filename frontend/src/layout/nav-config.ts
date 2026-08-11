@@ -1,0 +1,151 @@
+import type { PcisRole } from '../auth/types'
+
+export type NavLink = {
+  to: string
+  label: string
+  menuOption: string
+  /** Empty array = all authenticated roles (wireframe dashboard / design system). */
+  roles: PcisRole[]
+}
+
+export type NavSection = {
+  title?: string
+  items: NavLink[]
+}
+
+/** Wireframe screenPerms from PCIS Modernization UI.dc.html */
+export const NAV_SECTIONS: NavSection[] = [
+  {
+    items: [
+      { to: '/', label: 'Dashboard', menuOption: 'HOME', roles: [] },
+      { to: '/design-system', label: 'Design System', menuOption: 'DS', roles: [] },
+    ],
+  },
+  {
+    title: 'Claims',
+    items: [
+      {
+        to: '/claims/fnol',
+        label: 'FNOL Intake',
+        menuOption: 'FNOL',
+        roles: ['CLAIMS_ADJUSTER', 'CLAIMS_SUPERVISOR'],
+      },
+      {
+        to: '/claims',
+        label: 'Claim Inquiry',
+        menuOption: 'CLMINQ',
+        roles: ['CLAIMS_ADJUSTER', 'CLAIMS_SUPERVISOR'],
+      },
+      {
+        to: '/claims/payments',
+        label: 'Payment & Authority',
+        menuOption: 'CLMPAY',
+        roles: ['CLAIMS_ADJUSTER', 'CLAIMS_SUPERVISOR'],
+      },
+    ],
+  },
+  {
+    title: 'Customer & Policy',
+    items: [
+      {
+        to: '/customers',
+        label: 'Customer 360',
+        menuOption: 'CUS',
+        roles: ['CSR', 'CLAIMS_SUPERVISOR'],
+      },
+      {
+        to: '/policies',
+        label: 'Policy Issuance',
+        menuOption: 'POL',
+        roles: ['UNDERWRITER', 'CLAIMS_SUPERVISOR'],
+      },
+    ],
+  },
+  {
+    title: 'Operations',
+    items: [
+      {
+        to: '/billing',
+        label: 'Billing Reconciliation',
+        menuOption: 'BIL',
+        roles: ['COMPLIANCE', 'CLAIMS_SUPERVISOR'],
+      },
+      {
+        to: '/batch',
+        label: 'Batch Operations',
+        menuOption: 'BAT',
+        roles: ['COMPLIANCE', 'CLAIMS_SUPERVISOR'],
+      },
+      {
+        to: '/admin',
+        label: 'Admin & Compliance',
+        menuOption: 'ADM',
+        roles: ['COMPLIANCE'],
+      },
+    ],
+  },
+]
+
+export const ALL_NAV_ITEMS: NavLink[] = NAV_SECTIONS.flatMap((section) => section.items)
+
+export const ROUTE_TITLES: Record<string, string> = {
+  '/': 'Operations Dashboard',
+  '/design-system': 'Design System',
+  '/claims/fnol': 'Claim FNOL Intake',
+  '/claims': 'Claim Inquiry',
+  '/claims/payments': 'Claim Payment & Authority Approval',
+  '/customers': 'Customer 360',
+  '/policies': 'Policy Issuance & Premium Breakdown',
+  '/billing': 'Billing Generation & Parallel-Run Reconciliation',
+  '/batch': 'Batch Operations Console',
+  '/admin': 'Admin — Tunables, Classification & Audit Retention',
+}
+
+/** Sidebar always shows every wireframe nav item; RBAC is enforced on the route body. */
+export function allNavSections(): NavSection[] {
+  return NAV_SECTIONS
+}
+
+export function resolveRouteTitle(pathname: string): string {
+  if (pathname.startsWith('/customers/')) return 'Customer 360'
+  const normalized = pathname.replace(/\/$/, '') || '/'
+  const exact = ROUTE_TITLES[normalized]
+  if (exact) return exact
+  const match = Object.entries(ROUTE_TITLES)
+    .filter(([path]) => path !== '/')
+    .sort((a, b) => b[0].length - a[0].length)
+    .find(([path]) => normalized.startsWith(path))
+  return match?.[1] ?? 'PCIS'
+}
+
+function resolveNavItem(pathname: string): NavLink | undefined {
+  const normalized = pathname.replace(/\/$/, '') || '/'
+  if (normalized.startsWith('/customers/')) {
+    return ALL_NAV_ITEMS.find((i) => i.to === '/customers')
+  }
+  return (
+    ALL_NAV_ITEMS.find((nav) => nav.to === normalized) ??
+    ALL_NAV_ITEMS.find((nav) => nav.to !== '/' && normalized.startsWith(nav.to))
+  )
+}
+
+export function isRouteAllowedForRoles(pathname: string, roles: PcisRole[]): boolean {
+  const item = resolveNavItem(pathname)
+  if (!item || item.roles.length === 0) return true
+  return item.roles.some((role) => roles.includes(role))
+}
+
+export function requiredRolesForPath(pathname: string): PcisRole[] | undefined {
+  const item = resolveNavItem(pathname)
+  if (!item || item.roles.length === 0) return undefined
+  return item.roles
+}
+
+/** @deprecated Use allNavSections — wireframe shows all links regardless of role. */
+export function filterNavSectionsForRoles(roles: PcisRole[]): NavSection[] {
+  const roleSet = new Set(roles)
+  return NAV_SECTIONS.map((section) => ({
+    ...section,
+    items: section.items.filter((item) => item.roles.length === 0 || item.roles.some((role) => roleSet.has(role))),
+  })).filter((section) => section.items.length > 0)
+}

@@ -11,7 +11,7 @@ vi.mock('../auth/AuthContext', () => ({
 }))
 
 describe('Sidebar', () => {
-  it('renders only nav items allowed for adjuster roles', () => {
+  it('renders all wireframe nav links for authenticated users', () => {
     mockUseAuth.mockReturnValue({
       status: 'authenticated',
       user: authFixtures.adjuster.user,
@@ -25,14 +25,13 @@ describe('Sidebar', () => {
       </MemoryRouter>,
     )
 
-    expect(screen.getByRole('navigation', { name: 'Primary' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Dashboard' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Claims' })).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'Billing' })).not.toBeInTheDocument()
-    expect(screen.getByText('Alice Adjuster')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Claim Inquiry' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Billing Reconciliation' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Admin & Compliance' })).toBeInTheDocument()
   })
 
-  it('hides claims but shows customers and billing for CSR', () => {
+  it('shows customer link for CSR session', () => {
     mockUseAuth.mockReturnValue({
       status: 'authenticated',
       user: authFixtures.csr.user,
@@ -46,8 +45,7 @@ describe('Sidebar', () => {
       </MemoryRouter>,
     )
 
-    expect(screen.getByRole('link', { name: 'Customers' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Billing' })).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'Claims' })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Customer 360' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Claim Inquiry' })).toBeInTheDocument()
   })
 })

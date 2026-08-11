@@ -38,7 +38,7 @@ describe('App scaffold', () => {
     )
 
     expect(await screen.findByRole('navigation', { name: 'Primary' })).toBeInTheDocument()
-    expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /Good morning/i })).toBeInTheDocument()
   })
 
   it('mounts ErrorBoundary around the application tree', async () => {

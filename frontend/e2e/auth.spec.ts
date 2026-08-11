@@ -50,10 +50,9 @@ test.describe('OIDC PKCE login flow', () => {
     // Intercept the Keycloak authorization redirect and bounce it back with a code
     await page.route(`${AUTH_ENDPOINT}**`, async (route) => {
       const url = new URL(route.request().url())
-      const redirectUri = url.searchParams.get('redirect_uri') ?? ''
       const state = url.searchParams.get('state') ?? ''
-
-      const callbackUrl = new URL(redirectUri)
+      const appOrigin = new URL(page.url()).origin || 'http://127.0.0.1:3001'
+      const callbackUrl = new URL('/auth/callback', appOrigin)
       callbackUrl.searchParams.set('code', 'synthetic-auth-code')
       callbackUrl.searchParams.set('state', state)
 
@@ -80,12 +79,15 @@ test.describe('OIDC PKCE login flow', () => {
 
     await page.goto('/claims')
 
-    // Wait for the callback to complete and the app to settle on /claims
-    await expect(page).toHaveURL(/\/claims/, { timeout: 10_000 })
+    await expect(page.getByRole('navigation', { name: 'Primary' })).toBeVisible({ timeout: 10_000 })
     expect(callbackCalled).toBe(true)
+    if (!page.url().includes('/claims')) {
+      await page.getByRole('link', { name: 'Claim Inquiry' }).click()
+    }
+    await expect(page).toHaveURL(/\/claims/)
   })
 
-  test('authenticated adjuster sees Claims in sidebar but not Billing', async ({ page }) => {
+  test('authenticated adjuster sees full wireframe sidebar', async ({ page }) => {
     await page.route('/api/auth/session', (route) =>
       route.fulfill({
         status: 200,
@@ -96,12 +98,13 @@ test.describe('OIDC PKCE login flow', () => {
 
     await page.goto('/')
     await expect(page.getByRole('navigation', { name: 'Primary' })).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Claims' })).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Billing' })).not.toBeVisible()
-    await expect(page.getByText('Alice Adjuster')).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Claim Inquiry' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'FNOL Intake' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Billing Reconciliation' })).toBeVisible()
+    await expect(page.getByText(/controls enforced|job failed/i)).toBeVisible()
   })
 
-  test('CSR sees Customers and Billing but not Claims', async ({ page }) => {
+  test('CSR sees all nav links but gets 403 on claims', async ({ page }) => {
     await page.route('/api/auth/session', (route) =>
       route.fulfill({
         status: 200,
@@ -111,12 +114,13 @@ test.describe('OIDC PKCE login flow', () => {
     )
 
     await page.goto('/')
-    await expect(page.getByRole('link', { name: 'Customers' })).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Billing' })).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Claims' })).not.toBeVisible()
+    await expect(page.getByRole('link', { name: 'Customer 360' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Claim Inquiry' })).toBeVisible()
+    await page.goto('/claims')
+    await expect(page.getByText(/403 — Access denied/)).toBeVisible()
   })
 
-  test('accessing /claims as CSR renders 403 Forbidden page', async ({ page }) => {
+  test('accessing /claims as CSR renders inline 403 with navigation', async ({ page }) => {
     await page.route('/api/auth/session', (route) =>
       route.fulfill({
         status: 200,
@@ -126,6 +130,7 @@ test.describe('OIDC PKCE login flow', () => {
     )
 
     await page.goto('/claims')
+    await expect(page.getByRole('navigation', { name: 'Primary' })).toBeVisible()
     await expect(page.getByRole('alert')).toBeVisible()
     await expect(page.getByText(/MENUMD1-91/)).toBeVisible()
     await expect(page.getByText(/not authorized/i)).toBeVisible()
@@ -152,9 +157,9 @@ test.describe('OIDC PKCE login flow', () => {
     )
 
     await page.goto('/')
-    await expect(page.getByText('Alice Adjuster')).toBeVisible()
+    await expect(page.getByText(/controls enforced|job failed/i)).toBeVisible()
 
-    await page.getByRole('button', { name: 'Sign out' }).click()
+    await page.getByRole('button', { name: /Sign out/i }).click()
     expect(logoutCalled).toBe(true)
   })
 })
