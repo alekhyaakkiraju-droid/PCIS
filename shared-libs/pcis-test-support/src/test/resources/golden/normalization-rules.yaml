@@ -1,0 +1,81 @@
+# Normalization rules for golden capture (WO-176)
+# Allow-list: columns that MAY be rewritten for determinism.
+# Deny-list: columns that must NEVER be normalized (monetary + status).
+version: 1
+format_version: "1.0.0"
+woref: WO-176
+
+# Fixed reference clock used when capture context pins the date.
+default_reference_date: "2024-06-15"
+default_reference_time: "00:00:00Z"
+
+allow:
+  timestamps:
+    - CRT_TIMESTAMP
+    - UPD_TIMESTAMP
+    - CREATED_AT
+    - UPDATED_AT
+    - LOG_TIMESTAMP
+    - RUN_STARTED
+    - RUN_ENDED
+    - ARCHIVE_DATE
+    - CUTOFF_DATE
+  surrogates:
+    - LOG_ID
+    - PAYMENT_ID
+    - INSTALLMENT_ID
+    - COMMISSION_ID
+    - RUN_ID
+    - ARCHIVE_ID
+    - SEQ_NO
+    - ID
+  # Columns matching these suffixes are also treated as timestamps / surrogates
+  # unless they appear on the deny list.
+  timestamp_suffixes:
+    - _TS
+    - _TIMESTAMP
+  surrogate_suffixes:
+    - _SEQ
+
+deny:
+  # All NUMERIC(9,2) and NUMERIC(11,2) monetary fields — exact string compare only.
+  monetary_types:
+    - "NUMERIC(9,2)"
+    - "NUMERIC(11,2)"
+  monetary_columns:
+    - RESERVE_AMT
+    - AUTHORITY_LIMIT
+    - PAYMENT_AMT
+    - ANNUAL_PREMIUM
+    - AMOUNT
+    - PREMIUM_AMT
+    - COMMISSION_AMT
+    - DEDUCTIBLE_AMT
+    - INSTALLMENT_AMT
+    - INVOICE_AMT
+    - PAID_AMT
+    - APPROVED_AMT
+  # Status / lifecycle codes — never rewritten.
+  status_columns:
+    - STATUS
+    - RESERVE_STATUS
+    - PAYMENT_STATUS
+    - POLICY_STATUS
+    - COMM_CALC_FLAG
+    - BILLING_FREQ
+    - ACTION_CODE
+  status_suffixes:
+    - _STATUS
+    - _FLAG
+
+# Capture queries must ORDER BY these business keys (enforced by OrderByEnforcer).
+business_keys:
+  CLAIM_RESERVE_T: [CLAIM_ID, RESERVE_ID]
+  CLAIM_PAYMENT_T: [CLAIM_ID, PAYMENT_AMT]
+  BILLING_INSTALLMENT_T: [POLICY_ID, INSTALLMENT_NO]
+  AUDIT_LOG_T: [PROGRAM_NAME, ACTION_CODE, RECORD_KEY]
+  AUDIT_LOG_ARCHIVE_T: [PROGRAM_NAME, ACTION_CODE, RECORD_KEY]
+  COMMISSION_T: [POLICY_ID, AGENT_ID]
+  POLICY_T: [POLICY_ID]
+  DEDUCTIBLE_T: [POLICY_ID]
+  RPT_RUN_LOG_T: [PROGRAM_NAME, STATUS]

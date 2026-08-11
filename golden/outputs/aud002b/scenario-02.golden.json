@@ -1,0 +1,142 @@
+{
+  "completionStatus": "COMPLETED",
+  "displayOutput": "AUD002B START REF=2024-06-15\nboundary\nAUD002B END STATUS=COMPLETED\n",
+  "formatVersion": "1.0.0",
+  "program": "AUD002B",
+  "referenceDate": "2024-06-15",
+  "runLog": {
+    "programName": "AUD002B",
+    "rowsProcessed": 1,
+    "runEnded": "NORMALIZED_TS",
+    "runStarted": "NORMALIZED_TS",
+    "status": "COMPLETED"
+  },
+  "scenario": "scenario-02",
+  "tables": [
+    {
+      "businessKeys": [
+        "PROGRAM_NAME",
+        "ACTION_CODE",
+        "RECORD_KEY"
+      ],
+      "columns": [
+        {
+          "name": "LOG_ID",
+          "type": "SURROGATE"
+        },
+        {
+          "name": "PROGRAM_NAME",
+          "type": "STRING"
+        },
+        {
+          "name": "ACTION_CODE",
+          "type": "STATUS"
+        },
+        {
+          "name": "TABLE_NAME",
+          "type": "STRING"
+        },
+        {
+          "name": "RECORD_KEY",
+          "type": "STRING"
+        },
+        {
+          "name": "USER_ID",
+          "type": "STRING"
+        },
+        {
+          "name": "LOG_TIMESTAMP",
+          "type": "TIMESTAMP"
+        }
+      ],
+      "rows": [],
+      "tableName": "AUDIT_LOG_T"
+    },
+    {
+      "businessKeys": [
+        "PROGRAM_NAME",
+        "ACTION_CODE",
+        "RECORD_KEY"
+      ],
+      "columns": [
+        {
+          "name": "LOG_ID",
+          "type": "SURROGATE"
+        },
+        {
+          "name": "PROGRAM_NAME",
+          "type": "STRING"
+        },
+        {
+          "name": "ACTION_CODE",
+          "type": "STATUS"
+        },
+        {
+          "name": "TABLE_NAME",
+          "type": "STRING"
+        },
+        {
+          "name": "RECORD_KEY",
+          "type": "STRING"
+        },
+        {
+          "name": "USER_ID",
+          "type": "STRING"
+        },
+        {
+          "name": "LOG_TIMESTAMP",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "ARCHIVE_DATE",
+          "type": "TIMESTAMP"
+        }
+      ],
+      "rows": [],
+      "tableName": "AUDIT_LOG_ARCHIVE_T"
+    },
+    {
+      "businessKeys": [
+        "PROGRAM_NAME",
+        "STATUS"
+      ],
+      "columns": [
+        {
+          "name": "RUN_ID",
+          "type": "SURROGATE"
+        },
+        {
+          "name": "PROGRAM_NAME",
+          "type": "STRING"
+        },
+        {
+          "name": "STATUS",
+          "type": "STATUS"
+        },
+        {
+          "name": "ROWS_PROCESSED",
+          "type": "INTEGER"
+        },
+        {
+          "name": "RUN_STARTED",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "RUN_ENDED",
+          "type": "TIMESTAMP"
+        }
+      ],
+      "rows": [
+        {
+          "PROGRAM_NAME": "AUD002B",
+          "ROWS_PROCESSED": 1,
+          "RUN_ENDED": "NORMALIZED_TS",
+          "RUN_ID": "SEQ_001",
+          "RUN_STARTED": "NORMALIZED_TS",
+          "STATUS": "COMPLETED"
+        }
+      ],
+      "tableName": "RPT_RUN_LOG_T"
+    }
+  ]
+}

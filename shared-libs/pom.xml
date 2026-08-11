@@ -17,5 +17,6 @@
 
   <modules>
     <module>pcis-observability-starter</module>
+    <module>pcis-test-support</module>
   </modules>
 </project>
