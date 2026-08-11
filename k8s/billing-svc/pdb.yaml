@@ -1,0 +1,14 @@
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: billing-svc-pdb
+  namespace: pcis
+  labels:
+    app: billing-svc
+    domain: billing
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: billing-svc
