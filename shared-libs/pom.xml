@@ -22,5 +22,6 @@
     <module>pcis-test-support</module>
     <module>pcis-schema</module>
     <module>pcis-audit-contract</module>
+    <module>pcis-outbox</module>
   </modules>
 </project>
