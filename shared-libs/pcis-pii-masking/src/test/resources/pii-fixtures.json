@@ -1,0 +1,149 @@
+{
+  "maskStrategies": [
+    {
+      "strategy": "NONE",
+      "input": "public-code",
+      "expected": "public-code"
+    },
+    {
+      "strategy": "LAST_FOUR",
+      "input": "12-3456789",
+      "expected": "6789"
+    },
+    {
+      "strategy": "LAST_FOUR",
+      "input": "123",
+      "expected": "123"
+    },
+    {
+      "strategy": "LAST_FOUR",
+      "input": "",
+      "expected": ""
+    },
+    {
+      "strategy": "LAST_FOUR",
+      "input": null,
+      "expected": null
+    },
+    {
+      "strategy": "LAST_FOUR",
+      "input": "6789",
+      "expected": "6789",
+      "description": "already masked — idempotent"
+    },
+    {
+      "strategy": "EMAIL_DOMAIN_ONLY",
+      "input": "user@example.com",
+      "expected": "example.com"
+    },
+    {
+      "strategy": "EMAIL_DOMAIN_ONLY",
+      "input": "not-an-email",
+      "expected": "[REDACTED]"
+    },
+    {
+      "strategy": "EMAIL_DOMAIN_ONLY",
+      "input": "example.com",
+      "expected": "example.com",
+      "description": "already masked — idempotent"
+    },
+    {
+      "strategy": "PHONE_LAST_FOUR",
+      "input": "(555) 123-4567",
+      "expected": "4567"
+    },
+    {
+      "strategy": "PHONE_LAST_FOUR",
+      "input": "123",
+      "expected": "123"
+    },
+    {
+      "strategy": "DATE_YEAR_ONLY",
+      "input": "1985-03-15",
+      "expected": "1985"
+    },
+    {
+      "strategy": "DATE_YEAR_ONLY",
+      "input": "1985",
+      "expected": "1985",
+      "description": "already masked — idempotent"
+    },
+    {
+      "strategy": "FULL_REDACT",
+      "input": "Sensitive narrative text",
+      "expected": "[REDACTED]"
+    },
+    {
+      "strategy": "FULL_REDACT",
+      "input": "[REDACTED]",
+      "expected": "[REDACTED]",
+      "description": "already masked — idempotent"
+    }
+  ],
+  "registryLookups": [
+    {
+      "entity": "CUSTOMER_T",
+      "column": "TAX_ID",
+      "input": "12-3456789",
+      "expected": "6789"
+    },
+    {
+      "entity": "CUSTOMER_T",
+      "column": "EMAIL",
+      "input": "jane.doe@insurer.example",
+      "expected": "insurer.example"
+    },
+    {
+      "entity": "UNKNOWN_T",
+      "column": "SECRET",
+      "input": "cleartext",
+      "expected": "[REDACTED]",
+      "description": "missing registry entry fails closed"
+    }
+  ],
+  "polymorphicContacts": [
+    {
+      "entity": "CUSTOMER_CONTACT_T",
+      "column": "CONTACT_VALUE",
+      "discriminatorColumn": "CONTACT_TYPE",
+      "discriminatorValue": "EM",
+      "input": "contact@carrier.example",
+      "expected": "carrier.example"
+    },
+    {
+      "entity": "CUSTOMER_CONTACT_T",
+      "column": "CONTACT_VALUE",
+      "discriminatorColumn": "CONTACT_TYPE",
+      "discriminatorValue": "PH",
+      "input": "5558675309",
+      "expected": "5309"
+    },
+    {
+      "entity": "CUSTOMER_CONTACT_T",
+      "column": "CONTACT_VALUE",
+      "discriminatorColumn": "CONTACT_TYPE",
+      "discriminatorValue": "FX",
+      "input": "5551112222",
+      "expected": "[REDACTED]",
+      "description": "unknown discriminator fails closed"
+    }
+  ],
+  "customerDto": {
+    "entity": "CUSTOMER_T",
+    "taxId": {
+      "column": "TAX_ID",
+      "input": "98-7654321",
+      "expected": "4321"
+    },
+    "email": {
+      "column": "EMAIL",
+      "input": "john@pcis.test",
+      "expected": "pcis.test"
+    },
+    "firstName": {
+      "column": "FIRST_NAME",
+      "input": "John",
+      "expected": "[REDACTED]"
+    }
+  }
+}
