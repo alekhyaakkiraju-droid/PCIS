@@ -17,5 +17,6 @@
 
   <modules>
     <module>api-gateway</module>
+    <module>authz-svc</module>
   </modules>
 </project>
