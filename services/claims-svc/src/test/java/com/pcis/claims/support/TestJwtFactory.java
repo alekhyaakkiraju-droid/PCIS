@@ -23,6 +23,28 @@ public final class TestJwtFactory {
     return withScopes(TEST_SUBJECT, "claims:read", "claims:write");
   }
 
+  public static Jwt claimsAdjuster(String subject) {
+    return Jwt.withTokenValue("test-token-" + subject)
+        .header("alg", "none")
+        .subject(subject)
+        .claim("scope", List.of("claims:read", "claims:write"))
+        .claim("roles", List.of("CLAIMS_ADJUSTER"))
+        .issuedAt(Instant.now())
+        .expiresAt(Instant.now().plusSeconds(3600))
+        .build();
+  }
+
+  public static Jwt claimsSupervisor(String subject) {
+    return Jwt.withTokenValue("test-token-" + subject)
+        .header("alg", "none")
+        .subject(subject)
+        .claim("scope", List.of("claims:read", "claims:write"))
+        .claim("roles", List.of("CLAIMS_SUPERVISOR"))
+        .issuedAt(Instant.now())
+        .expiresAt(Instant.now().plusSeconds(3600))
+        .build();
+  }
+
   public static RequestPostProcessor asClaimsReader() {
     return jwt().jwt(claimsReader()).authorities(new SimpleGrantedAuthority("claims:read"));
   }
@@ -33,6 +55,24 @@ public final class TestJwtFactory {
         .authorities(
             new SimpleGrantedAuthority("claims:read"),
             new SimpleGrantedAuthority("claims:write"));
+  }
+
+  public static RequestPostProcessor asClaimsAdjuster(String subject) {
+    return jwt()
+        .jwt(claimsAdjuster(subject))
+        .authorities(
+            new SimpleGrantedAuthority("claims:read"),
+            new SimpleGrantedAuthority("claims:write"),
+            new SimpleGrantedAuthority("CLAIMS_ADJUSTER"));
+  }
+
+  public static RequestPostProcessor asClaimsSupervisor(String subject) {
+    return jwt()
+        .jwt(claimsSupervisor(subject))
+        .authorities(
+            new SimpleGrantedAuthority("claims:read"),
+            new SimpleGrantedAuthority("claims:write"),
+            new SimpleGrantedAuthority("CLAIMS_SUPERVISOR"));
   }
 
   public static Jwt withScopes(String subject, String... scopes) {

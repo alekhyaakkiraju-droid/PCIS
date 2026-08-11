@@ -71,12 +71,18 @@ class FlywayMigrationTest {
   }
 
   @Test
-  void outboxEventsPrimaryKeyIsUuid() {
-    String dataType = jdbcTemplate.queryForObject(
+  void outboxEventsTableUsesPcisStandardSchema() {
+    String idType = jdbcTemplate.queryForObject(
         "SELECT data_type FROM information_schema.columns " +
         "WHERE table_schema = 'public' AND table_name = 'outbox_events' AND column_name = 'id'",
         String.class);
-    assertThat(dataType).isEqualTo("uuid");
+    assertThat(idType).isEqualTo("bigint");
+
+    Integer idempotencyCount = jdbcTemplate.queryForObject(
+        "SELECT COUNT(*) FROM information_schema.columns " +
+        "WHERE table_schema = 'public' AND table_name = 'outbox_events' AND column_name = 'idempotency_key'",
+        Integer.class);
+    assertThat(idempotencyCount).isEqualTo(1);
   }
 
   @Test

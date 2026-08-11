@@ -44,14 +44,16 @@ VALUES ('CLM000000001', 'Initial FNOL assessment: property damage from storm eve
 INSERT INTO recovery (claim_nbr, recovery_amt, recovery_type, crt_user, crt_timestamp)
 VALUES ('CLM000000002', 2500.00, 'SUB', 'seed', NOW());
 
--- Outbox event (un-published) for CLM000000001 payment
-INSERT INTO outbox_events (id, aggregate_type, aggregate_id, event_type, payload, created_at, published)
+-- Outbox event (un-published) for CLM000000001 payment — pcis-outbox standard schema
+INSERT INTO outbox_events (AGGREGATE_TYPE, AGGREGATE_ID, EVENT_TYPE, PAYLOAD, IDEMPOTENCY_KEY, STATUS, ATTEMPT_COUNT, CRT_USER, CRT_TIMESTAMP)
 VALUES (
-    gen_random_uuid(),
     'Claim',
     'CLM000000001',
     'ClaimPaymentInitiated',
-    '{"claimNbr":"CLM000000001","paymentAmt":15000.00,"paymentStatus":"P"}',
-    NOW(),
-    FALSE
+    '{"claimNbr":"CLM000000001","paymentAmt":15000.00,"paymentStatus":"P"}'::jsonb,
+    gen_random_uuid(),
+    'PENDING',
+    0,
+    'seed',
+    NOW()
 );

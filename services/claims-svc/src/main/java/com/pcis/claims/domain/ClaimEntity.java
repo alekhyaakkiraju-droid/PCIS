@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import java.time.LocalDate;
@@ -32,6 +33,10 @@ public class ClaimEntity extends AuditableEntity {
   @JdbcTypeCode(SqlTypes.CHAR)
   private String claimStatus;
 
+  @Version
+  @Column(name = "version", nullable = false)
+  private Long version;
+
   public String getClaimNbr() { return claimNbr; }
   public void setClaimNbr(String claimNbr) { this.claimNbr = claimNbr; }
 
@@ -49,4 +54,6 @@ public class ClaimEntity extends AuditableEntity {
 
   public String getClaimStatus() { return claimStatus; }
   public void setClaimStatus(String claimStatus) { this.claimStatus = claimStatus; }
+
+  public Long getVersion() { return version; }
 }
