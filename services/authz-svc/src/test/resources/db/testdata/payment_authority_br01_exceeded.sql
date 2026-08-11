@@ -1,0 +1,2 @@
+-- P-B01 / BR-01: cumulative authority exceeded (25000 limit, 20000 paid, 10000 requested)
+-- Uses reserve 1001 and approval 2001 from payment_authority_baseline.sql

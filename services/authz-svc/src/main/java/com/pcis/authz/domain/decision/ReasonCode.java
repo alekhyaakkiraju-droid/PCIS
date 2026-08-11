@@ -4,5 +4,7 @@ package com.pcis.authz.domain.decision;
 public enum ReasonCode {
   GRANT_MATCH,
   NO_GRANT,
-  PAYMENT_AUTHORITY_STUB
+  APPROVAL_MISSING,
+  AUTHORITY_LIMIT_EXCEEDED,
+  PAYMENT_AUTHORITY_GRANTED
 }
