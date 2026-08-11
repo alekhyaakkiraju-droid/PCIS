@@ -21,5 +21,124 @@
     <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spring-boot.version>3.5.16</spring-boot.version>
+    <surefire.version>3.5.3</surefire.version>
+    <jacoco.version>0.8.13</jacoco.version>
+    <!-- Golden-output gate configuration — override via -D on CI -->
+    <golden.surefire.timeout>300</golden.surefire.timeout>
+    <golden.test.timeout.per.class>120</golden.test.timeout.per.class>
+    <golden.coverage.minimum>0.90</golden.coverage.minimum>
   </properties>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${surefire.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>${jacoco.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <profiles>
+    <!--
+      golden-output profile — activated by Forge Shipping pipeline golden-output gate.
+      Run via: mvn test -Pgolden-output -Dgroups=GoldenOutput
+      Surefire is fail-closed: failIfNoTests=true ensures a missing @GoldenOutput tag
+      or infrastructure failure (Testcontainers, fixtures) fails the build rather than
+      silently passing.
+    -->
+    <profile>
+      <id>golden-output</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>${surefire.version}</version>
+            <configuration>
+              <!-- Fail if no @GoldenOutput tests are discovered — fail-closed gate -->
+              <failIfNoTests>true</failIfNoTests>
+              <!-- Kill forked JVM after 5 minutes to prevent hanging builds -->
+              <forkedProcessTimeoutInSeconds>${golden.surefire.timeout}</forkedProcessTimeoutInSeconds>
+              <!-- Execute only @Tag("GoldenOutput") tests -->
+              <groups>GoldenOutput</groups>
+              <!-- Write Surefire XML alongside golden diff reports -->
+              <reportsDirectory>${maven.multiModuleProjectDirectory}/golden/reports</reportsDirectory>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!--
+      jacoco profile — activated by Forge Shipping pipeline coverage gate.
+      Enforces 90% line coverage on monetary calculation packages:
+        com.pcis.*.calc  — billing, commission, premium installment calculation logic
+        com.pcis.*.payment — claims payment reserve drawdown logic
+      Run via: mvn verify -Pjacoco -DskipTests=true  (after test phase has run)
+    -->
+    <profile>
+      <id>jacoco</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${jacoco.version}</version>
+            <executions>
+              <execution>
+                <id>golden-prepare-agent</id>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>golden-report</id>
+                <phase>test</phase>
+                <goals>
+                  <goal>report</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>golden-coverage-check</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>check</goal>
+                </goals>
+                <configuration>
+                  <!--
+                    Scope the coverage rule to monetary calculation packages only.
+                    Packages not matching these patterns are excluded from enforcement.
+                  -->
+                  <includes>
+                    <include>com/pcis/*/calc/**</include>
+                    <include>com/pcis/*/payment/**</include>
+                  </includes>
+                  <rules>
+                    <rule>
+                      <element>BUNDLE</element>
+                      <limits>
+                        <limit>
+                          <counter>LINE</counter>
+                          <value>COVEREDRATIO</value>
+                          <minimum>${golden.coverage.minimum}</minimum>
+                        </limit>
+                      </limits>
+                    </rule>
+                  </rules>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

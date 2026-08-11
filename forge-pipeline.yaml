@@ -1,0 +1,120 @@
+# Forge Shipping Declarative Pipeline — PCIS Modernization
+# WO-178: Wire Golden-Output Regression into CI Pipeline
+
+apiVersion: forge.shipping/v1
+kind: Pipeline
+metadata:
+  name: pcis-build
+  project: pcis-modernization
+  description: >
+    PCIS build pipeline with fail-closed golden-output regression gate.
+    Any cent-level divergence blocks image promotion. JaCoCo enforces 90%
+    line coverage on monetary calculation packages.
+
+triggers:
+  branches:
+    include:
+      - main
+      - "forge/*"
+  pullRequest:
+    targetBranches:
+      - main
+
+schedules:
+  - name: nightly-golden-regression
+    cron: "0 2 * * *"
+    displayName: "Nightly Golden-Output Regression (Full Suite)"
+    stages:
+      - build:maven
+    env:
+      PCIS_USE_TESTCONTAINERS: "1"
+      PCIS_GOLDEN_FULL_SUITE: "1"
+    metadata:
+      attachSurefireClassDurations: true
+      durationKey: golden_class_duration_seconds
+      suiteDurationKey: golden_suite_duration_seconds
+
+stages:
+  build:maven:
+    displayName: "Build and Test"
+    timeout: 3600
+    steps:
+      - id: compile
+        name: Maven Compile
+        run: mvn -B --no-transfer-progress compile
+
+      - id: unit-tests
+        name: Unit Tests (non-golden)
+        run: >
+          mvn -B --no-transfer-progress test
+          -Dexcluded.groups=GoldenOutput
+
+      - id: golden-output-gate
+        name: Golden-Output Regression Gate
+        # fail-closed: build fails if no GoldenOutput tests are found OR if any diverge
+        failClosed: true
+        env:
+          PCIS_USE_TESTCONTAINERS: "1"
+        run: >
+          mvn -B --no-transfer-progress test
+          -Pjacoco
+          -Dgroups=GoldenOutput
+          -Dsurefire.failIfNoTests=true
+          -Dsurefire.forkedProcessTimeoutInSeconds=300
+          -Dsurefire.timeout=120
+          -Dsurefire.reportsDirectory=${FORGE_WORKSPACE}/golden/reports
+        onFailure:
+          retainArtifacts:
+            - pattern: "golden/reports/*.json"
+              label: golden-diff-json
+              description: "Structured JSON diff report per golden scenario"
+              retentionDays: 30
+            - pattern: "golden/reports/*.txt"
+              label: golden-diff-text
+              description: "Human-readable text diff report per golden scenario"
+              retentionDays: 30
+        metadata:
+          - source: surefire-xml
+            glob: "golden/reports/TEST-*.xml"
+            key: golden_class_duration_seconds
+            field: time
+            aggregate: sum
+            label: "Total golden-output suite duration (seconds)"
+
+      - id: jacoco-check
+        name: JaCoCo Coverage Check (Monetary Packages)
+        # Enforces 90% line coverage on com.pcis.*.calc and com.pcis.*.payment
+        run: >
+          mvn -B --no-transfer-progress verify
+          -Pjacoco
+          -DskipTests=true
+
+  publish:image:
+    displayName: "Build and Push Container Image"
+    dependsOn: build:maven
+    steps:
+      - id: docker-build
+        name: Docker Build
+        run: >
+          docker build
+          --build-arg BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          --build-arg GIT_COMMIT=${FORGE_COMMIT_SHA}
+          -t pcis/app:${FORGE_BUILD_ID}
+          .
+
+      - id: docker-push
+        name: Docker Push
+        run: docker push pcis/app:${FORGE_BUILD_ID}
+
+  promote:staging:
+    displayName: "Promote to Staging"
+    dependsOn: publish:image
+    # Image promotion blocked until golden-output gate passes
+    steps:
+      - id: helm-upgrade
+        name: Helm Upgrade (Staging)
+        run: >
+          helm upgrade --install pcis-staging helm/
+          --namespace pcis-staging
+          --set image.tag=${FORGE_BUILD_ID}
+          --wait --timeout=300s
