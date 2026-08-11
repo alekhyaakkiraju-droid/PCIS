@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    enabled: false
+
+pcis:
+  classification:
+    enabled: true
+    drift-detection-enabled: true
+    loader-enabled: true

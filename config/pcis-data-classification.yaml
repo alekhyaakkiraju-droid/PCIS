@@ -1,0 +1,3012 @@
+# PCIS Machine-Readable Data Classification Registry (WO-159)
+registry_version: "1.0.0"
+generated_at: "2026-08-11T12:14:31Z"
+woref: WO-159
+compliance_signoff_ref: "PENDING-COMPLIANCE-REVIEW"
+
+metadata:
+  pci_dss_scope: out-of-scope
+  pci_dss_justification: >
+    Payment capture is delegated to a tokenized third-party gateway;
+    PCIS stores only payment tokens and last-four digits, not cardholder data.
+  authoritative_entity_count: 57
+  design_doc_table_count: 55
+
+entity_reconciliation:
+  code_witnessed_extras:
+    - entity: AUDIT_LOG_ARCHIVE_T
+      source: AUD002B.cbl, README.md
+      rationale: Archive target for aged AUDIT_LOG_T rows; absent from PCIS_Database_Design.md inventory
+    - entity: COMMISSION_LEDGER_T
+      source: CMM001B.cbl
+      rationale: Commission accrual ledger written by CMM001B; design lists COMMISSION_PAYMENT_T instead
+  flyway_extras:
+    - OUTBOX_EVENTS
+  note: Final Flyway V1 baseline defines 57 base tables (not 55 design-doc tables).
+
+audit_log_canonicalization:
+  key_generation: IDENTITY
+  key_generation_rationale: Flyway V1 uses BIGINT GENERATED ALWAYS AS IDENTITY for LOG_ID
+  canonical_columns:
+    audit_log_id: LOG_ID
+    table_name: TABLE_NAME
+    key_value: RECORD_KEY
+    action_cd: ACTION_CODE
+    field_name: FIELD_NAME
+    old_value: OLD_VALUE
+    new_value: NEW_VALUE
+    chg_user: USER_ID
+    chg_timestamp: CRT_TIMESTAMP
+    program_name: PROGRAM_NAME
+
+tier_handling:
+  Public:
+    retention_days: 365
+    storage_encryption: false
+    access_control: anonymous
+    log_emission: allowed
+  Internal:
+    retention_days: 2555
+    storage_encryption: at-rest-optional
+    access_control: authenticated
+    log_emission: allowed
+  Confidential:
+    retention_days: 1825
+    storage_encryption: at-rest-required
+    access_control: role-based
+    log_emission: masked
+  Restricted:
+    retention_days: 2555
+    storage_encryption: at-rest-required
+    access_control: need-to-know
+    log_emission: masked-redacted
+
+entities:
+  - entity: AGENT_COMMISSION_T
+    domain: AGT
+    tier: Internal
+    columns:
+      - column: AGT_COMM_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: AGT_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: POL_NBR
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: COMM_AMT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: COMM_STATUS
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: AGENT_LICENSE_T
+    domain: AGT
+    tier: Internal
+    columns:
+      - column: LICENSE_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: AGT_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: STATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: LICENSE_NBR
+        tier: Internal
+        pii: true
+        mask_strategy: LAST_FOUR
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: EXPIRY_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: AGENT_T
+    domain: AGT
+    tier: Internal
+    columns:
+      - column: AGT_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: AGT_NAME
+        tier: Internal
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: AGT_STATUS
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: AGT_TYPE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: HIRE_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: APPROVAL_T
+    domain: CLM
+    tier: Internal
+    columns:
+      - column: APPROVAL_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CLAIM_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: APPROVER_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: APPROVED_AMT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: APPROVAL_STATUS
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: APPROVAL_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: RESERVE_HIST_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: AUDIT_LOG_ARCHIVE_T
+    domain: AUD
+    tier: Confidential
+    columns:
+      - column: LOG_ID
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: PROGRAM_NAME
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: ACTION_CODE
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: TABLE_NAME
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: RECORD_KEY
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: USER_ID
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: LOG_TIMESTAMP
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: ARCHIVE_DATE
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: CRT_USER
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: AUDIT_LOG_T
+    domain: AUD
+    tier: Confidential
+    columns:
+      - column: LOG_ID
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: PROGRAM_NAME
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: ACTION_CODE
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: TABLE_NAME
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: RECORD_KEY
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: USER_ID
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "Canonicalize on USER_ID (CUS/AUD002B); CHG_USER is alias"
+      - column: OLD_VALUE
+        tier: Confidential
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: NEW_VALUE
+        tier: Confidential
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: LOG_TIMESTAMP
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "AUD002B filters LOG_TIMESTAMP; prefer over CRT_TIMESTAMP synonym"
+      - column: CRT_USER
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: BILLING_NOTICE_T
+    domain: BIL
+    tier: Internal
+    columns:
+      - column: NOTICE_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: BILL_SCHED_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Name drift BILL_SCHED_ID ↔ HV-SCHED-ID / SCHED_ID; canonical bill_sched_id"
+      - column: CUST_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Name drift CUST_ID ↔ HV-CUSTOMER-ID / CUSTOMER_ID; canonical cust_id"
+      - column: NOTICE_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: AMOUNT_DUE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: DELIVERY_EMAIL
+        tier: Internal
+        pii: true
+        mask_strategy: EMAIL_DOMAIN_ONLY
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: NOTICE_STATUS
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Name drift NOTICE_STATUS ↔ STATUS / STATUS; canonical notice_status"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: BILLING_PLAN_T
+    domain: BIL
+    tier: Internal
+    columns:
+      - column: BILL_PLAN_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: POL_NBR
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Name drift POL_NBR ↔ HV-POLICY-ID / POLICY_ID; canonical pol_nbr"
+      - column: BILL_FREQ
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: INSTALLMENT_CNT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: PLAN_STATUS
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: BILLING_SCHEDULE_T
+    domain: BIL
+    tier: Internal
+    columns:
+      - column: BILL_SCHED_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Name drift BILL_SCHED_ID ↔ HV-SCHED-ID / SCHED_ID; canonical bill_sched_id"
+      - column: POL_NBR
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Name drift POL_NBR ↔ HV-POLICY-ID / POLICY_ID; canonical pol_nbr"
+      - column: BILL_PLAN_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: INSTALLMENT_NBR
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: DUE_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: AMT_DUE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Shipped code authoritative: BIL003B/PRM005B write DUE_AMT"
+      - column: AMT_PAID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Shipped code authoritative: uses PAID_AMT not AMT_PAID"
+      - column: SCHED_STATUS
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Code domain D/L/P via BILL_STATUS; design SCHED_STATUS O/P/V discarded"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: COMM_CALC_FLAG
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "CMM001B idempotency flag absent from DDL; add to target"
+  - entity: CANCELLATION_REASON_T
+    domain: POL
+    tier: Public
+    columns:
+      - column: CANCEL_REASON
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: REASON_DESC
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: REFUND_ELIGIBLE
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: CLAIM_ADJUSTER_T
+    domain: CLM
+    tier: Internal
+    columns:
+      - column: ADJUSTER_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: ADJ_NAME
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: AUTHORITY_LIMIT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: ADJ_STATUS
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: CLAIM_DOCUMENT_T
+    domain: CLM
+    tier: Internal
+    columns:
+      - column: DOC_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CLAIM_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: DOC_TYPE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: DOC_PATH
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: CLAIM_NOTE_T
+    domain: CLM
+    tier: Restricted
+    columns:
+      - column: NOTE_ID
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CLAIM_ID
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: NOTE_TEXT
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: NOTE_USER
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: NOTE_DATE
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: CLAIM_PAYMENT_T
+    domain: CLM
+    tier: Internal
+    columns:
+      - column: PAYMENT_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CLAIM_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: ADJUSTER_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: PAYMENT_AMT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Host HV-PMT-AMOUNT maps to payment_amt NUMERIC(11,2)"
+      - column: PAYMENT_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: PAYEE_NAME
+        tier: Internal
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: PAYMENT_STATUS
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: CLAIM_RESERVE_HISTORY_T
+    domain: CLM
+    tier: Internal
+    columns:
+      - column: RES_HIST_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CLAIM_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: OLD_AMT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: NEW_AMT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CHANGE_REASON
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: CLAIM_RESERVE_T
+    domain: CLM
+    tier: Internal
+    columns:
+      - column: RESERVE_HIST_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Shipped code uses RESERVE_ID; design RESERVE_HIST_ID renamed"
+      - column: CLAIM_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: RESERVE_AMT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Code APPROVED_AMT is the live reserve balance written by CLM006B"
+      - column: CHANGE_REASON
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Keep in history table path; optional on live reserve row"
+      - column: RESERVE_STATUS
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: PAID_TO_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Code-witnessed on CLAIM_RESERVE_T; add to target"
+  - entity: CLAIM_T
+    domain: CLM
+    tier: Internal
+    columns:
+      - column: CLAIM_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: POL_NBR
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CUST_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CLAIM_STATUS
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: LOSS_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: PAID_TO_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: CODE_TABLE_T
+    domain: SEC
+    tier: Public
+    columns:
+      - column: CODE_TYPE
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CODE_VALUE
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CODE_DESC
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: ACTIVE_FLAG
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: COMMISSION_LEDGER_T
+    domain: AGT
+    tier: Internal
+    columns:
+      - column: LEDGER_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: AGT_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: BILL_SCHED_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: COMM_RATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: COMMISSION_AMT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CALC_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: COMMISSION_RATE_T
+    domain: AGT
+    tier: Internal
+    columns:
+      - column: RATE_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: POLICY_TYPE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: COMM_RATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: EFF_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: END_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: COMMISSION_T
+    domain: AGT
+    tier: Internal
+    columns:
+      - column: COMMISSION_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: AGT_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: POL_NBR
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Name drift POL_NBR ↔ HV-POLICY-ID / POLICY_ID; canonical pol_nbr"
+      - column: COMMISSION_AMT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: CALC_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: COMM_STATUS
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Name drift COMM_STATUS ↔ STATUS / STATUS; canonical comm_status"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: COVERAGE_T
+    domain: POL
+    tier: Internal
+    columns:
+      - column: COVERAGE_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: POL_NBR
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: COV_TYPE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: LIMIT_AMT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: DED_AMT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: COV_PREMIUM
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: COVERAGE_TYPE_T
+    domain: POL
+    tier: Public
+    columns:
+      - column: COV_TYPE
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: COV_DESC
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: ACTIVE_FLAG
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: CUSTOMER_ADDRESS_T
+    domain: CUS
+    tier: Restricted
+    columns:
+      - column: ADDRESS_ID
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CUST_ID
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "Name drift CUST_ID ↔ HV-CUSTOMER-ID / CUSTOMER_ID; canonical cust_id"
+      - column: ADDR_TYPE
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: ADDR_LINE1
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: ADDR_LINE2
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CITY
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: STATE
+        tier: Restricted
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: POSTAL_CODE
+        tier: Restricted
+        pii: true
+        mask_strategy: LAST_FOUR
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: EFFECTIVE_DATE
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: CUSTOMER_CONTACT_T
+    domain: CUS
+    tier: Restricted
+    columns:
+      - column: CONTACT_ID
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CUST_ID
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "Name drift CUST_ID ↔ HV-CUSTOMER-ID / CUSTOMER_ID; canonical cust_id"
+      - column: CONTACT_TYPE
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CONTACT_NAME
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CONTACT_PHONE
+        tier: Restricted
+        pii: true
+        mask_strategy: PHONE_LAST_FOUR
+        rationale: "Name drift CONTACT_PHONE ↔ HV-PHONE / PHONE_NUMBER; canonical contact_phone"
+      - column: CONTACT_EMAIL
+        tier: Restricted
+        pii: true
+        mask_strategy: EMAIL_DOMAIN_ONLY
+        rationale: "Name drift CONTACT_EMAIL ↔ HV-EMAIL / EMAIL_ADDRESS; canonical contact_email"
+      - column: PREFERRED_FLAG
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: CUSTOMER_T
+    domain: CUS
+    tier: Restricted
+    columns:
+      - column: CUST_ID
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "Name drift CUST_ID ↔ HV-CUSTOMER-ID / CUSTOMER_ID; canonical cust_id"
+      - column: CUST_TYPE
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: CUST_NAME
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: FIRST_NAME
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "DDL-only in CUSTOMER_T; include in target for individual customers"
+      - column: LAST_NAME
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "DDL-only in CUSTOMER_T; include in target for name splitting"
+      - column: TAX_ID
+        tier: Restricted
+        pii: true
+        mask_strategy: LAST_FOUR
+        rationale: "G-06: DDL TAX_ID vs COBOL CUST_SSN_TAXID; keep tax_id (domain-neutral) as canonical"
+      - column: DOB
+        tier: Restricted
+        pii: true
+        mask_strategy: DATE_YEAR_ONLY
+        rationale: "G-06: DDL DOB vs COBOL CUST_DOB; canonical snake_case cust_dob for PostgreSQL"
+      - column: EMAIL
+        tier: Restricted
+        pii: true
+        mask_strategy: EMAIL_DOMAIN_ONLY
+        rationale: "G-06: DDL EMAIL vs COBOL CUST_EMAIL; strip CUST_ prefix for target email"
+      - column: PHONE
+        tier: Restricted
+        pii: true
+        mask_strategy: PHONE_LAST_FOUR
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CUST_STATUS
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: ASSIGNED_AGENT
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CUST_GENDER
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "COBOL-only column inserted by CUS path; add to target schema"
+      - column: CUST_MARITAL_ST
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "COBOL-only column; add to target schema"
+      - column: CUST_CREDIT_SCORE
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "COBOL-only column; add to target schema"
+  - entity: DEDUCTIBLE_T
+    domain: POL
+    tier: Internal
+    columns:
+      - column: DEDUCT_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: COVERAGE_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: DED_AMT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: DED_TYPE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: DISCOUNT_RULE_T
+    domain: PRM
+    tier: Internal
+    columns:
+      - column: DISC_RULE_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: DISC_CODE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: DISC_PCT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: EFF_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: DOCUMENT_T
+    domain: DOC
+    tier: Internal
+    columns:
+      - column: DOCUMENT_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: OWNER_TYPE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: OWNER_KEY
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: DOC_TYPE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: DOC_URI
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: ENDORSEMENT_T
+    domain: POL
+    tier: Confidential
+    columns:
+      - column: ENDORSE_ID
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: POL_NBR
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: END_TYPE
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: EFF_DATE
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: PREM_CHG
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: INVOICE_T
+    domain: BIL
+    tier: Internal
+    columns:
+      - column: INVOICE_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: BILL_SCHED_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: INVOICE_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: INVOICE_DUE_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: INVOICE_AMT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: INVOICE_STATUS
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: OUTBOX_EVENTS
+    domain: Shared
+    tier: Internal
+    columns:
+      - column: ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: AGGREGATE_TYPE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: AGGREGATE_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: EVENT_TYPE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: PAYLOAD
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: IDEMPOTENCY_KEY
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: STATUS
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: ATTEMPT_COUNT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: NEXT_ATTEMPT_AT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: LAST_ERROR
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: PAYMENT_T
+    domain: PAY
+    tier: Internal
+    columns:
+      - column: PAYMENT_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: INVOICE_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: PAYMENT_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: PAYMENT_AMT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: PAYMENT_TOKEN
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: PAYMENT_STATUS
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: POLICY_HISTORY_T
+    domain: POL
+    tier: Confidential
+    columns:
+      - column: HIST_ID
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: POL_NBR
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: EVENT_CODE
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: EVENT_DATE
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: EVENT_DESC
+        tier: Confidential
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: POLICY_PROPERTY_T
+    domain: POL
+    tier: Internal
+    columns:
+      - column: PROPERTY_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: POL_NBR
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: PROP_TYPE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: ADDR_LINE1
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: STATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: POLICY_T
+    domain: POL
+    tier: Internal
+    columns:
+      - column: POL_NBR
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL POL_NBR vs COBOL POLICY_ID/HV-POLICY-ID; keep pol_nbr business key"
+      - column: CUST_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Name drift CUST_ID ↔ HV-CUSTOMER-ID / CUSTOMER_ID; canonical cust_id"
+      - column: AGT_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: POLICY_TYPE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: POL_STATUS
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Name drift POL_STATUS ↔ STATUS / STATUS; canonical pol_status"
+      - column: EFF_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: EXP_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "DDL column name aligns with COBOL reference"
+      - column: PREM_ANNUAL
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Host HV-PREMIUM-AMT (S9(9)V99) → prem_annual NUMERIC(9,2)"
+      - column: RENEWAL_OF_POL
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Name drift RENEWAL_OF_POL ↔ RENEWAL_OF_POLICY_ID / RENEWAL_OF_POLICY_ID; canonical renewal_of_pol"
+      - column: BILL_FREQ
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: POLICY_VEHICLE_T
+    domain: POL
+    tier: Internal
+    columns:
+      - column: VEHICLE_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: POL_NBR
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: VIN
+        tier: Internal
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: YEAR
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: MAKE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: MODEL
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: PREMIUM_CALC_DETAIL_T
+    domain: PRM
+    tier: Internal
+    columns:
+      - column: DETAIL_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CALC_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: COMPONENT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: COMPONENT_AMT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: PREMIUM_CALC_T
+    domain: PRM
+    tier: Internal
+    columns:
+      - column: CALC_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: POL_NBR
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: FINAL_PREMIUM
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CALC_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: SNAPSHOT_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: QUOTE_COVERAGE_T
+    domain: QTE
+    tier: Internal
+    columns:
+      - column: QUOTE_COV_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: QUOTE_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: COV_TYPE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: LIMIT_AMT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: DED_AMT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: QUOTE_T
+    domain: QTE
+    tier: Internal
+    columns:
+      - column: QUOTE_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CUST_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: QUOTE_STATUS
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: QUOTE_PREMIUM
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: EFF_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: RATE_FACTOR_T
+    domain: PRM
+    tier: Internal
+    columns:
+      - column: RATE_FACTOR_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: RATE_TABLE_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: FACTOR_CODE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: FACTOR_VALUE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: RATE_TABLE_T
+    domain: PRM
+    tier: Internal
+    columns:
+      - column: RATE_TABLE_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: POLICY_TYPE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: TERRITORY
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: BASE_RATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: EFF_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: RECOVERY_T
+    domain: CLM
+    tier: Internal
+    columns:
+      - column: RECOVERY_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CLAIM_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: RECOVERY_AMT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: RECOVERY_STATUS
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: RECOVERY_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: REFUND_T
+    domain: PAY
+    tier: Internal
+    columns:
+      - column: REFUND_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: POL_NBR
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: REFUND_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: REFUND_AMT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: REFUND_REASON
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: REINSURANCE_CESSION_T
+    domain: REI
+    tier: Internal
+    columns:
+      - column: CESSION_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: TREATY_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CLAIM_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CESSION_AMT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: REINSURANCE_TREATY_T
+    domain: REI
+    tier: Internal
+    columns:
+      - column: TREATY_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: TREATY_NAME
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CESSION_THRESHOLD
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: TREATY_STATUS
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: RISK_SCORE_FACTOR_T
+    domain: PRM
+    tier: Internal
+    columns:
+      - column: RISK_FACTOR_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: FACTOR_CODE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: FACTOR_VALUE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: EFF_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: ROLE_MENU_T
+    domain: SEC
+    tier: Public
+    columns:
+      - column: ROLE_CODE
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: MENU_OPTION
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: ALLOW_FLAG
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Public
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: RPT_PARM_T
+    domain: RPT
+    tier: Internal
+    columns:
+      - column: PARM_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: PROGRAM_NAME
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: PARM_NAME
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: PARM_VALUE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: RPT_RUN_LOG_T
+    domain: RPT
+    tier: Internal
+    columns:
+      - column: RUN_LOG_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "WO-237 identity PK; no COBOL host (generated on INSERT)"
+      - column: PGM_NAME
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "WO-237: design PROGRAM_NAME vs COBOL WS-RL-PGM-NAME / PGM_NAME"
+      - column: RUN_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Batch run date from WS-RL-RUN-DATE working storage"
+      - column: REC_SELECTED
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "WO-237: design ROWS_PROCESSED replaced by REC_SELECTED counter"
+      - column: REC_UPDATED
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Batch programs write WS-RL-UPDATED into REC_UPDATED"
+      - column: REC_ERRORS
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Batch programs write WS-RL-ERRORS into REC_ERRORS"
+      - column: REC_DELINQUENT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "PRM005B-only delinquency counter; nullable in Flyway"
+      - column: START_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "WO-237 wall-clock timing captured at batch initialize"
+      - column: END_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "WO-237 wall-clock timing captured at 8000-WRITE-RUN-LOG"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "Row create timestamp; default CURRENT_TIMESTAMP in Flyway"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: SEC_USER_T
+    domain: SEC
+    tier: Restricted
+    columns:
+      - column: USER_ID
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: USER_NAME
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: USER_STATUS
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: ROLE_CODE
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: SURCHARGE_RULE_T
+    domain: PRM
+    tier: Internal
+    columns:
+      - column: SUR_RULE_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: SUR_CODE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: SUR_PCT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: EFF_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: TAX_TABLE_T
+    domain: PRM
+    tier: Internal
+    columns:
+      - column: TAX_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: STATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: TAX_PCT
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: EFF_DATE
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: UW_DECISION_T
+    domain: UND
+    tier: Restricted
+    columns:
+      - column: DECISION_ID
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: REFERRAL_ID
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: DECISION_CODE
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: DECISION_USER
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Restricted
+        pii: true
+        mask_strategy: FULL_REDACT
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: UW_REFERRAL_T
+    domain: UND
+    tier: Internal
+    columns:
+      - column: REFERRAL_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: POL_NBR
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UW_RULE_ID
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: REF_STATUS
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Internal
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+  - entity: UW_RULE_T
+    domain: UND
+    tier: Confidential
+    columns:
+      - column: UW_RULE_ID
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: RULE_CODE
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: RULE_DESC
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: THRESHOLD_AMT
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_USER
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: CRT_TIMESTAMP
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_USER
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
+      - column: UPD_TIMESTAMP
+        tier: Confidential
+        pii: false
+        mask_strategy: NONE
+        rationale: "No COBOL host variable reference; include from DDL design"
