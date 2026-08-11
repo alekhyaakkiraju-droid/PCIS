@@ -1,0 +1,41 @@
+{
+  "receiver": "pagerduty-critical",
+  "status": "firing",
+  "alerts": [
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "BatchJobFailed",
+        "severity": "critical",
+        "job_name": "commission-calc-job",
+        "service": "pcis-batch",
+        "team": "platform"
+      },
+      "annotations": {
+        "summary": "Batch job commission-calc-job failed with non-zero exit code",
+        "runbook_url": "docs/runbooks/batch-job-failure.md",
+        "value": "2",
+        "threshold": "0"
+      },
+      "startsAt": "2026-08-11T10:00:00Z",
+      "endsAt": "0001-01-01T00:00:00Z"
+    }
+  ],
+  "groupLabels": {
+    "alertname": "BatchJobFailed",
+    "job_name": "commission-calc-job"
+  },
+  "commonLabels": {
+    "alertname": "BatchJobFailed",
+    "severity": "critical",
+    "job_name": "commission-calc-job",
+    "service": "pcis-batch"
+  },
+  "commonAnnotations": {
+    "summary": "Batch job commission-calc-job failed with non-zero exit code",
+    "runbook_url": "docs/runbooks/batch-job-failure.md",
+    "value": "2",
+    "threshold": "0"
+  },
+  "externalURL": "http://alertmanager:9093"
+}

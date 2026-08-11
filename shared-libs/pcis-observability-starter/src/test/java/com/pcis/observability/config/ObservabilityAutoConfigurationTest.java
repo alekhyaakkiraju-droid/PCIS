@@ -36,6 +36,7 @@ class ObservabilityAutoConfigurationTest {
   private final ApplicationContextRunner nonWebRunner =
       new ApplicationContextRunner()
           .withConfiguration(AutoConfigurations.of(ObservabilityAutoConfiguration.class))
+          .withBean(MeterRegistry.class, SimpleMeterRegistry::new)
           .withPropertyValues("spring.application.name=batch-job", "otel.sdk.disabled=true");
 
   @Test
