@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Validate ops/scheduler-map.yaml against manifest/pcis-manifest.yaml (WO-003).
+Validate ops/scheduler-map.yaml against manifest/pcis-manifest.yaml (WO-003, WO-238).
 
 Checks:
   1. Every expected batch program has a scheduler-map entry.
@@ -11,6 +11,8 @@ Checks:
   4. Target schedules are annotated as ASSUMPTION placeholders.
   5. JOBSCHD1-3 entries are source_status referenced-only; JOBSCHD4-7 in-repo.
   6. PRM005B resolves naming drift to premiumProcessingJob.
+  7. WO-238 measurement fields (measured_avg_duration_seconds,
+     measured_max_duration_seconds) are present and valid per schema.
 
 Exits 0 on success, non-zero on any discrepancy.
 """
@@ -31,6 +33,21 @@ REQUIRED_FIELDS = (
     "target_cronjob_name",
     "target_schedule",
     "naming_notes",
+)
+MEASUREMENT_FIELDS = (
+    "measured_avg_duration_seconds",
+    "measured_max_duration_seconds",
+)
+MEASUREMENT_PLACEHOLDER = "MEASUREMENT_PENDING"
+EXPECTED_CRONJOBS = frozenset(
+    {
+        "audit-archive-job",
+        "billing-installment-job",
+        "claim-payment-job",
+        "commission-calc-job",
+        "premium-processing-job",
+        "policy-renewal-job",
+    }
 )
 
 
@@ -176,9 +193,61 @@ def load_manifest_programs(manifest_path: Path) -> set[str]:
     return programs
 
 
-def validate(map_path: Path, manifest_path: Path) -> list[str]:
+def load_schema_required_fields(schema_path: Path) -> dict[str, list[str]]:
+    """Parse ops/scheduler-map-schema.yaml for required batch_program fields."""
+    if not schema_path.is_file():
+        return {"batch_programs": list(REQUIRED_FIELDS) + list(MEASUREMENT_FIELDS)}
+
+    text = schema_path.read_text(encoding="utf-8")
+    required: list[str] = []
+    in_batch_programs = False
+    in_entry_fields = False
+    for line in text.splitlines():
+        if line.startswith("batch_programs:"):
+            in_batch_programs = True
+            in_entry_fields = False
+            continue
+        if in_batch_programs and line.startswith("scheduler_index:"):
+            break
+        if in_batch_programs and line.strip() == "entry_fields:":
+            in_entry_fields = True
+            continue
+        if in_entry_fields:
+            if line.startswith("  ") and not line.startswith("    "):
+                break
+            if line.startswith("    ") and line.strip().endswith(":"):
+                key = line.strip()[:-1]
+                if key not in {"required", "type", "must_contain", "min_items", "description"}:
+                    required.append(key)
+
+    if not required:
+        required = list(REQUIRED_FIELDS) + list(MEASUREMENT_FIELDS)
+    return {"batch_programs": required}
+
+
+def is_valid_measurement_value(value: object) -> bool:
+    if value == MEASUREMENT_PLACEHOLDER:
+        return True
+    if isinstance(value, bool):
+        return False
+    if isinstance(value, int):
+        return value >= 0
+    if isinstance(value, float):
+        return value >= 0
+    if isinstance(value, str):
+        try:
+            parsed = float(value)
+        except ValueError:
+            return False
+        return parsed >= 0
+    return False
+
+
+def validate(map_path: Path, manifest_path: Path, schema_path: Path) -> list[str]:
     errors: list[str] = []
     data = load_simple_yaml(map_path.read_text(encoding="utf-8"))
+    schema_fields = load_schema_required_fields(schema_path)
+    batch_required = schema_fields.get("batch_programs", list(REQUIRED_FIELDS))
     programs = data.get("batch_programs")
     if not isinstance(programs, dict) or not programs:
         return ["batch_programs missing or empty in scheduler map"]
@@ -203,6 +272,21 @@ def validate(map_path: Path, manifest_path: Path) -> list[str]:
         for field in REQUIRED_FIELDS:
             if field not in entry or entry[field] in (None, "", []):
                 errors.append(f"{name}: missing required field {field}")
+
+        for field in MEASUREMENT_FIELDS:
+            if field not in entry:
+                errors.append(f"{name}: missing WO-238 measurement field {field}")
+            elif not is_valid_measurement_value(entry[field]):
+                errors.append(
+                    f"{name}: {field} must be {MEASUREMENT_PLACEHOLDER} or a "
+                    f"non-negative number (got {entry[field]!r})"
+                )
+
+        for field in batch_required:
+            if field in REQUIRED_FIELDS or field in MEASUREMENT_FIELDS:
+                continue
+            if field not in entry or entry[field] in (None, "", []):
+                errors.append(f"{name}: missing schema-required field {field}")
 
         target_sched = str(entry.get("target_schedule") or "")
         if "ASSUMPTION" not in target_sched:
@@ -247,6 +331,17 @@ def validate(map_path: Path, manifest_path: Path) -> list[str]:
         if name not in map_keys:
             errors.append(f"{name}: shipped in manifest but missing from scheduler map")
 
+    cronjobs = data.get("kubernetes_cronjobs")
+    if not isinstance(cronjobs, dict):
+        errors.append("kubernetes_cronjobs missing or not a mapping")
+    else:
+        cron_keys = set(cronjobs.keys())
+        if cron_keys != EXPECTED_CRONJOBS:
+            errors.append(
+                f"kubernetes_cronjobs keys {sorted(cron_keys)} != "
+                f"expected {sorted(EXPECTED_CRONJOBS)}"
+            )
+
     return errors
 
 
@@ -262,6 +357,11 @@ def main() -> int:
         default=None,
         help="Path to pcis-manifest.yaml",
     )
+    parser.add_argument(
+        "--schema",
+        default=None,
+        help="Path to scheduler-map-schema.yaml",
+    )
     args = parser.parse_args()
     repo_root = Path(__file__).resolve().parents[1]
     map_path = Path(args.map) if args.map else repo_root / "ops" / "scheduler-map.yaml"
@@ -270,6 +370,11 @@ def main() -> int:
         if args.manifest
         else repo_root / "manifest" / "pcis-manifest.yaml"
     )
+    schema_path = (
+        Path(args.schema)
+        if args.schema
+        else repo_root / "ops" / "scheduler-map-schema.yaml"
+    )
 
     if not map_path.is_file():
         print(f"ERROR: scheduler map not found: {map_path}", file=sys.stderr)
@@ -277,8 +382,11 @@ def main() -> int:
     if not manifest_path.is_file():
         print(f"ERROR: manifest not found: {manifest_path}", file=sys.stderr)
         return 2
+    if not schema_path.is_file():
+        print(f"ERROR: schema not found: {schema_path}", file=sys.stderr)
+        return 2
 
-    errors = validate(map_path, manifest_path)
+    errors = validate(map_path, manifest_path, schema_path)
     if errors:
         print("Scheduler map validation FAILED:")
         for err in errors:
@@ -287,8 +395,10 @@ def main() -> int:
 
     print("Scheduler map validation OK")
     print(f"  map: {map_path}")
+    print(f"  schema: {schema_path}")
     print(f"  manifest: {manifest_path}")
     print(f"  batch programs: {', '.join(sorted(EXPECTED_BATCH_PROGRAMS))}")
+    print(f"  measurement fields: {', '.join(MEASUREMENT_FIELDS)}")
     return 0
 
 
