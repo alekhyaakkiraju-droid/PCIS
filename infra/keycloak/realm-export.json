@@ -1,0 +1,465 @@
+{
+  "realm": "pcis",
+  "enabled": true,
+  "displayName": "PCIS",
+  "displayNameHtml": "<div class=\"kc-logo-text\"><span>PCIS</span></div>",
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 5,
+  "accessTokenLifespan": 900,
+  "accessTokenLifespanForImplicitFlow": 900,
+  "ssoSessionIdleTimeout": 28800,
+  "ssoSessionMaxLifespan": 28800,
+  "ssoSessionIdleTimeoutRememberMe": 28800,
+  "ssoSessionMaxLifespanRememberMe": 28800,
+  "offlineSessionIdleTimeout": 2592000,
+  "offlineSessionMaxLifespanEnabled": false,
+  "clientSessionIdleTimeout": 3600,
+  "clientSessionMaxLifespan": 3600,
+  "clientOfflineSessionIdleTimeout": 0,
+  "clientOfflineSessionMaxLifespan": 0,
+  "accessCodeLifespan": 60,
+  "accessCodeLifespanUserAction": 300,
+  "accessCodeLifespanLogin": 1800,
+  "actionTokenGeneratedByAdminLifespan": 43200,
+  "actionTokenGeneratedByUserLifespan": 300,
+  "oauth2DeviceCodeLifespan": 600,
+  "oauth2DevicePollingInterval": 5,
+  "revokeRefreshToken": true,
+  "refreshTokenMaxReuse": 0,
+  "roles": {
+    "realm": [
+      {
+        "name": "CLAIMS_ADJUSTER",
+        "description": "Claims adjuster — payment authority bounded by authority_limit claim",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "CLAIMS_SUPERVISOR",
+        "description": "Claims supervisor — oversight and elevated claim actions",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "CSR",
+        "description": "Customer service representative",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "UNDERWRITER",
+        "description": "Policy underwriter",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "FINANCE",
+        "description": "Billing / finance clerk and reporting consumers",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "COMPLIANCE",
+        "description": "Compliance officer / audit investigator",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "BATCH_SVC",
+        "description": "Non-human batch / service workload identity",
+        "composite": false,
+        "clientRole": false
+      }
+    ]
+  },
+  "defaultDefaultClientScopes": [
+    "role_list",
+    "profile",
+    "email",
+    "roles",
+    "web-origins",
+    "acr",
+    "authority_limit"
+  ],
+  "defaultOptionalClientScopes": [
+    "offline_access",
+    "address",
+    "phone",
+    "microprofile-jwt"
+  ],
+  "clientScopes": [
+    {
+      "name": "authority_limit",
+      "description": "Maps user attribute authority_limit into access tokens (absent when unset)",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false",
+        "consent.screen.text": ""
+      },
+      "protocolMappers": [
+        {
+          "name": "authority_limit",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "authority_limit",
+            "claim.name": "authority_limit",
+            "jsonType.label": "long",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true",
+            "multivalued": "false",
+            "aggregate.attrs": "false"
+          }
+        }
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "pcis-spa",
+      "name": "PCIS React SPA",
+      "description": "Public browser client — Authorization Code + PKCE (S256)",
+      "enabled": true,
+      "publicClient": true,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "rootUrl": "http://localhost:3000",
+      "baseUrl": "/",
+      "redirectUris": [
+        "http://localhost:3000/*",
+        "https://app.dev.pcis.example.com/*",
+        "https://app.tst.pcis.example.com/*",
+        "https://app.pcis.example.com/*"
+      ],
+      "webOrigins": [
+        "+",
+        "http://localhost:3000"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:3000/*##https://app.dev.pcis.example.com/*##https://app.tst.pcis.example.com/*##https://app.pcis.example.com/*",
+        "oauth2.device.authorization.grant.enabled": "false",
+        "oidc.ciba.grant.enabled": "false",
+        "backchannel.logout.session.required": "true",
+        "client_credentials.use_refresh_token": "false",
+        "access.token.lifespan": "900"
+      },
+      "fullScopeAllowed": true,
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "profile",
+        "roles",
+        "email",
+        "authority_limit"
+      ],
+      "optionalClientScopes": [
+        "offline_access"
+      ]
+    },
+    {
+      "clientId": "pcis-gateway",
+      "name": "PCIS API Gateway",
+      "description": "Confidential gateway client — auth code + token introspection",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "protocol": "openid-connect",
+      "secret": "CHANGE_ME_GATEWAY_CLIENT_SECRET",
+      "rootUrl": "http://localhost:8081",
+      "redirectUris": [
+        "http://localhost:8081/*",
+        "https://api.dev.pcis.example.com/*",
+        "https://api.tst.pcis.example.com/*",
+        "https://api.pcis.example.com/*"
+      ],
+      "webOrigins": [
+        "+"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "access.token.lifespan": "900",
+        "client_credentials.use_refresh_token": "false",
+        "oauth2.device.authorization.grant.enabled": "false",
+        "backchannel.logout.session.required": "true"
+      },
+      "fullScopeAllowed": true,
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "profile",
+        "roles",
+        "email",
+        "authority_limit"
+      ],
+      "optionalClientScopes": [
+        "offline_access"
+      ]
+    },
+    {
+      "clientId": "pcis-batch",
+      "name": "PCIS Batch Workloads",
+      "description": "Confidential client-credentials client with BATCH_SVC service account",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "protocol": "openid-connect",
+      "secret": "CHANGE_ME_BATCH_CLIENT_SECRET",
+      "attributes": {
+        "access.token.lifespan": "3600",
+        "client_credentials.use_refresh_token": "false",
+        "oauth2.device.authorization.grant.enabled": "false"
+      },
+      "fullScopeAllowed": true,
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "roles",
+        "profile",
+        "email"
+      ],
+      "optionalClientScopes": []
+    }
+  ],
+  "users": [
+    {
+      "username": "adj.alice",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Alice",
+      "lastName": "Adjuster",
+      "email": "alice.adjuster@pcis.example.com",
+      "attributes": {
+        "persona": ["Claims Adjuster"],
+        "authority_limit": ["25000"]
+      },
+      "realmRoles": ["CLAIMS_ADJUSTER"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "TempChangeMe!Adj01",
+          "temporary": true
+        }
+      ]
+    },
+    {
+      "username": "sup.bob",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Bob",
+      "lastName": "Supervisor",
+      "email": "bob.supervisor@pcis.example.com",
+      "attributes": {
+        "persona": ["Claims Supervisor"]
+      },
+      "realmRoles": ["CLAIMS_SUPERVISOR"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "TempChangeMe!Sup01",
+          "temporary": true
+        }
+      ]
+    },
+    {
+      "username": "csr.carol",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Carol",
+      "lastName": "Rep",
+      "email": "carol.csr@pcis.example.com",
+      "attributes": {
+        "persona": ["CSR"]
+      },
+      "realmRoles": ["CSR"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "TempChangeMe!Csr01",
+          "temporary": true
+        }
+      ]
+    },
+    {
+      "username": "uw.dave",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Dave",
+      "lastName": "Underwriter",
+      "email": "dave.underwriter@pcis.example.com",
+      "attributes": {
+        "persona": ["Underwriter"]
+      },
+      "realmRoles": ["UNDERWRITER"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "TempChangeMe!Uw01",
+          "temporary": true
+        }
+      ]
+    },
+    {
+      "username": "fin.erin",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Erin",
+      "lastName": "Billing",
+      "email": "erin.billing@pcis.example.com",
+      "attributes": {
+        "persona": ["Billing Clerk"]
+      },
+      "realmRoles": ["FINANCE"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "TempChangeMe!Fin01",
+          "temporary": true
+        }
+      ]
+    },
+    {
+      "username": "batch.frank",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Frank",
+      "lastName": "BatchOps",
+      "email": "frank.batchops@pcis.example.com",
+      "attributes": {
+        "persona": ["Batch Operations Operator"]
+      },
+      "realmRoles": ["BATCH_SVC"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "TempChangeMe!Batch01",
+          "temporary": true
+        }
+      ]
+    },
+    {
+      "username": "comp.grace",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Grace",
+      "lastName": "Compliance",
+      "email": "grace.compliance@pcis.example.com",
+      "attributes": {
+        "persona": ["Compliance Officer"]
+      },
+      "realmRoles": ["COMPLIANCE"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "TempChangeMe!Comp01",
+          "temporary": true
+        }
+      ]
+    },
+    {
+      "username": "admin.helen",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Helen",
+      "lastName": "Admin",
+      "email": "helen.itadmin@pcis.example.com",
+      "attributes": {
+        "persona": ["IT Admin"]
+      },
+      "realmRoles": ["COMPLIANCE"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "TempChangeMe!Admin01",
+          "temporary": true
+        }
+      ]
+    },
+    {
+      "username": "rpt.ivan",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Ivan",
+      "lastName": "Analyst",
+      "email": "ivan.analyst@pcis.example.com",
+      "attributes": {
+        "persona": ["Reporting Analyst"]
+      },
+      "realmRoles": ["FINANCE"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "TempChangeMe!Rpt01",
+          "temporary": true
+        }
+      ]
+    },
+    {
+      "username": "service-account-pcis-batch",
+      "enabled": true,
+      "serviceAccountClientId": "pcis-batch",
+      "realmRoles": ["BATCH_SVC"]
+    },
+    {
+      "username": "multi.role",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Multi",
+      "lastName": "Role",
+      "email": "multi.role@pcis.example.com",
+      "attributes": {
+        "persona": ["Edge-case multi-role"],
+        "authority_limit": ["10000"]
+      },
+      "realmRoles": ["CLAIMS_ADJUSTER", "CSR"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "TempChangeMe!Multi01",
+          "temporary": true
+        }
+      ]
+    }
+  ],
+  "browserSecurityHeaders": {
+    "contentSecurityPolicyReportOnly": "",
+    "xContentTypeOptions": "nosniff",
+    "referrerPolicy": "no-referrer",
+    "xRobotsTag": "none",
+    "xFrameOptions": "SAMEORIGIN",
+    "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self'; object-src 'none';",
+    "xXSSProtection": "1; mode=block",
+    "strictTransportSecurity": "max-age=31536000; includeSubDomains"
+  }
+}

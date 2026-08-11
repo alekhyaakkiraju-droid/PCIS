@@ -30,3 +30,13 @@ eso_chart_version              = "0.9.20"
 object_lock_retention_days    = 365
 glacier_transition_days       = 90
 deep_archive_transition_days  = 365
+
+# Keycloak OIDC IdP (WO-145) — production; realm import off by default
+enable_keycloak                 = false
+keycloak_replica_count          = 3
+keycloak_certificate_arn        = "arn:aws:acm:us-east-1:000000000000:certificate/REPLACE_PRD_CERT"
+keycloak_ingress_host           = "auth.pcis.example.com"
+keycloak_db_host                = "REPLACE_KEYCLOAK_DB_HOST"
+keycloak_enable_realm_import    = false
+keycloak_create_secret_shells   = true
+
