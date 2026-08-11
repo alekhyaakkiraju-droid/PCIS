@@ -6,8 +6,11 @@ import com.pcis.customer.domain.DuplicateCandidate;
 import com.pcis.customer.domain.DuplicateDetectionService;
 import com.pcis.customer.domain.exception.DuplicateTaxIdException;
 import com.pcis.customer.domain.model.CreateCustomerCommand;
+import com.pcis.customer.domain.model.UpdateCustomerCommand;
+import com.pcis.customer.domain.repository.CustomerRepository;
 import com.pcis.customer.outbox.CustomerOutboxWriter;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
@@ -19,14 +22,17 @@ public class CustomerApplicationService {
 
   private final DuplicateDetectionService duplicateDetectionService;
   private final CustomerDomainService customerDomainService;
+  private final CustomerRepository customerRepository;
   private final CustomerOutboxWriter customerOutboxWriter;
 
   public CustomerApplicationService(
       DuplicateDetectionService duplicateDetectionService,
       CustomerDomainService customerDomainService,
+      CustomerRepository customerRepository,
       CustomerOutboxWriter customerOutboxWriter) {
     this.duplicateDetectionService = duplicateDetectionService;
     this.customerDomainService = customerDomainService;
+    this.customerRepository = customerRepository;
     this.customerOutboxWriter = customerOutboxWriter;
   }
 
@@ -56,6 +62,34 @@ public class CustomerApplicationService {
     CustomerEntity created = customerDomainService.createIgnoringDuplicateCheck(command);
     writeOverrideEvent(created, duplicate, overrideReason.trim());
     return created;
+  }
+
+  @Transactional(readOnly = true)
+  public CustomerEntity findById(Integer custId) {
+    return customerDomainService.findById(custId);
+  }
+
+  @Transactional
+  public CustomerEntity update(UpdateCustomerCommand command) {
+    return customerDomainService.update(command);
+  }
+
+  @Transactional(readOnly = true)
+  public List<CustomerEntity> search(String query) {
+    if (!StringUtils.hasText(query)) {
+      throw new IllegalArgumentException("Search query must not be blank");
+    }
+    return customerRepository.search(query.trim());
+  }
+
+  @Transactional(readOnly = true)
+  public Optional<DuplicateCandidate> duplicateCheck(Integer custId) {
+    CustomerEntity customer = customerDomainService.findById(custId);
+    if (!StringUtils.hasText(customer.getTaxId())) {
+      return Optional.empty();
+    }
+    return duplicateDetectionService.findByTaxId(customer.getTaxId())
+        .filter(candidate -> !candidate.custId().equals(custId));
   }
 
   private void writeDuplicateDetectedEvent(

@@ -5,7 +5,9 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.pcis.customer.application.Customer360Service;
 import com.pcis.customer.application.CustomerApplicationService;
+import com.pcis.customer.api.dto.CustomerResponseMapper;
 import com.pcis.customer.support.TestJwtGenerator;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -34,6 +36,12 @@ class SecurityConfigTest {
 
   @MockBean
   private CustomerApplicationService customerApplicationService;
+
+  @MockBean
+  private Customer360Service customer360Service;
+
+  @MockBean
+  private CustomerResponseMapper customerResponseMapper;
 
   @Test
   void healthEndpointPermittedWithoutAuthentication() throws Exception {

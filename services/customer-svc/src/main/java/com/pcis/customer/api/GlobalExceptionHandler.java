@@ -1,5 +1,6 @@
 package com.pcis.customer.api;
 
+import com.pcis.customer.domain.exception.CustomerNotFoundException;
 import com.pcis.customer.domain.exception.DuplicateTaxIdException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
@@ -22,6 +23,21 @@ public class GlobalExceptionHandler {
       URI.create("https://pcis.example/problems/validation");
   private static final URI ACCESS_DENIED_TYPE =
       URI.create("https://pcis.example/problems/access-denied");
+  private static final URI NOT_FOUND_TYPE =
+      URI.create("https://pcis.example/problems/not-found");
+
+  @ExceptionHandler(CustomerNotFoundException.class)
+  ResponseEntity<ProblemDetail> handleCustomerNotFound(
+      CustomerNotFoundException ex, HttpServletRequest request) {
+    ProblemDetail problem =
+        ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+    problem.setType(NOT_FOUND_TYPE);
+    problem.setTitle("Customer not found");
+    problem.setInstance(URI.create(request.getRequestURI()));
+    problem.setProperty("code", "CUSTOMER_NOT_FOUND");
+    problem.setProperty("custId", ex.getCustId());
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problem);
+  }
 
   @ExceptionHandler(DuplicateTaxIdException.class)
   ResponseEntity<ProblemDetail> handleDuplicateTaxId(

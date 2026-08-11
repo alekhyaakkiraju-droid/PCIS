@@ -67,6 +67,12 @@ pcis:
     url: ${AUTHZ_SVC_URL:http://authz-svc:8083}
   audit-svc:
     url: ${AUDIT_SVC_URL:http://audit-svc:8080}
+  policy-svc:
+    url: ${POLICY_SVC_URL:http://policy-svc:8084}
+  billing-svc:
+    url: ${BILLING_SVC_URL:http://billing-svc:8085}
+  claims-svc:
+    url: ${CLAIMS_SVC_URL:http://claims-svc:8086}
 
 # Resilience4j circuit breaker defaults for Feign clients
 resilience4j:
@@ -83,6 +89,12 @@ resilience4j:
         baseConfig: default
       audit-svc:
         baseConfig: default
+      policy-svc:
+        baseConfig: default
+      billing-svc:
+        baseConfig: default
+      claims-svc:
+        baseConfig: default
   timelimiter:
     configs:
       default:
@@ -91,6 +103,12 @@ resilience4j:
       authz-svc:
         baseConfig: default
       audit-svc:
+        baseConfig: default
+      policy-svc:
+        baseConfig: default
+      billing-svc:
+        baseConfig: default
+      claims-svc:
         baseConfig: default
 
 spring.cloud.openfeign.circuitbreaker.enabled: true
