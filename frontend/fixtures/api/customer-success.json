@@ -1,0 +1,74 @@
+{
+  "content": [
+    {
+      "custId": 100001,
+      "taxId": "123-45-6789",
+      "custName": "Alice Johnson",
+      "custType": "I",
+      "custStatus": "A",
+      "crtTimestamp": "2024-01-15T10:30:00Z",
+      "updTimestamp": "2025-03-20T14:22:00Z",
+      "addresses": [
+        {
+          "addrSeq": 1,
+          "addrLine1": "742 Evergreen Terrace",
+          "addrLine2": null,
+          "city": "Springfield",
+          "stateCode": "IL",
+          "postalCode": "62704",
+          "countryCode": "US",
+          "addrType": "P"
+        }
+      ],
+      "contacts": [
+        {
+          "contactSeq": 1,
+          "contactType": "PH",
+          "contactValue": "217-555-0101",
+          "isPrimary": true
+        },
+        {
+          "contactSeq": 2,
+          "contactType": "EM",
+          "contactValue": "alice.johnson@example.com",
+          "isPrimary": true
+        }
+      ]
+    },
+    {
+      "custId": 100002,
+      "taxId": "98-7654321",
+      "custName": "Acme Manufacturing LLC",
+      "custType": "B",
+      "custStatus": "A",
+      "crtTimestamp": "2023-06-01T09:00:00Z",
+      "updTimestamp": "2025-07-10T11:45:00Z",
+      "addresses": [
+        {
+          "addrSeq": 1,
+          "addrLine1": "100 Industrial Blvd",
+          "addrLine2": "Suite 500",
+          "city": "Peoria",
+          "stateCode": "IL",
+          "postalCode": "61602",
+          "countryCode": "US",
+          "addrType": "B"
+        }
+      ],
+      "contacts": [
+        {
+          "contactSeq": 1,
+          "contactType": "PH",
+          "contactValue": "309-555-0200",
+          "isPrimary": true
+        }
+      ]
+    }
+  ],
+  "page": {
+    "size": 20,
+    "number": 0,
+    "totalElements": 2,
+    "totalPages": 1
+  }
+}
