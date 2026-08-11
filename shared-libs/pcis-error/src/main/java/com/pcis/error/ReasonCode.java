@@ -16,7 +16,9 @@ public enum ReasonCode {
   AUTHZ_LIMIT_EXCEEDED("AUTHZ_LIMIT_EXCEEDED", "Authority limit exceeded", URI.create("https://pcis.example/problems/authority-limit-exceeded")),
   PRM_NOT_IMPLEMENTED("PRM_NOT_IMPLEMENTED", "Premium rating not implemented", URI.create("https://pcis.example/problems/premium-not-implemented")),
   CFG_TUNABLE_NOT_FOUND("CFG_TUNABLE_NOT_FOUND", "Required tunable not found", URI.create("https://pcis.example/problems/tunable-not-found")),
-  CFG_TUNABLE_OUT_OF_RANGE("CFG_TUNABLE_OUT_OF_RANGE", "Tunable value out of range", URI.create("https://pcis.example/problems/tunable-out-of-range"));
+  CFG_TUNABLE_OUT_OF_RANGE("CFG_TUNABLE_OUT_OF_RANGE", "Tunable value out of range", URI.create("https://pcis.example/problems/tunable-out-of-range")),
+  CFG_UNKNOWN_CODE_VALUE("CFG_UNKNOWN_CODE_VALUE", "Unknown or inactive code value", URI.create("https://pcis.example/problems/unknown-code-value")),
+  CFG_RULE_SET_NOT_FOUND("CFG_RULE_SET_NOT_FOUND", "Required rule set not found", URI.create("https://pcis.example/problems/rule-set-not-found"));
 
   private final String code;
   private final String title;
