@@ -1,0 +1,24 @@
+namespace: pcis-batch
+
+prometheusRule:
+  namespace: pcis-monitoring
+
+jobs:
+  - name: audit-archive-job
+    serviceAccount:
+      irsaRoleArn: "arn:aws:iam::222233334444:role/pcis-audit-archive-batch-prd"
+  - name: billing-installment-job
+    serviceAccount:
+      irsaRoleArn: "arn:aws:iam::222233334444:role/pcis-billing-batch-prd"
+  - name: claim-payment-job
+    serviceAccount:
+      irsaRoleArn: "arn:aws:iam::222233334444:role/pcis-claims-batch-prd"
+  - name: commission-calc-job
+    serviceAccount:
+      irsaRoleArn: "arn:aws:iam::222233334444:role/pcis-commission-batch-prd"
+  - name: premium-processing-job
+    serviceAccount:
+      irsaRoleArn: "arn:aws:iam::222233334444:role/pcis-premium-batch-prd"
+  - name: policy-renewal-job
+    serviceAccount:
+      irsaRoleArn: "arn:aws:iam::222233334444:role/pcis-policy-batch-prd"
