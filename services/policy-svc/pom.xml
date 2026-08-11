@@ -17,11 +17,13 @@
   <description>Policy domain service — issuance, endorsement, renewal, and cancellation (Phase 4)</description>
 
   <properties>
+    <spring-cloud.version>2025.0.0</spring-cloud.version>
     <testcontainers.version>1.20.6</testcontainers.version>
     <flyway.version>11.8.2</flyway.version>
     <logstash-logback.version>8.1</logstash-logback.version>
     <nimbus-jose-jwt.version>10.3</nimbus-jose-jwt.version>
     <jacoco.version>0.8.13</jacoco.version>
+    <wiremock.version>3.13.1</wiremock.version>
   </properties>
 
   <dependencyManagement>
@@ -30,6 +32,13 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
         <version>${spring-boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-dependencies</artifactId>
+        <version>${spring-cloud.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -53,6 +62,11 @@
     <dependency>
       <groupId>com.pcis</groupId>
       <artifactId>pcis-error</artifactId>
+      <version>0.1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.pcis</groupId>
+      <artifactId>pcis-outbox</artifactId>
       <version>0.1.0-SNAPSHOT</version>
     </dependency>
 
@@ -105,6 +119,16 @@
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
 
+    <!-- OpenFeign + circuit breaker for authz-svc -->
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-openfeign</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
+    </dependency>
+
     <!-- Structured JSON logging -->
     <dependency>
       <groupId>net.logstash.logback</groupId>
@@ -140,6 +164,12 @@
       <version>${nimbus-jose-jwt.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.wiremock</groupId>
+      <artifactId>wiremock-standalone</artifactId>
+      <version>${wiremock.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -162,6 +192,7 @@
         <version>3.14.0</version>
         <configuration>
           <release>${maven.compiler.release}</release>
+          <parameters>true</parameters>
         </configuration>
       </plugin>
       <plugin>

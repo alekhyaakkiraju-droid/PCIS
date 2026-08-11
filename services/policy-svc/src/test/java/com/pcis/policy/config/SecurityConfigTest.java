@@ -1,5 +1,7 @@
 package com.pcis.policy.config;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -7,16 +9,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.List;
 import java.util.Map;
+import com.pcis.policy.controller.PolicyController;
+import com.pcis.policy.dto.PolicyListResponse;
+import com.pcis.policy.dto.PolicyMapper;
+import com.pcis.policy.service.PolicyService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(controllers = {})
+@WebMvcTest(controllers = PolicyController.class)
 @Import(SecurityConfig.class)
 class SecurityConfigTest {
 
@@ -25,6 +33,12 @@ class SecurityConfigTest {
 
   @MockBean
   private JwtDecoder jwtDecoder;
+
+  @MockBean
+  private PolicyService policyService;
+
+  @MockBean
+  private PolicyMapper policyMapper;
 
   @Test
   void healthEndpointPermittedWithoutAuthentication() throws Exception {
@@ -55,6 +69,11 @@ class SecurityConfigTest {
 
   @Test
   void apiPoliciesPassesWithValidJwt() throws Exception {
+    when(policyService.findPolicies(any(), any(), any(Pageable.class)))
+        .thenReturn(new PageImpl<>(List.of()));
+    when(policyMapper.toListResponse(List.of(), 0, 20, 0))
+        .thenReturn(new PolicyListResponse(List.of(), new PolicyListResponse.PageMetadata(0, 20, 0, 0)));
+
     mockMvc.perform(
             get("/api/v1/policies")
                 .with(jwt().jwt(
@@ -63,7 +82,7 @@ class SecurityConfigTest {
                         .subject("policy-agent")
                         .claim("realm_access", Map.of("roles", List.of("POLICY_AGENT")))
                         .build())))
-        .andExpect(status().isNotFound()); // 404 means auth passed — no controller mapped yet
+        .andExpect(status().isOk());
   }
 
   @Test
