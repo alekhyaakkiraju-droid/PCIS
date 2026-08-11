@@ -1,6 +1,6 @@
-.PHONY: lint lint-prometheus lint-alertmanager lint-runbooks lint-semgrep test-prometheus-rules test-semgrep validate-data-dictionary test-data-dictionary test-monetary-precision
+.PHONY: lint lint-prometheus lint-alertmanager lint-runbooks lint-semgrep lint-openapi-contract test-prometheus-rules test-semgrep validate-data-dictionary test-data-dictionary test-monetary-precision test-openapi-contract
 
-lint: lint-prometheus lint-alertmanager lint-runbooks
+lint: lint-prometheus lint-alertmanager lint-runbooks lint-openapi-contract
 
 lint-semgrep:
 	semgrep --config semgrep/rules --error services/
@@ -26,6 +26,12 @@ lint-alertmanager:
 
 lint-runbooks:
 	bash observability/runbooks/validate-runbook-links.sh
+
+lint-openapi-contract:
+	bash scripts/openapi-contract-gate.sh
+
+test-openapi-contract:
+	python3 -m unittest discover -s contracts/tests -p 'test_openapi_contract_gate.py' -v
 
 test-prometheus-rules:
 	bash observability/test/test-rules.sh
