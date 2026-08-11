@@ -1,0 +1,6 @@
+-- outside 60-day renewal window (expiry 2024-12-01)
+INSERT INTO POLICY_T (POLICY_ID, STATUS, EXPIRY_DATE) VALUES
+ ('POLREN0002', 'A', '2024-12-01');
+INSERT INTO DEDUCTIBLE_T (POLICY_ID, DEDUCTIBLE_AMT) VALUES
+ ('POLREN0002', 1000.00);
+-- Gap P-P8: POL006B does NOT copy DEDUCTIBLE_T on renewal — golden must show absence.

@@ -1,0 +1,58 @@
+{
+  "program": "CUS001A",
+  "source": "Property_Casualty_Insurance_System/CUS001A.cbl",
+  "spec": "baseline/specs/cus001a_duplicate_taxid_behavior.md",
+  "verified_finding": "no_duplicate_check",
+  "notes": "Shipped PROCEDURE DIVISION has no 4000-CHECK-DUPLICATE-CUSTOMER, WS-DUPLICATE-FOUND-SW, or CUS0015 path. Scenarios document actual behavior plus US-007 target for modernization.",
+  "scenarios": [
+    {
+      "id": "no_duplicate",
+      "precondition": "WS-SCREEN-ACTION=ADD, WS-AUTH-FLAG=Y after SECCHK01, CUSVAL01 returns OK, TAX_ID unique or unconstrained",
+      "legacy_behavior": "5000-ADD-CUSTOMER INSERT proceeds (L248-L275); COMMIT + AUDLOG01 INSERT audit",
+      "legacy_outcome": "insert_proceeds",
+      "us007_target": "insert_proceeds",
+      "disposition": "PARITY"
+    },
+    {
+      "id": "duplicate_found_soft_warning",
+      "precondition": "Same tax ID already exists in CUSTOMER_T",
+      "legacy_behavior": "No soft-warning path exists; program does not detect duplicate before INSERT",
+      "legacy_outcome": "insert_proceeds_without_warning",
+      "us007_target": "not_applicable_soft_warning_model",
+      "disposition": "NEW_control_required",
+      "applicable_to_legacy": false
+    },
+    {
+      "id": "duplicate_found_hard_block",
+      "precondition": "Same tax ID already exists in CUSTOMER_T",
+      "legacy_behavior": "No hard-block path exists in COBOL; INSERT attempted unless DB unique constraint rejects it as generic SQLCODE",
+      "legacy_outcome": "insert_attempted",
+      "us007_target": "insert_blocked_unless_override_permission",
+      "disposition": "NEW"
+    },
+    {
+      "id": "sqlcode_error",
+      "precondition": "INSERT returns SQLCODE < 0 (e.g. constraint/connection)",
+      "legacy_behavior": "DISPLAY error + WS-RETURN-CODE=8 (L276-L280); no duplicate-specific message",
+      "legacy_outcome": "insert_failed_generic",
+      "us007_target": "structured_error_with_duplicate_code_when_applicable",
+      "disposition": "IMPROVE"
+    },
+    {
+      "id": "blank_taxid",
+      "precondition": "HV-TAX-ID blank/spaces, CUSVAL01 returns OK",
+      "legacy_behavior": "INSERT proceeds with blank TAX_ID (L255/L263); no blank-tax-ID guard",
+      "legacy_outcome": "insert_proceeds",
+      "us007_target": "reject_or_require_tax_id_per_policy",
+      "disposition": "NEW_or_IMPROVE"
+    },
+    {
+      "id": "assumed_paragraph_absent",
+      "precondition": "N/A — documentation scenario",
+      "legacy_behavior": "4000-CHECK-DUPLICATE-CUSTOMER and CUST_SSN_TAXID do not exist; 4000-UPDATE-CUSTOMER is the update path (L166)",
+      "legacy_outcome": "story_assumptions_stale_vs_baseline",
+      "us007_target": "implement_explicit_duplicate_service_check",
+      "disposition": "NEW"
+    }
+  ]
+}

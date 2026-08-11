@@ -1,0 +1,29 @@
+generation_timestamp: "2026-08-11T00:00:00Z"
+generator_version: 1.0.0
+woref: WOREF-002-FIXTURE
+program_count: 1
+programs:
+  - program_id: CUSFIX01
+    module: CUSTOMER
+    purpose: Fixture program for data dictionary unit tests
+    sql_statements:
+      - statement_type: SELECT
+        target_table: SAMPLE_CUSTOMER_T
+        cursor_name: null
+        host_variables:
+          - HV-CUST-ID
+          - CUST_DOB
+          - CUST_SSN_TAXID
+        where_clause_summary: "CUST_ID = :HV-CUST-ID"
+        fetch_strategy: single-row
+        sql_preview: "SELECT CUST_ID, CUST_DOB, CUST_SSN_TAXID INTO :HV-CUST-ID, :CUST_DOB, :CUST_SSN_TAXID FROM SAMPLE_CUSTOMER_T WHERE CUST_ID = :HV-CUST-ID"
+      - statement_type: INSERT
+        target_table: SAMPLE_CUSTOMER_T
+        cursor_name: null
+        host_variables:
+          - HV-CUST-ID
+          - CUST_GENDER
+          - CUST_EMAIL
+        where_clause_summary: ""
+        fetch_strategy: n/a
+        sql_preview: "INSERT INTO SAMPLE_CUSTOMER_T (CUST_ID, CUST_GENDER, CUST_EMAIL) VALUES (:HV-CUST-ID, :CUST_GENDER, :CUST_EMAIL)"

@@ -1,0 +1,281 @@
+rules:
+  - id: require-preauthorize-on-mutations
+    languages:
+      - java
+    severity: ERROR
+    message: >-
+      Mutating controller handler `$METHOD` is missing `@PreAuthorize`. Every
+      POST, PUT, PATCH, or DELETE endpoint must declare an explicit permission
+      guard before merge (deny-by-default authorization policy).
+    metadata:
+      category: security
+      technology:
+        - spring
+      cwe: "CWE-862: Missing Authorization"
+      owasp: "A01:2021 - Broken Access Control"
+      references:
+        - docs/authz/preauthorize-rule-guide.md
+    patterns:
+      - pattern-either:
+          - pattern: |
+              @PostMapping(...)
+              $RET $METHOD(...) {...}
+          - pattern: |
+              @PostMapping(...)
+              @$A(...)
+              $RET $METHOD(...) {...}
+          - pattern: |
+              @PostMapping(...)
+              @$A(...)
+              @$B(...)
+              $RET $METHOD(...) {...}
+          - pattern: |
+              @PostMapping(...)
+              @$A(...)
+              @$B(...)
+              @$C(...)
+              $RET $METHOD(...) {...}
+          - pattern: |
+              @PostMapping(...)
+              @$A(...)
+              @$B(...)
+              @$C(...)
+              @$D(...)
+              $RET $METHOD(...) {...}
+          - pattern: |
+              @PutMapping(...)
+              $RET $METHOD(...) {...}
+          - pattern: |
+              @PutMapping(...)
+              @$A(...)
+              $RET $METHOD(...) {...}
+          - pattern: |
+              @PutMapping(...)
+              @$A(...)
+              @$B(...)
+              $RET $METHOD(...) {...}
+          - pattern: |
+              @PutMapping(...)
+              @$A(...)
+              @$B(...)
+              @$C(...)
+              $RET $METHOD(...) {...}
+          - pattern: |
+              @PutMapping(...)
+              @$A(...)
+              @$B(...)
+              @$C(...)
+              @$D(...)
+              $RET $METHOD(...) {...}
+          - pattern: |
+              @PatchMapping(...)
+              $RET $METHOD(...) {...}
+          - pattern: |
+              @PatchMapping(...)
+              @$A(...)
+              $RET $METHOD(...) {...}
+          - pattern: |
+              @PatchMapping(...)
+              @$A(...)
+              @$B(...)
+              $RET $METHOD(...) {...}
+          - pattern: |
+              @PatchMapping(...)
+              @$A(...)
+              @$B(...)
+              @$C(...)
+              $RET $METHOD(...) {...}
+          - pattern: |
+              @PatchMapping(...)
+              @$A(...)
+              @$B(...)
+              @$C(...)
+              @$D(...)
+              $RET $METHOD(...) {...}
+          - pattern: |
+              @DeleteMapping(...)
+              $RET $METHOD(...) {...}
+          - pattern: |
+              @DeleteMapping(...)
+              @$A(...)
+              $RET $METHOD(...) {...}
+          - pattern: |
+              @DeleteMapping(...)
+              @$A(...)
+              @$B(...)
+              $RET $METHOD(...) {...}
+          - pattern: |
+              @DeleteMapping(...)
+              @$A(...)
+              @$B(...)
+              @$C(...)
+              $RET $METHOD(...) {...}
+          - pattern: |
+              @DeleteMapping(...)
+              @$A(...)
+              @$B(...)
+              @$C(...)
+              @$D(...)
+              $RET $METHOD(...) {...}
+      - pattern-not:
+          pattern-either:
+            - pattern: |
+                @PostMapping(...)
+                @PreAuthorize(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @PostMapping(...)
+                @PreAuthorize(...)
+                @$X(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @PostMapping(...)
+                @$X(...)
+                @PreAuthorize(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @PostMapping(...)
+                @$X(...)
+                @PreAuthorize(...)
+                @$Y(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @PostMapping(...)
+                @$X(...)
+                @$Y(...)
+                @PreAuthorize(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @PostMapping(...)
+                @$X(...)
+                @$Y(...)
+                @PreAuthorize(...)
+                @$Z(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @PostMapping(...)
+                @$X(...)
+                @$Y(...)
+                @$Z(...)
+                @PreAuthorize(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @PutMapping(...)
+                @PreAuthorize(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @PutMapping(...)
+                @PreAuthorize(...)
+                @$X(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @PutMapping(...)
+                @$X(...)
+                @PreAuthorize(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @PutMapping(...)
+                @$X(...)
+                @PreAuthorize(...)
+                @$Y(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @PutMapping(...)
+                @$X(...)
+                @$Y(...)
+                @PreAuthorize(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @PutMapping(...)
+                @$X(...)
+                @$Y(...)
+                @PreAuthorize(...)
+                @$Z(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @PutMapping(...)
+                @$X(...)
+                @$Y(...)
+                @$Z(...)
+                @PreAuthorize(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @PatchMapping(...)
+                @PreAuthorize(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @PatchMapping(...)
+                @PreAuthorize(...)
+                @$X(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @PatchMapping(...)
+                @$X(...)
+                @PreAuthorize(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @PatchMapping(...)
+                @$X(...)
+                @PreAuthorize(...)
+                @$Y(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @PatchMapping(...)
+                @$X(...)
+                @$Y(...)
+                @PreAuthorize(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @PatchMapping(...)
+                @$X(...)
+                @$Y(...)
+                @PreAuthorize(...)
+                @$Z(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @PatchMapping(...)
+                @$X(...)
+                @$Y(...)
+                @$Z(...)
+                @PreAuthorize(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @DeleteMapping(...)
+                @PreAuthorize(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @DeleteMapping(...)
+                @PreAuthorize(...)
+                @$X(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @DeleteMapping(...)
+                @$X(...)
+                @PreAuthorize(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @DeleteMapping(...)
+                @$X(...)
+                @PreAuthorize(...)
+                @$Y(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @DeleteMapping(...)
+                @$X(...)
+                @$Y(...)
+                @PreAuthorize(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @DeleteMapping(...)
+                @$X(...)
+                @$Y(...)
+                @PreAuthorize(...)
+                @$Z(...)
+                $RET $METHOD(...) {...}
+            - pattern: |
+                @DeleteMapping(...)
+                @$X(...)
+                @$Y(...)
+                @$Z(...)
+                @PreAuthorize(...)
+                $RET $METHOD(...) {...}

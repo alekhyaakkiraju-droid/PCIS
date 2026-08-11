@@ -1,0 +1,16 @@
+registry_version: "test-invalid"
+tier_handling:
+  Restricted:
+    retention_days: 2555
+    storage_encryption: at-rest-required
+    access_control: need-to-know
+    log_emission: masked-redacted
+entities:
+  - entity: CUSTOMER_T
+    domain: CUS
+    tier: Restricted
+    columns:
+      - column: TAX_ID
+        tier: Restricted
+        pii: true
+        mask_strategy: NOT_A_REAL_MASK

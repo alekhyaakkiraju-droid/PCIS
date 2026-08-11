@@ -1,0 +1,20 @@
+{
+  "program": "AUD002B",
+  "table": "RPT_RUN_LOG_T",
+  "insert": {
+    "PGM_NAME": "AUD002B",
+    "RUN_DATE": "2026-08-11",
+    "REC_SELECTED": 2500,
+    "REC_UPDATED": 2500,
+    "REC_ERRORS": 0,
+    "REC_DELINQUENT": null,
+    "START_TIMESTAMP": "2026-08-11 02:15:00.000000",
+    "END_TIMESTAMP": "2026-08-11 02:18:42.125000",
+    "CRT_TIMESTAMP": "2026-08-11 02:18:42.130000"
+  },
+  "counter_mapping": {
+    "REC_SELECTED": "WS-CNT-COPIED",
+    "REC_UPDATED": "WS-CNT-COPIED",
+    "REC_ERRORS": "WS-CNT-ERRORS"
+  }
+}

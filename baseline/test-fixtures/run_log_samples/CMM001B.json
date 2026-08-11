@@ -1,0 +1,20 @@
+{
+  "program": "CMM001B",
+  "table": "RPT_RUN_LOG_T",
+  "insert": {
+    "PGM_NAME": "CMM001B",
+    "RUN_DATE": "2026-08-11",
+    "REC_SELECTED": 960,
+    "REC_UPDATED": 945,
+    "REC_ERRORS": 1,
+    "REC_DELINQUENT": null,
+    "START_TIMESTAMP": "2026-08-11 04:00:00.000000",
+    "END_TIMESTAMP": "2026-08-11 04:08:33.780000",
+    "CRT_TIMESTAMP": "2026-08-11 04:08:33.785000"
+  },
+  "counter_mapping": {
+    "REC_SELECTED": "WS-CNT-READ",
+    "REC_UPDATED": "WS-CNT-WRITTEN",
+    "REC_ERRORS": "WS-CNT-ERRORS"
+  }
+}

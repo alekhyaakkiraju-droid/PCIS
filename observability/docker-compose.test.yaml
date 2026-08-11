@@ -1,0 +1,45 @@
+# Optional integration test stack for WO-141 Prometheus rules.
+# Usage: docker compose -f observability/docker-compose.test.yaml up --abort-on-container-exit
+services:
+  prometheus:
+    image: prom/prometheus:v3.9.1
+    command:
+      - --config.file=/etc/prometheus/prometheus.test.yml
+      - --web.enable-lifecycle
+      - --storage.tsdb.retention.time=1h
+    volumes:
+      - ./prometheus/prometheus.test.yml:/etc/prometheus/prometheus.test.yml:ro
+      - ./prometheus/recording-rules.yaml:/etc/prometheus/recording-rules.yaml:ro
+      - ./prometheus/alerting-rules.yaml:/etc/prometheus/alerting-rules.yaml:ro
+    ports:
+      - "9090:9090"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9090/-/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  pushgateway:
+    image: prom/pushgateway:v1.11.2
+    ports:
+      - "9091:9091"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9091/-/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  test-runner:
+    image: python:3.12-slim
+    working_dir: /work
+    volumes:
+      - ..:/work
+    depends_on:
+      prometheus:
+        condition: service_healthy
+      pushgateway:
+        condition: service_healthy
+    environment:
+      PROMETHEUS_URL: http://prometheus:9090
+      PUSHGATEWAY_URL: http://pushgateway:9091
+    command: ["bash", "observability/test/test-rules.sh", "--integration"]

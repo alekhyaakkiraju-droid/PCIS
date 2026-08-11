@@ -1,0 +1,12 @@
+[
+  { "id": "CLM-5001", "customerId": "C-1001", "status": "Open", "lossDate": "2026-01-12", "reserve": 12500.5 },
+  { "id": "CLM-5002", "customerId": "C-1002", "status": "Approved", "lossDate": "2025-11-03", "reserve": 8200 },
+  { "id": "CLM-5003", "customerId": "C-1003", "status": "Denied", "lossDate": "2025-09-21", "reserve": 0 },
+  { "id": "CLM-5004", "customerId": "C-1004", "status": "Settled", "lossDate": "2025-08-14", "reserve": 4500.25 },
+  { "id": "CLM-5005", "customerId": "C-1005", "status": "Closed", "lossDate": "2025-07-01", "reserve": 0 },
+  { "id": "CLM-5006", "customerId": "C-1006", "status": "Open", "lossDate": "2026-02-18", "reserve": 22000 },
+  { "id": "CLM-5007", "customerId": "C-1007", "status": "Approved", "lossDate": "2026-03-05", "reserve": 3100.75 },
+  { "id": "CLM-5008", "customerId": "C-1008", "status": "Open", "lossDate": "2026-04-11", "reserve": 980.1 },
+  { "id": "CLM-5009", "customerId": "C-1009", "status": "Settled", "lossDate": "2025-12-22", "reserve": 1500 },
+  { "id": "CLM-5010", "customerId": "C-1010", "status": "Denied", "lossDate": "2026-01-30", "reserve": 0 }
+]

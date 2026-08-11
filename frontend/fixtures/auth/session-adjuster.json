@@ -1,0 +1,10 @@
+{
+  "authenticated": true,
+  "user": {
+    "sub": "adjuster-alice",
+    "name": "Alice Adjuster",
+    "email": "alice.adjuster@pcis.example.com",
+    "roles": ["CLAIMS_ADJUSTER"],
+    "authority_limit": 25000
+  }
+}

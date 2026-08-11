@@ -1,0 +1,27 @@
+---
+# Expected parser output for manifest/test-fixtures/sample-prologue.cbl
+prologue_calls:
+  - AUDLOG01
+  - SECCHK01
+prologue_tables:
+  - CUSTOMER_T
+  - POLICY_T
+prologue_ui:
+  - CUSMNTD1
+procedure_calls:
+  - AUDLOG01
+  - SECCHK01
+procedure_copies:
+  - CUSTCOPY
+dds_pfile:
+  - CUSTOMER_T
+dds_ref:
+  - CUSTOMER_T
+cl_crtpgm:
+  - TSTPROG1
+cl_crtdspf:
+  - TSTDSPF1
+cl_crtprtf:
+  - TSTPRTF1
+cl_sbmjob:
+  - TSTPROG1

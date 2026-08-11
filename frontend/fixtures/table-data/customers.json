@@ -1,0 +1,12 @@
+[
+  { "id": "C-1001", "name": "Jordan Lee", "email": "j***@example.com", "state": "TX", "status": "Active" },
+  { "id": "C-1002", "name": "Avery Chen", "email": "a***@example.com", "state": "CA", "status": "Active" },
+  { "id": "C-1003", "name": "Sam Rivera", "email": "s***@example.com", "state": "NY", "status": "Inactive" },
+  { "id": "C-1004", "name": "Morgan Blake", "email": "m***@example.com", "state": "FL", "status": "Active" },
+  { "id": "C-1005", "name": "Riley Quinn", "email": "r***@example.com", "state": "IL", "status": "Active" },
+  { "id": "C-1006", "name": "Casey Ng", "email": "c***@example.com", "state": "WA", "status": "Active" },
+  { "id": "C-1007", "name": "Taylor Brooks", "email": "t***@example.com", "state": "GA", "status": "Inactive" },
+  { "id": "C-1008", "name": "Jamie Ortiz", "email": "j***@example.com", "state": "AZ", "status": "Active" },
+  { "id": "C-1009", "name": "Drew Patel", "email": "d***@example.com", "state": "OH", "status": "Active" },
+  { "id": "C-1010", "name": "Cameron Diaz", "email": "c***@example.com", "state": "CO", "status": "Active" }
+]

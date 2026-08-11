@@ -1,0 +1,152 @@
+{
+  "completionStatus": "COMPLETED",
+  "displayOutput": "BIL003B START REF=2024-06-15\nPOLICY POLBILREM FREQ=T PREMIUM=1000.00\nPENNY_REMAINDER=0.01 LOST (333.33x3=999.99)\nINSTALLMENTS=3\nBIL003B END STATUS=COMPLETED\n",
+  "formatVersion": "1.0.0",
+  "program": "BIL003B",
+  "referenceDate": "2024-06-15",
+  "runLog": {
+    "programName": "BIL003B",
+    "rowsProcessed": 3,
+    "runEnded": "NORMALIZED_TS",
+    "runStarted": "NORMALIZED_TS",
+    "status": "COMPLETED"
+  },
+  "scenario": "remainder-loss",
+  "tables": [
+    {
+      "businessKeys": [
+        "POLICY_ID"
+      ],
+      "columns": [
+        {
+          "name": "POLICY_ID",
+          "type": "STRING"
+        },
+        {
+          "name": "BILLING_FREQ",
+          "type": "STATUS"
+        },
+        {
+          "name": "ANNUAL_PREMIUM",
+          "type": "NUMERIC(11,2)"
+        },
+        {
+          "name": "STATUS",
+          "type": "STATUS"
+        }
+      ],
+      "rows": [
+        {
+          "ANNUAL_PREMIUM": "1000.00",
+          "BILLING_FREQ": "T",
+          "POLICY_ID": "POLBILREM",
+          "STATUS": "A"
+        }
+      ],
+      "tableName": "POLICY_T"
+    },
+    {
+      "businessKeys": [
+        "POLICY_ID",
+        "INSTALLMENT_NO"
+      ],
+      "columns": [
+        {
+          "name": "INSTALLMENT_ID",
+          "type": "SURROGATE"
+        },
+        {
+          "name": "POLICY_ID",
+          "type": "STRING"
+        },
+        {
+          "name": "INSTALLMENT_NO",
+          "type": "INTEGER"
+        },
+        {
+          "name": "AMOUNT",
+          "type": "NUMERIC(11,2)"
+        }
+      ],
+      "rows": [
+        {
+          "AMOUNT": "333.33",
+          "INSTALLMENT_ID": "SEQ_001",
+          "INSTALLMENT_NO": 1,
+          "POLICY_ID": "POLBILREM"
+        },
+        {
+          "AMOUNT": "333.33",
+          "INSTALLMENT_ID": "SEQ_002",
+          "INSTALLMENT_NO": 2,
+          "POLICY_ID": "POLBILREM"
+        },
+        {
+          "AMOUNT": "333.33",
+          "INSTALLMENT_ID": "SEQ_003",
+          "INSTALLMENT_NO": 3,
+          "POLICY_ID": "POLBILREM"
+        }
+      ],
+      "tableName": "BILLING_INSTALLMENT_T"
+    },
+    {
+      "businessKeys": [
+        "PROGRAM_NAME",
+        "STATUS"
+      ],
+      "columns": [
+        {
+          "name": "RUN_ID",
+          "type": "SURROGATE"
+        },
+        {
+          "name": "PROGRAM_NAME",
+          "type": "STRING"
+        },
+        {
+          "name": "STATUS",
+          "type": "STATUS"
+        },
+        {
+          "name": "REC_SELECTED",
+          "type": "INTEGER"
+        },
+        {
+          "name": "REC_UPDATED",
+          "type": "INTEGER"
+        },
+        {
+          "name": "REC_ERRORS",
+          "type": "INTEGER"
+        },
+        {
+          "name": "ROWS_PROCESSED",
+          "type": "INTEGER"
+        },
+        {
+          "name": "RUN_STARTED",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "RUN_ENDED",
+          "type": "TIMESTAMP"
+        }
+      ],
+      "rows": [
+        {
+          "PROGRAM_NAME": "BIL003B",
+          "REC_ERRORS": 0,
+          "REC_SELECTED": 3,
+          "REC_UPDATED": 3,
+          "ROWS_PROCESSED": 3,
+          "RUN_ENDED": "NORMALIZED_TS",
+          "RUN_ID": "SEQ_001",
+          "RUN_STARTED": "NORMALIZED_TS",
+          "STATUS": "COMPLETED"
+        }
+      ],
+      "tableName": "RPT_RUN_LOG_T"
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+/**
+ * PCIS design tokens — deep teal + charcoal + warm off-white.
+ * Avoid purple-on-white, cream-terracotta, and broadsheet clichés.
+ */
+:root {
+  /* Brand / primary (deep teal) */
+  --pcis-color-primary-50: #e8f6f5;
+  --pcis-color-primary-100: #c5eae7;
+  --pcis-color-primary-200: #9fd9d4;
+  --pcis-color-primary-300: #6fc2bb;
+  --pcis-color-primary-400: #3ea39b;
+  --pcis-color-primary-500: #1f877f;
+  --pcis-color-primary-600: #0b6e6a;
+  --pcis-color-primary-700: #085853;
+  --pcis-color-primary-800: #064540;
+  --pcis-color-primary-900: #03312e;
+
+  /* Neutral (charcoal scale) */
+  --pcis-color-neutral-0: #ffffff;
+  --pcis-color-neutral-50: #f5f2eb;
+  --pcis-color-neutral-100: #ebe6dc;
+  --pcis-color-neutral-200: #d6cfc0;
+  --pcis-color-neutral-300: #b8b0a0;
+  --pcis-color-neutral-400: #8f8778;
+  --pcis-color-neutral-500: #6b6458;
+  --pcis-color-neutral-600: #4a453c;
+  --pcis-color-neutral-700: #322e28;
+  --pcis-color-neutral-800: #1a2332;
+  --pcis-color-neutral-900: #0f141c;
+
+  /* Semantic */
+  --pcis-color-success-50: #e8f7ef;
+  --pcis-color-success-500: #1f8a4c;
+  --pcis-color-success-700: #146338;
+  --pcis-color-warning-50: #fff6e5;
+  --pcis-color-warning-500: #c47a00;
+  --pcis-color-warning-700: #8a5600;
+  --pcis-color-error-50: #fdecea;
+  --pcis-color-error-500: #c0392b;
+  --pcis-color-error-700: #8e2a1f;
+  --pcis-color-info-50: #e8f1f8;
+  --pcis-color-info-500: #1f5f8a;
+  --pcis-color-info-700: #144262;
+
+  /* Surfaces */
+  --pcis-color-bg: var(--pcis-color-neutral-50);
+  --pcis-color-surface: var(--pcis-color-neutral-0);
+  --pcis-color-text: var(--pcis-color-neutral-800);
+  --pcis-color-text-muted: var(--pcis-color-neutral-500);
+  --pcis-color-border: var(--pcis-color-neutral-200);
+  --pcis-color-focus: var(--pcis-color-primary-500);
+
+  /* Typography */
+  --pcis-font-sans: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  --pcis-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --pcis-font-size-xs: 0.75rem;
+  --pcis-font-size-sm: 0.875rem;
+  --pcis-font-size-md: 1rem;
+  --pcis-font-size-lg: 1.125rem;
+  --pcis-font-size-xl: 1.25rem;
+  --pcis-font-size-2xl: 1.5rem;
+  --pcis-font-weight-regular: 400;
+  --pcis-font-weight-medium: 500;
+  --pcis-font-weight-semibold: 600;
+  --pcis-font-weight-bold: 700;
+  --pcis-line-height-tight: 1.25;
+  --pcis-line-height-normal: 1.5;
+  --pcis-line-height-relaxed: 1.625;
+
+  /* Spacing (4px base) */
+  --pcis-space-0: 0;
+  --pcis-space-1: 0.25rem;
+  --pcis-space-2: 0.5rem;
+  --pcis-space-3: 0.75rem;
+  --pcis-space-4: 1rem;
+  --pcis-space-5: 1.25rem;
+  --pcis-space-6: 1.5rem;
+  --pcis-space-8: 2rem;
+  --pcis-space-10: 2.5rem;
+  --pcis-space-12: 3rem;
+  --pcis-space-16: 4rem;
+
+  /* Radii */
+  --pcis-radius-sm: 0.25rem;
+  --pcis-radius-md: 0.375rem;
+  --pcis-radius-lg: 0.5rem;
+  --pcis-radius-xl: 0.75rem;
+  --pcis-radius-full: 9999px;
+
+  /* Elevation */
+  --pcis-shadow-sm: 0 1px 2px rgb(15 20 28 / 0.08);
+  --pcis-shadow-md: 0 4px 12px rgb(15 20 28 / 0.12);
+  --pcis-shadow-lg: 0 12px 28px rgb(15 20 28 / 0.16);
+  --pcis-shadow-xl: 0 20px 40px rgb(15 20 28 / 0.2);
+
+  /* Breakpoints (reference; use in JS via tokens.ts) */
+  --pcis-bp-sm: 640px;
+  --pcis-bp-md: 768px;
+  --pcis-bp-lg: 1024px;
+  --pcis-bp-xl: 1280px;
+
+  /* Motion */
+  --pcis-duration-fast: 120ms;
+  --pcis-duration-normal: 200ms;
+  --pcis-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}

@@ -1,0 +1,20 @@
+{
+  "valid": {
+    "description": "Valid JWT with realm roles and authority_limit — replace token at runtime via JwtTestSupport",
+    "issuer": "http://localhost:8080/realms/pcis",
+    "subject": "test-user-001",
+    "realm_access": {
+      "roles": ["claims-adjuster", "ROLE_SUPERVISOR"]
+    },
+    "authority_limit": 50000
+  },
+  "expired": {
+    "description": "Expired JWT fixture metadata",
+    "issuer": "http://localhost:8080/realms/pcis",
+    "exp_offset_seconds": -60
+  },
+  "wrong_issuer": {
+    "description": "JWT with unexpected issuer",
+    "issuer": "http://evil.example/realms/pcis"
+  }
+}

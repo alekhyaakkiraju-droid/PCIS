@@ -1,0 +1,10 @@
+     A*================================================================*
+     A* TSTDSPF1 - Test Display File                                  *
+     A*================================================================*
+     A                                      DSPSIZ(*DS4)
+     A                                      INDARA
+     A          R TSTDSPFF
+     A                                      CA03(03 'F3=Exit')
+     A                                      PFILE(CUSTOMER_T)
+     A                                      REF(CUSTOMER_T)
+     A  98                         24  2'F3=Exit'

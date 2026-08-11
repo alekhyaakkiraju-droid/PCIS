@@ -1,0 +1,1477 @@
+generation_timestamp: "2026-08-11T03:50:17Z"
+generator_version: 1.0.0
+manifest_ref: manifest/pcis-manifest.yaml
+woref: WOREF-002
+program_count: 8
+programs:
+  - program_id: AUD002B
+    module: AUDIT
+    purpose: Audit Archive Batch
+    manifest_path: Property_Casualty_Insurance_System/AUD002B.cbl
+    sql_statements:
+      - statement_type: SELECT
+        target_table: SYSDUMMY1
+        cursor_name: null
+        host_variables:
+          - HV-CUTOFF-DATE
+          - WS-RETENTION-DAYS
+        where_clause_summary: ""
+        fetch_strategy: single-row
+        sql_preview: "SELECT CHAR(CURRENT_DATE - :WS-RETENTION-DAYS DAYS, ISO) INTO :HV-CUTOFF-DATE FROM SYSIBM.SYSDUMMY1"
+      - statement_type: COMMIT
+        target_table: null
+        cursor_name: null
+        host_variables: []
+        where_clause_summary: ""
+        fetch_strategy: n/a
+        sql_preview: COMMIT
+      - statement_type: INSERT
+        target_table: AUDIT_LOG_ARCHIVE_T
+        cursor_name: null
+        host_variables:
+          - HV-CHUNK-SIZE
+          - HV-CUTOFF-DATE
+        where_clause_summary: "A.LOG_TIMESTAMP < :HV-CUTOFF-DATE AND NOT EXISTS ( SELECT 1 FROM AUDIT_LOG_ARCHIVE_T X WHERE X.LOG_ID = A.LOG_ID )"
+        fetch_strategy: multi-row chunk=HV-CHUNK-SIZE
+        sql_preview: "INSERT INTO AUDIT_LOG_ARCHIVE_T (LOG_ID, PROGRAM_NAME, ACTION_CODE, TABLE_NAME, RECORD_KEY, USER_ID, LOG_TIMESTAMP, ARCHIVE_DATE) SELECT A.LOG_ID, A.PROGRAM_NAME, A.ACTION_CODE, A.TABLE_NAME, A.RECORD_KEY, A.USER_ID, A.LOG_TIMESTAMP, CURREN"
+      - statement_type: SELECT
+        target_table: AUDIT_LOG_ARCHIVE_T
+        cursor_name: null
+        host_variables:
+          - HV-CUTOFF-DATE
+          - HV-ROWS-INSERTED
+        where_clause_summary: "ARCHIVE_DATE = CURRENT_DATE AND LOG_TIMESTAMP < :HV-CUTOFF-DATE"
+        fetch_strategy: single-row
+        sql_preview: "SELECT COUNT(*) INTO :HV-ROWS-INSERTED FROM AUDIT_LOG_ARCHIVE_T WHERE ARCHIVE_DATE = CURRENT_DATE AND LOG_TIMESTAMP < :HV-CUTOFF-DATE"
+      - statement_type: DELETE
+        target_table: AUDIT_LOG_T
+        cursor_name: null
+        host_variables:
+          - HV-CHUNK-SIZE
+          - HV-CUTOFF-DATE
+        where_clause_summary: "A.LOG_TIMESTAMP < :HV-CUTOFF-DATE AND EXISTS ( SELECT 1 FROM AUDIT_LOG_ARCHIVE_T X WHERE X.LOG_ID = A.LOG_ID )"
+        fetch_strategy: multi-row chunk=HV-CHUNK-SIZE
+        sql_preview: "DELETE FROM AUDIT_LOG_T A WHERE A.LOG_TIMESTAMP < :HV-CUTOFF-DATE AND EXISTS ( SELECT 1 FROM AUDIT_LOG_ARCHIVE_T X WHERE X.LOG_ID = A.LOG_ID ) FETCH FIRST :HV-CHUNK-SIZE ROWS ONLY"
+      - statement_type: ROLLBACK
+        target_table: null
+        cursor_name: null
+        host_variables: []
+        where_clause_summary: ""
+        fetch_strategy: n/a
+        sql_preview: ROLLBACK
+    commit_scope:
+      commit_granularity: per-chunk size=1000
+      rollback_issued: true
+      commit_issued: true
+      audit_write_failure_triggers_rollback: false
+      audit_write_failure_continues: null
+    audit_call_parameters:
+      called: false
+      using_parameter_list: []
+      action_code_pic: null
+      old_value_pic: null
+      new_value_pic: null
+      key_field_pic: null
+      notes: AUDLOG01 is not called in PROCEDURE DIVISION
+    error_handling_paths:
+      - trigger: IF WS-SQLCODE-SAVE = 0
+        outcome: ROLLBACK
+        line: 95
+      - trigger: IF WS-SQLCODE-SAVE = 0
+        outcome: ROLLBACK
+        line: 97
+      - trigger: IF SQLCODE = 0
+        outcome: DISPLAY-only
+        line: 144
+      - trigger: IF SQLCODE NOT = 0
+        outcome: DISPLAY-only
+        line: 168
+      - trigger: IF SQLCODE = 0
+        outcome: ROLLBACK
+        line: 188
+    working_storage_tunables:
+      - name: WS-CHUNK-SIZE
+        pic: S9(7)
+        value: 1000
+      - name: WS-CNT-CHUNKS
+        pic: S9(7)
+        value: 0
+      - name: WS-CNT-COPIED
+        pic: S9(9)
+        value: 0
+      - name: WS-CNT-DELETED
+        pic: S9(9)
+        value: 0
+      - name: WS-CNT-ERRORS
+        pic: S9(7)
+        value: 0
+      - name: WS-CUTOFF-DATE
+        pic: X(10)
+        value: SPACES
+      - name: WS-MORE-ROWS
+        pic: X
+        value: Y
+      - name: WS-RETENTION-DAYS
+        pic: S9(7)
+        value: 365
+      - name: WS-RETURN-CODE
+        pic: S9(4)
+        value: 0
+      - name: WS-ROWS-DELETED
+        pic: S9(9)
+        value: 0
+      - name: WS-ROWS-INSERTED
+        pic: S9(9)
+        value: 0
+      - name: WS-SQLCODE-SAVE
+        pic: S9(9)
+        value: 0
+    prologue_contradictions:
+      - prologue_claim: Audit archiver program
+        code_evidence: PROCEDURE DIVISION never calls AUDLOG01 (self-audit absence)
+        severity: HIGH
+    calls: []
+    prologue:
+      description: Audit Archive Batch
+      calls: []
+      tables:
+        - AUDIT_LOG_ARCHIVE_T
+        - AUDIT_LOG_T
+      ui: []
+  - program_id: BIL003B
+    module: BILLING
+    purpose: Billing Installments Batch
+    manifest_path: Property_Casualty_Insurance_System/BIL003B.cbl
+    sql_statements:
+      - statement_type: SELECT
+        target_table: BILLING_PLAN_T
+        cursor_name: BIL_CURSOR
+        host_variables: []
+        where_clause_summary: "BS.STATUS = 'OPEN' AND BS.DUE_DATE <= (CURRENT_DATE + 7 DAYS) AND BS.BILLED_FLAG = 'N'"
+        fetch_strategy: cursor (see FETCH)
+        sql_preview: "DECLARE BIL_CURSOR CURSOR FOR SELECT BP.PLAN_ID, BS.SCHED_ID, BS.POLICY_ID, P.CUSTOMER_ID, BS.INSTALLMENT_NBR, BS.DUE_DATE, BS.AMOUNT_DUE, BP.PLAN_TYPE FROM BILLING_PLAN_T BP JOIN BILLING_SCHEDULE_T BS ON BS.POLICY_ID = BP.POLICY_ID JOIN PO"
+      - statement_type: OPEN
+        target_table: null
+        cursor_name: BIL_CURSOR
+        host_variables: []
+        where_clause_summary: ""
+        fetch_strategy: cursor (see FETCH)
+        sql_preview: OPEN BIL_CURSOR
+      - statement_type: FETCH
+        target_table: null
+        cursor_name: BIL_CURSOR
+        host_variables:
+          - HV-AMOUNT-DUE
+          - HV-CUSTOMER-ID
+          - HV-DUE-DATE
+          - HV-INSTALLMENT-NBR
+          - HV-PLAN-ID
+          - HV-PLAN-TYPE
+          - HV-POLICY-ID
+          - HV-SCHED-ID
+        where_clause_summary: ""
+        fetch_strategy: single-row
+        sql_preview: "FETCH BIL_CURSOR INTO :HV-PLAN-ID, :HV-SCHED-ID, :HV-POLICY-ID, :HV-CUSTOMER-ID, :HV-INSTALLMENT-NBR, :HV-DUE-DATE, :HV-AMOUNT-DUE, :HV-PLAN-TYPE"
+      - statement_type: SELECT
+        target_table: CUSTOMER_T
+        cursor_name: null
+        host_variables:
+          - HV-CUST-EMAIL
+          - HV-CUST-NAME
+          - HV-CUSTOMER-ID
+        where_clause_summary: "CUSTOMER_ID = :HV-CUSTOMER-ID"
+        fetch_strategy: single-row
+        sql_preview: "SELECT CUST_NAME, EMAIL_ADDRESS INTO :HV-CUST-NAME, :HV-CUST-EMAIL FROM CUSTOMER_T WHERE CUSTOMER_ID = :HV-CUSTOMER-ID"
+      - statement_type: INSERT
+        target_table: BILLING_NOTICE_T
+        cursor_name: null
+        host_variables:
+          - HV-AMOUNT-DUE
+          - HV-CUST-EMAIL
+          - HV-CUSTOMER-ID
+          - HV-DUE-DATE
+          - HV-INSTALLMENT-NBR
+          - HV-POLICY-ID
+          - HV-SCHED-ID
+        where_clause_summary: ""
+        fetch_strategy: n/a
+        sql_preview: "INSERT INTO BILLING_NOTICE_T (POLICY_ID, SCHED_ID, CUSTOMER_ID, INSTALLMENT_NBR, AMOUNT_DUE, DUE_DATE, NOTICE_DATE, DELIVERY_EMAIL, STATUS, CREATE_TS) VALUES (:HV-POLICY-ID, :HV-SCHED-ID, :HV-CUSTOMER-ID, :HV-INSTALLMENT-NBR, :HV-AMOUNT-DUE"
+      - statement_type: UPDATE
+        target_table: BILLING_SCHEDULE_T
+        cursor_name: null
+        host_variables:
+          - HV-SCHED-ID
+        where_clause_summary: "SCHED_ID = :HV-SCHED-ID"
+        fetch_strategy: n/a
+        sql_preview: "UPDATE BILLING_SCHEDULE_T SET BILLED_FLAG = 'Y', BILLED_DATE = CURRENT_DATE, LAST_UPDATE_TS = CURRENT_TIMESTAMP WHERE SCHED_ID = :HV-SCHED-ID"
+      - statement_type: CLOSE
+        target_table: null
+        cursor_name: BIL_CURSOR
+        host_variables: []
+        where_clause_summary: ""
+        fetch_strategy: cursor (see FETCH)
+        sql_preview: CLOSE BIL_CURSOR
+      - statement_type: COMMIT
+        target_table: null
+        cursor_name: null
+        host_variables: []
+        where_clause_summary: ""
+        fetch_strategy: n/a
+        sql_preview: COMMIT
+    commit_scope:
+      commit_granularity: per-row
+      rollback_issued: false
+      commit_issued: true
+      audit_write_failure_triggers_rollback: false
+      audit_write_failure_continues: true
+    audit_call_parameters:
+      called: true
+      call_count: 3
+      using_parameter_list:
+        - name: WS-AUDIT-PARMS
+          pic: null
+        - name: WS-AUDIT-PARMS
+          pic: null
+        - name: ELSE
+          pic: null
+        - name: WS-AUDIT-PARMS
+          pic: null
+      action_code_pic: X(10)
+      old_value_pic: null
+      new_value_pic: null
+      key_field_pic: X(30)
+      notes: Batch vs interactive PIC drift captured via WS-AUD-* definitions (G-04)
+    error_handling_paths:
+      - trigger: IF SQLCODE NOT = 0
+        outcome: DISPLAY-only
+        line: 129
+      - trigger: IF SQLCODE NOT = 0
+        outcome: DISPLAY-only
+        line: 205
+      - trigger: IF SQLCODE NOT = 0
+        outcome: DISPLAY-only
+        line: 240
+      - trigger: IF SQLCODE = 0
+        outcome: DISPLAY-only
+        line: 258
+    working_storage_tunables:
+      - name: WS-AUD-ACTION
+        pic: X(10)
+        value: SPACES
+      - name: WS-AUD-KEY
+        pic: X(30)
+        value: SPACES
+      - name: WS-AUD-PROGRAM
+        pic: X(10)
+        value: BIL003B
+      - name: WS-AUD-RESULT
+        pic: X(4)
+        value: SPACES
+      - name: WS-AUD-TABLE
+        pic: X(20)
+        value: SPACES
+      - name: WS-AUD-USER
+        pic: X(10)
+        value: SPACES
+      - name: WS-CNT-BILLED
+        pic: S9(7)
+        value: 0
+      - name: WS-CNT-ERRORS
+        pic: S9(7)
+        value: 0
+      - name: WS-CNT-READ
+        pic: S9(7)
+        value: 0
+      - name: WS-CNT-SKIPPED
+        pic: S9(7)
+        value: 0
+      - name: WS-CYCLE-DAYS
+        pic: S9(4)
+        value: 7
+      - name: WS-END-OF-CURSOR
+        pic: X
+        value: N
+      - name: WS-RETURN-CODE
+        pic: S9(4)
+        value: 0
+      - name: WS-SKIP-FLAG
+        pic: X
+        value: N
+      - name: WS-SQLCODE-SAVE
+        pic: S9(9)
+        value: 0
+    prologue_contradictions:
+      - prologue_claim: Financial mutations are audited
+        code_evidence: AUDLOG01 failure path is DISPLAY-only; no ROLLBACK of prior COMMIT
+        severity: HIGH
+      - prologue_claim: HV-INSTALLMENT-NBR is installment number
+        code_evidence: HV-INSTALLMENT-NBR reused as scratch counter for days calculation (parity trap)
+        severity: MEDIUM
+    calls:
+      - callee: AUDLOG01
+        using:
+          - name: WS-AUDIT-PARMS
+            pic: null
+        line: 100
+      - callee: CUSVAL01
+        using:
+          - name: WS-CUSVAL-PARMS
+            pic: null
+        line: 185
+      - callee: AUDLOG01
+        using:
+          - name: WS-AUDIT-PARMS
+            pic: null
+          - name: ELSE
+            pic: null
+        line: 263
+      - callee: AUDLOG01
+        using:
+          - name: WS-AUDIT-PARMS
+            pic: null
+        line: 286
+    prologue:
+      description: Billing Installments Batch
+      calls:
+        - AUDLOG01
+        - CUSVAL01
+      tables:
+        - BILLING_PLAN_T
+        - BILLING_SCHEDULE_T
+        - CUSTOMER_T
+        - POLICY_T
+      ui: []
+  - program_id: CLM006B
+    module: CLAIMS
+    purpose: Claim Payment Batch Processing
+    manifest_path: Property_Casualty_Insurance_System/CLM006B.cbl
+    sql_statements:
+      - statement_type: SELECT
+        target_table: CLAIM_T
+        cursor_name: CLAIM_CUR
+        host_variables: []
+        where_clause_summary: "C.CLAIM_STATUS = 'APPROVED' AND C.PAID_TO_DATE < C.APPROVED_AMOUNT"
+        fetch_strategy: cursor (see FETCH)
+        sql_preview: "DECLARE CLAIM_CUR CURSOR FOR SELECT C.CLAIM_ID, C.POLICY_ID, C.CUSTOMER_ID, C.CLAIM_STATUS, C.APPROVED_AMOUNT, C.PAID_TO_DATE, C.RESERVE_AMOUNT, C.ADJUSTER_ID, CHAR(C.LOSS_DATE, ISO), CHAR(C.APPROVAL_DATE, ISO) FROM INSPRDDTA.CLAIM_T C WHER"
+      - statement_type: OPEN
+        target_table: null
+        cursor_name: CLAIM_CUR
+        host_variables: []
+        where_clause_summary: ""
+        fetch_strategy: n/a
+        sql_preview: OPEN CLAIM_CUR
+      - statement_type: FETCH
+        target_table: null
+        cursor_name: CLAIM_CUR
+        host_variables:
+          - HV-ADJUSTER-ID
+          - HV-APPROVAL-DATE
+          - HV-APPROVED-AMT
+          - HV-CLAIM-ID
+          - HV-CLAIM-STATUS
+          - HV-CUSTOMER-ID
+          - HV-LOSS-DATE
+          - HV-PAID-TO-DATE
+          - HV-POLICY-ID
+          - HV-RESERVE-AMT
+        where_clause_summary: ""
+        fetch_strategy: single-row
+        sql_preview: "FETCH CLAIM_CUR INTO :HV-CLAIM-ID, :HV-POLICY-ID, :HV-CUSTOMER-ID, :HV-CLAIM-STATUS, :HV-APPROVED-AMT, :HV-PAID-TO-DATE, :HV-RESERVE-AMT, :HV-ADJUSTER-ID, :HV-LOSS-DATE, :HV-APPROVAL-DATE"
+      - statement_type: INSERT
+        target_table: INSPRDDTA
+        cursor_name: null
+        host_variables:
+          - HV-PMT-ADJUSTER
+          - HV-PMT-AMOUNT
+          - HV-PMT-CLAIM-ID
+          - HV-PMT-DATE
+          - HV-PMT-STATUS
+        where_clause_summary: ""
+        fetch_strategy: n/a
+        sql_preview: "INSERT INTO INSPRDDTA.CLAIM_PAYMENT_T (CLAIM_ID, PAYMENT_AMOUNT, PAYMENT_DATE, PAYMENT_STATUS, ADJUSTER_ID) VALUES (:HV-PMT-CLAIM-ID, :HV-PMT-AMOUNT, :HV-PMT-DATE, :HV-PMT-STATUS, :HV-PMT-ADJUSTER)"
+      - statement_type: UPDATE
+        target_table: INSPRDDTA
+        cursor_name: null
+        host_variables:
+          - HV-CLAIM-ID
+          - HV-PMT-AMOUNT
+        where_clause_summary: "CLAIM_ID = :HV-CLAIM-ID"
+        fetch_strategy: n/a
+        sql_preview: "UPDATE INSPRDDTA.CLAIM_T SET PAID_TO_DATE = PAID_TO_DATE + :HV-PMT-AMOUNT, CLAIM_STATUS = 'PAID', LAST_UPDATED = CURRENT_TIMESTAMP WHERE CLAIM_ID = :HV-CLAIM-ID"
+      - statement_type: CLOSE
+        target_table: null
+        cursor_name: CLAIM_CUR
+        host_variables: []
+        where_clause_summary: ""
+        fetch_strategy: n/a
+        sql_preview: CLOSE CLAIM_CUR
+    commit_scope:
+      commit_granularity: per-row
+      rollback_issued: false
+      commit_issued: false
+      audit_write_failure_triggers_rollback: false
+      audit_write_failure_continues: true
+    audit_call_parameters:
+      called: true
+      call_count: 1
+      using_parameter_list:
+        - name: WS-AUDIT-PARMS
+          pic: null
+      action_code_pic: X(3)
+      old_value_pic: X(30)
+      new_value_pic: null
+      key_field_pic: null
+      notes: Batch vs interactive PIC drift captured via WS-AUD-* definitions (G-04)
+    error_handling_paths: []
+    working_storage_tunables:
+      - name: WS-CHUNK-COUNT
+        pic: 9(7)
+        value: ZEROS
+      - name: WS-CHUNK-SIZE
+        pic: 9(5)
+        value: 00001
+      - name: WS-CNT-ERRORS
+        pic: 9(7)
+        value: ZEROS
+      - name: WS-CNT-PAID
+        pic: 9(7)
+        value: ZEROS
+      - name: WS-CNT-READ
+        pic: 9(7)
+        value: ZEROS
+      - name: WS-CNT-SKIPPED
+        pic: 9(7)
+        value: ZEROS
+      - name: WS-EOF-FLAG
+        pic: X(1)
+        value: N
+      - name: WS-MAX-PAYMENT-AMT
+        pic: S9(11)V99
+        value: 9999999
+      - name: WS-MIN-PAYMENT-AMT
+        pic: S9(11)V99
+        value: 0
+      - name: WS-PAYMENT-VALID
+        pic: X(1)
+        value: Y
+      - name: WS-PROGRAM-NAME
+        pic: X(8)
+        value: CLM006B
+      - name: WS-RESERVE-THRESHOLD
+        pic: S9(11)V99
+        value: 0
+      - name: WS-RUN-JOB
+        pic: X(10)
+        value: CLM006B
+      - name: WS-RUN-STATUS
+        pic: X(10)
+        value: RUNNING
+      - name: WS-RUN-USER
+        pic: X(10)
+        value: BATCHUSR
+      - name: WS-STATUS
+        pic: X(1)
+        value: ""
+    prologue_contradictions:
+      - prologue_claim: TABLES includes CLAIM_ADJUSTER_T
+        code_evidence: No EXEC SQL referencing CLAIM_ADJUSTER_T
+        severity: HIGH
+      - prologue_claim: Financial mutations are audited
+        code_evidence: AUDLOG01 failure path is DISPLAY-only; no ROLLBACK of prior COMMIT
+        severity: HIGH
+      - prologue_claim: Verifies payment authority / SECCHK01
+        code_evidence: No SECCHK01 call; pays when reserve/claim status approved
+        severity: BLOCK
+    calls:
+      - callee: CLMVAL01
+        using:
+          - name: HV-CLAIM-ID
+            pic: 9(10)
+          - name: WS-STATUS
+            pic: X(1)
+        line: 187
+      - callee: AUDLOG01
+        using:
+          - name: WS-AUDIT-PARMS
+            pic: null
+        line: 246
+    prologue:
+      description: Claim Payment Batch Processing
+      calls:
+        - AUDLOG01
+        - CLMVAL01
+      tables:
+        - CLAIM_ADJUSTER_T
+        - CLAIM_PAYMENT_T
+        - CLAIM_RESERVE_T
+        - CLAIM_T
+      ui:
+        - CLMPAYD1
+  - program_id: CMM001B
+    module: COMMISSION
+    purpose: Agent Commission Batch
+    manifest_path: Property_Casualty_Insurance_System/CMM001B.cbl
+    sql_statements:
+      - statement_type: SELECT
+        target_table: POLICY_T
+        cursor_name: POL_CURSOR
+        host_variables: []
+        where_clause_summary: "P.STATUS = 'ACTV' AND P.COMMISSION_CALC_DATE IS NULL"
+        fetch_strategy: cursor (see FETCH)
+        sql_preview: "DECLARE POL_CURSOR CURSOR FOR SELECT P.POLICY_ID, P.AGENT_ID, P.POLICY_TYPE, P.ANNUAL_PREMIUM, P.EFFECTIVE_DATE, P.EXPIRATION_DATE FROM POLICY_T P WHERE P.STATUS = 'ACTV' AND P.COMMISSION_CALC_DATE IS NULL ORDER BY P.POLICY_ID"
+      - statement_type: OPEN
+        target_table: null
+        cursor_name: POL_CURSOR
+        host_variables: []
+        where_clause_summary: ""
+        fetch_strategy: cursor (see FETCH)
+        sql_preview: OPEN POL_CURSOR
+      - statement_type: FETCH
+        target_table: null
+        cursor_name: POL_CURSOR
+        host_variables:
+          - HV-AGENT-ID
+          - HV-EFF-DATE
+          - HV-EXP-DATE
+          - HV-POLICY-ID
+          - HV-POLICY-TYPE
+          - HV-PREMIUM-AMT
+        where_clause_summary: ""
+        fetch_strategy: single-row
+        sql_preview: "FETCH POL_CURSOR INTO :HV-POLICY-ID, :HV-AGENT-ID, :HV-POLICY-TYPE, :HV-PREMIUM-AMT, :HV-EFF-DATE, :HV-EXP-DATE"
+      - statement_type: FETCH
+        target_table: COMMISSION_RATE_T
+        cursor_name: FIRST
+        host_variables:
+          - HV-POLICY-TYPE
+          - HV-RATE-PCT
+        where_clause_summary: "POLICY_TYPE = :HV-POLICY-TYPE AND EFFECTIVE_DATE <= CURRENT_DATE AND (END_DATE IS NULL OR END_DATE >= CURRENT_DATE)"
+        fetch_strategy: multi-row chunk=1
+        sql_preview: "SELECT RATE_PERCENT INTO :HV-RATE-PCT FROM COMMISSION_RATE_T WHERE POLICY_TYPE = :HV-POLICY-TYPE AND EFFECTIVE_DATE <= CURRENT_DATE AND (END_DATE IS NULL OR END_DATE >= CURRENT_DATE) FETCH FIRST 1 ROW ONLY"
+      - statement_type: SELECT
+        target_table: SYSDUMMY1
+        cursor_name: null
+        host_variables:
+          - HV-CALC-DATE
+        where_clause_summary: ""
+        fetch_strategy: single-row
+        sql_preview: "SELECT CHAR(CURRENT_DATE, ISO) INTO :HV-CALC-DATE FROM SYSIBM.SYSDUMMY1"
+      - statement_type: INSERT
+        target_table: COMMISSION_T
+        cursor_name: null
+        host_variables:
+          - HV-AGENT-ID
+          - HV-CALC-DATE
+          - HV-COMMISSION-AMT
+          - HV-POLICY-ID
+        where_clause_summary: ""
+        fetch_strategy: n/a
+        sql_preview: "INSERT INTO COMMISSION_T (COMMISSION_ID, POLICY_ID, AGENT_ID, COMMISSION_AMT, CALC_DATE, STATUS, CREATE_TS) VALUES (NEXT VALUE FOR COMMISSION_SEQ, :HV-POLICY-ID, :HV-AGENT-ID, :HV-COMMISSION-AMT, :HV-CALC-DATE, 'PEND', CURRENT_TIMESTAMP)"
+      - statement_type: UPDATE
+        target_table: POLICY_T
+        cursor_name: null
+        host_variables:
+          - HV-POLICY-ID
+        where_clause_summary: "POLICY_ID = :HV-POLICY-ID"
+        fetch_strategy: n/a
+        sql_preview: "UPDATE POLICY_T SET COMMISSION_CALC_DATE = CURRENT_DATE, LAST_UPDATE_TS = CURRENT_TIMESTAMP WHERE POLICY_ID = :HV-POLICY-ID"
+      - statement_type: CLOSE
+        target_table: null
+        cursor_name: POL_CURSOR
+        host_variables: []
+        where_clause_summary: ""
+        fetch_strategy: cursor (see FETCH)
+        sql_preview: CLOSE POL_CURSOR
+      - statement_type: COMMIT
+        target_table: null
+        cursor_name: null
+        host_variables: []
+        where_clause_summary: ""
+        fetch_strategy: n/a
+        sql_preview: COMMIT
+    commit_scope:
+      commit_granularity: per-row
+      rollback_issued: false
+      commit_issued: true
+      audit_write_failure_triggers_rollback: false
+      audit_write_failure_continues: true
+    audit_call_parameters:
+      called: true
+      call_count: 3
+      using_parameter_list:
+        - name: WS-AUDIT-PARMS
+          pic: null
+        - name: WS-AUDIT-PARMS
+          pic: null
+        - name: ELSE
+          pic: null
+        - name: WS-AUDIT-PARMS
+          pic: null
+      action_code_pic: X(10)
+      old_value_pic: null
+      new_value_pic: null
+      key_field_pic: X(30)
+      notes: Batch vs interactive PIC drift captured via WS-AUD-* definitions (G-04)
+    error_handling_paths:
+      - trigger: IF SQLCODE NOT = 0
+        outcome: DISPLAY-only
+        line: 114
+      - trigger: IF SQLCODE = 100
+        outcome: DISPLAY-only
+        line: 174
+      - trigger: IF SQLCODE < 0
+        outcome: DISPLAY-only
+        line: 180
+      - trigger: IF SQLCODE = 0
+        outcome: DISPLAY-only
+        line: 224
+      - trigger: IF SQLCODE NOT = 0
+        outcome: DISPLAY-only
+        line: 247
+    working_storage_tunables:
+      - name: WS-AUD-ACTION
+        pic: X(10)
+        value: SPACES
+      - name: WS-AUD-KEY
+        pic: X(30)
+        value: SPACES
+      - name: WS-AUD-PROGRAM
+        pic: X(10)
+        value: CMM001B
+      - name: WS-AUD-RESULT
+        pic: X(4)
+        value: SPACES
+      - name: WS-AUD-TABLE
+        pic: X(20)
+        value: SPACES
+      - name: WS-AUD-USER
+        pic: X(10)
+        value: SPACES
+      - name: WS-CNT-ERRORS
+        pic: S9(7)
+        value: 0
+      - name: WS-CNT-READ
+        pic: S9(7)
+        value: 0
+      - name: WS-CNT-SKIPPED
+        pic: S9(7)
+        value: 0
+      - name: WS-CNT-WRITTEN
+        pic: S9(7)
+        value: 0
+      - name: WS-END-OF-CURSOR
+        pic: X
+        value: N
+      - name: WS-RETURN-CODE
+        pic: S9(4)
+        value: 0
+      - name: WS-SQLCODE-SAVE
+        pic: S9(9)
+        value: 0
+    prologue_contradictions:
+      - prologue_claim: Financial mutations are audited
+        code_evidence: AUDLOG01 failure path is DISPLAY-only; no ROLLBACK of prior COMMIT
+        severity: HIGH
+    calls:
+      - callee: AUDLOG01
+        using:
+          - name: WS-AUDIT-PARMS
+            pic: null
+        line: 92
+      - callee: AUDLOG01
+        using:
+          - name: WS-AUDIT-PARMS
+            pic: null
+          - name: ELSE
+            pic: null
+        line: 229
+      - callee: AUDLOG01
+        using:
+          - name: WS-AUDIT-PARMS
+            pic: null
+        line: 270
+    prologue:
+      description: Commission Calculation Batch
+      calls:
+        - AUDLOG01
+      tables:
+        - AGENT_T
+        - COMMISSION_RATE_T
+        - COMMISSION_T
+        - POLICY_T
+      ui: []
+  - program_id: CUS001A
+    module: CUSTOMER
+    purpose: Customer Maintenance Interactive
+    manifest_path: Property_Casualty_Insurance_System/CUS001A.cbl
+    sql_statements:
+      - statement_type: SELECT
+        target_table: CUSTOMER_T
+        cursor_name: null
+        host_variables:
+          - HV-BIRTH-DATE
+          - HV-CUST-NAME
+          - HV-CUST-STATUS
+          - HV-CUST-TYPE
+          - HV-CUSTOMER-ID
+          - HV-TAX-ID
+        where_clause_summary: "C.CUSTOMER_ID = :HV-CUSTOMER-ID"
+        fetch_strategy: single-row
+        sql_preview: "SELECT C.CUSTOMER_ID, C.CUST_NAME, C.STATUS, C.CUST_TYPE, C.TAX_ID, C.BIRTH_DATE INTO :HV-CUSTOMER-ID, :HV-CUST-NAME, :HV-CUST-STATUS, :HV-CUST-TYPE, :HV-TAX-ID, :HV-BIRTH-DATE FROM CUSTOMER_T C WHERE C.CUSTOMER_ID = :HV-CUSTOMER-ID"
+      - statement_type: UPDATE
+        target_table: CUSTOMER_T
+        cursor_name: null
+        host_variables:
+          - HV-CUST-NAME
+          - HV-CUST-STATUS
+          - HV-CUST-TYPE
+          - HV-CUSTOMER-ID
+        where_clause_summary: "CUSTOMER_ID = :HV-CUSTOMER-ID"
+        fetch_strategy: n/a
+        sql_preview: "UPDATE CUSTOMER_T SET CUST_NAME = :HV-CUST-NAME, STATUS = :HV-CUST-STATUS, CUST_TYPE = :HV-CUST-TYPE, LAST_UPDATE_TS = CURRENT_TIMESTAMP WHERE CUSTOMER_ID = :HV-CUSTOMER-ID"
+      - statement_type: COMMIT
+        target_table: null
+        cursor_name: null
+        host_variables: []
+        where_clause_summary: ""
+        fetch_strategy: n/a
+        sql_preview: COMMIT
+      - statement_type: UPDATE
+        target_table: ADDRESS_T
+        cursor_name: null
+        host_variables:
+          - HV-CITY
+          - HV-CUSTOMER-ID
+          - HV-POSTAL-CODE
+          - HV-STATE
+          - HV-STREET-1
+          - HV-STREET-2
+        where_clause_summary: "CUSTOMER_ID = :HV-CUSTOMER-ID AND ADDRESS_TYPE = 'MAIL'"
+        fetch_strategy: n/a
+        sql_preview: "UPDATE ADDRESS_T SET STREET_LINE_1 = :HV-STREET-1, STREET_LINE_2 = :HV-STREET-2, CITY = :HV-CITY, STATE_CODE = :HV-STATE, POSTAL_CODE = :HV-POSTAL-CODE, LAST_UPDATE_TS = CURRENT_TIMESTAMP WHERE CUSTOMER_ID = :HV-CUSTOMER-ID AND ADDRESS_TYPE"
+      - statement_type: UPDATE
+        target_table: CONTACT_T
+        cursor_name: null
+        host_variables:
+          - HV-CUSTOMER-ID
+          - HV-EMAIL
+          - HV-PHONE
+        where_clause_summary: "CUSTOMER_ID = :HV-CUSTOMER-ID AND CONTACT_TYPE = 'PRIM'"
+        fetch_strategy: n/a
+        sql_preview: "UPDATE CONTACT_T SET PHONE_NUMBER = :HV-PHONE, EMAIL_ADDRESS = :HV-EMAIL, LAST_UPDATE_TS = CURRENT_TIMESTAMP WHERE CUSTOMER_ID = :HV-CUSTOMER-ID AND CONTACT_TYPE = 'PRIM'"
+      - statement_type: INSERT
+        target_table: CUSTOMER_T
+        cursor_name: null
+        host_variables:
+          - HV-BIRTH-DATE
+          - HV-CUST-NAME
+          - HV-CUST-TYPE
+          - HV-CUSTOMER-ID
+          - HV-TAX-ID
+        where_clause_summary: ""
+        fetch_strategy: n/a
+        sql_preview: "INSERT INTO CUSTOMER_T (CUSTOMER_ID, CUST_NAME, STATUS, CUST_TYPE, TAX_ID, BIRTH_DATE, CREATE_TS) VALUES (:HV-CUSTOMER-ID, :HV-CUST-NAME, 'ACTV', :HV-CUST-TYPE, :HV-TAX-ID, :HV-BIRTH-DATE, CURRENT_TIMESTAMP)"
+      - statement_type: COMMIT
+        target_table: null
+        cursor_name: null
+        host_variables: []
+        where_clause_summary: ""
+        fetch_strategy: n/a
+        sql_preview: COMMIT
+    commit_scope:
+      commit_granularity: per-transaction (interactive)
+      rollback_issued: false
+      commit_issued: true
+      audit_write_failure_triggers_rollback: false
+      audit_write_failure_continues: true
+    audit_call_parameters:
+      called: true
+      call_count: 2
+      using_parameter_list:
+        - name: WS-AUDIT-PARMS
+          pic: null
+        - name: ELSE
+          pic: null
+        - name: WS-AUDIT-PARMS
+          pic: null
+        - name: ELSE
+          pic: null
+      action_code_pic: X(10)
+      old_value_pic: null
+      new_value_pic: null
+      key_field_pic: X(30)
+      notes: Batch vs interactive PIC drift captured via WS-AUD-* definitions (G-04)
+    error_handling_paths:
+      - trigger: IF SQLCODE = 100
+        outcome: DISPLAY-only
+        line: 154
+      - trigger: IF SQLCODE < 0
+        outcome: DISPLAY-only
+        line: 158
+      - trigger: IF SQLCODE = 0
+        outcome: DISPLAY-only
+        line: 183
+      - trigger: IF SQLCODE NOT = 0 AND SQLCODE NOT = 100
+        outcome: DISPLAY-only
+        line: 215
+      - trigger: IF SQLCODE NOT = 0 AND SQLCODE NOT = 100
+        outcome: DISPLAY-only
+        line: 233
+      - trigger: IF SQLCODE = 0
+        outcome: DISPLAY-only
+        line: 268
+    working_storage_tunables:
+      - name: WS-AUD-ACTION
+        pic: X(10)
+        value: SPACES
+      - name: WS-AUD-KEY
+        pic: X(30)
+        value: SPACES
+      - name: WS-AUD-PROGRAM
+        pic: X(10)
+        value: CUS001A
+      - name: WS-AUD-RESULT
+        pic: X(4)
+        value: SPACES
+      - name: WS-AUD-TABLE
+        pic: X(20)
+        value: SPACES
+      - name: WS-AUD-USER
+        pic: X(10)
+        value: SPACES
+      - name: WS-AUTH-FLAG
+        pic: X
+        value: N
+      - name: WS-CUSTOMER-ID
+        pic: X(10)
+        value: SPACES
+      - name: WS-ERROR-MSG
+        pic: X(78)
+        value: SPACES
+      - name: WS-RETURN-CODE
+        pic: S9(4)
+        value: 0
+      - name: WS-SCREEN-ACTION
+        pic: X(4)
+        value: SPACES
+      - name: WS-SQLCODE-SAVE
+        pic: S9(9)
+        value: 0
+      - name: WS-USER-ID
+        pic: X(10)
+        value: SPACES
+      - name: WS-VALID-FLAG
+        pic: X
+        value: Y
+    prologue_contradictions: []
+    calls:
+      - callee: SECCHK01
+        using:
+          - name: WS-SECCHK-PARMS
+            pic: null
+        line: 125
+      - callee: CUSVAL01
+        using:
+          - name: WS-CUSVAL-PARMS
+            pic: null
+        line: 168
+      - callee: AUDLOG01
+        using:
+          - name: WS-AUDIT-PARMS
+            pic: null
+          - name: ELSE
+            pic: null
+        line: 192
+      - callee: CUSVAL01
+        using:
+          - name: WS-CUSVAL-PARMS
+            pic: null
+        line: 243
+      - callee: AUDLOG01
+        using:
+          - name: WS-AUDIT-PARMS
+            pic: null
+          - name: ELSE
+            pic: null
+        line: 275
+    prologue:
+      description: Customer Maintenance Interactive
+      calls:
+        - AUDLOG01
+        - CUSVAL01
+        - SECCHK01
+      tables:
+        - ADDRESS_T
+        - CONTACT_T
+        - CUSTOMER_T
+      ui:
+        - CUSMNTD1
+  - program_id: POL001A
+    module: POLICY
+    purpose: Policy Issue Interactive
+    manifest_path: Property_Casualty_Insurance_System/POL001A.cbl
+    sql_statements:
+      - statement_type: SELECT
+        target_table: SYSDUMMY1
+        cursor_name: null
+        host_variables:
+          - HV-EFF-DATE
+        where_clause_summary: ""
+        fetch_strategy: single-row
+        sql_preview: "SELECT CHAR(CURRENT_DATE, ISO) INTO :HV-EFF-DATE FROM SYSIBM.SYSDUMMY1"
+      - statement_type: SELECT
+        target_table: CUSTOMER_T
+        cursor_name: null
+        host_variables:
+          - HV-CUST-NAME
+          - HV-CUST-STATUS
+          - HV-CUSTOMER-ID
+        where_clause_summary: "CUSTOMER_ID = :HV-CUSTOMER-ID"
+        fetch_strategy: single-row
+        sql_preview: "SELECT CUST_NAME, STATUS INTO :HV-CUST-NAME, :HV-CUST-STATUS FROM CUSTOMER_T WHERE CUSTOMER_ID = :HV-CUSTOMER-ID"
+      - statement_type: INSERT
+        target_table: POLICY_T
+        cursor_name: null
+        host_variables:
+          - HV-CUSTOMER-ID
+          - HV-EFF-DATE
+          - HV-EXP-DATE
+          - HV-POLICY-ID
+          - HV-POLICY-TYPE
+          - HV-PREMIUM-AMT
+        where_clause_summary: ""
+        fetch_strategy: n/a
+        sql_preview: "INSERT INTO POLICY_T (POLICY_ID, CUSTOMER_ID, POLICY_TYPE, ANNUAL_PREMIUM, EFFECTIVE_DATE, EXPIRATION_DATE, STATUS, CREATE_TS) VALUES (:HV-POLICY-ID, :HV-CUSTOMER-ID, :HV-POLICY-TYPE, :HV-PREMIUM-AMT, :HV-EFF-DATE, :HV-EXP-DATE, 'ACTV', CUR"
+      - statement_type: INSERT
+        target_table: BILLING_SCHEDULE_T
+        cursor_name: null
+        host_variables:
+          - HV-DUE-DATE
+          - HV-POLICY-ID
+          - HV-SCHED-AMT
+        where_clause_summary: ""
+        fetch_strategy: n/a
+        sql_preview: "INSERT INTO BILLING_SCHEDULE_T (POLICY_ID, INSTALLMENT_NBR, DUE_DATE, AMOUNT_DUE, STATUS, CREATE_TS) VALUES (:HV-POLICY-ID, 1, :HV-DUE-DATE, :HV-SCHED-AMT, 'OPEN', CURRENT_TIMESTAMP)"
+      - statement_type: COMMIT
+        target_table: null
+        cursor_name: null
+        host_variables: []
+        where_clause_summary: ""
+        fetch_strategy: n/a
+        sql_preview: COMMIT
+    commit_scope:
+      commit_granularity: per-transaction (interactive)
+      rollback_issued: false
+      commit_issued: true
+      audit_write_failure_triggers_rollback: false
+      audit_write_failure_continues: true
+    audit_call_parameters:
+      called: true
+      call_count: 1
+      using_parameter_list:
+        - name: WS-AUDIT-PARMS
+          pic: null
+      action_code_pic: X(10)
+      old_value_pic: null
+      new_value_pic: null
+      key_field_pic: X(30)
+      notes: Batch vs interactive PIC drift captured via WS-AUD-* definitions (G-04)
+    error_handling_paths:
+      - trigger: IF SQLCODE = 100
+        outcome: continue
+        line: 141
+      - trigger: IF SQLCODE < 0
+        outcome: continue
+        line: 145
+      - trigger: IF SQLCODE NOT = 0
+        outcome: continue
+        line: 202
+      - trigger: IF SQLCODE NOT = 0
+        outcome: DISPLAY-only
+        line: 231
+    working_storage_tunables:
+      - name: WS-AUD-ACTION
+        pic: X(10)
+        value: SPACES
+      - name: WS-AUD-KEY
+        pic: X(30)
+        value: SPACES
+      - name: WS-AUD-PROGRAM
+        pic: X(10)
+        value: POL001A
+      - name: WS-AUD-RESULT
+        pic: X(4)
+        value: SPACES
+      - name: WS-AUD-TABLE
+        pic: X(20)
+        value: SPACES
+      - name: WS-AUD-USER
+        pic: X(10)
+        value: SPACES
+      - name: WS-CUSTOMER-ID
+        pic: X(10)
+        value: SPACES
+      - name: WS-EFF-DATE
+        pic: X(10)
+        value: SPACES
+      - name: WS-ERROR-MSG
+        pic: X(78)
+        value: SPACES
+      - name: WS-EXP-DATE
+        pic: X(10)
+        value: SPACES
+      - name: WS-POLICY-ID
+        pic: X(20)
+        value: SPACES
+      - name: WS-POLICY-TYPE
+        pic: X(4)
+        value: SPACES
+      - name: WS-RETURN-CODE
+        pic: S9(4)
+        value: 0
+      - name: WS-SCREEN-ACTION
+        pic: X(4)
+        value: SPACES
+      - name: WS-SQLCODE-SAVE
+        pic: S9(9)
+        value: 0
+      - name: WS-VALID-FLAG
+        pic: X
+        value: Y
+    prologue_contradictions: []
+    calls:
+      - callee: POLVAL01
+        using:
+          - name: WS-POLVAL-PARMS
+            pic: null
+        line: 158
+      - callee: PRMCLC01
+        using:
+          - name: WS-PRMCLC-PARMS
+            pic: null
+        line: 169
+      - callee: AUDLOG01
+        using:
+          - name: WS-AUDIT-PARMS
+            pic: null
+        line: 245
+    prologue:
+      description: Policy Issuance Interactive
+      calls:
+        - AUDLOG01
+        - POLVAL01
+        - PRMCLC01
+      tables:
+        - BILLING_SCHEDULE_T
+        - COVERAGE_T
+        - CUSTOMER_T
+        - POLICY_T
+      ui:
+        - POLMNTD1
+  - program_id: POL006B
+    module: POLICY
+    purpose: Nightly Policy Renewal Batch
+    manifest_path: Property_Casualty_Insurance_System/POL006B.cbl
+    sql_statements:
+      - statement_type: SELECT
+        target_table: POLICY_T
+        cursor_name: RNW_CURSOR
+        host_variables: []
+        where_clause_summary: "P.STATUS = 'ACTV' AND P.EXPIRATION_DATE BETWEEN CURRENT_DATE AND (CURRENT_DATE + 30 DAYS) AND P.RENEWAL_STATUS IS NULL"
+        fetch_strategy: cursor (see FETCH)
+        sql_preview: "DECLARE RNW_CURSOR CURSOR FOR SELECT P.POLICY_ID, P.CUSTOMER_ID, P.POLICY_TYPE, P.ANNUAL_PREMIUM, P.EXPIRATION_DATE FROM POLICY_T P WHERE P.STATUS = 'ACTV' AND P.EXPIRATION_DATE BETWEEN CURRENT_DATE AND (CURRENT_DATE + 30 DAYS) AND P.RENEWA"
+      - statement_type: OPEN
+        target_table: null
+        cursor_name: RNW_CURSOR
+        host_variables: []
+        where_clause_summary: ""
+        fetch_strategy: cursor (see FETCH)
+        sql_preview: OPEN RNW_CURSOR
+      - statement_type: FETCH
+        target_table: null
+        cursor_name: RNW_CURSOR
+        host_variables:
+          - HV-CUSTOMER-ID
+          - HV-OLD-EXP-DATE
+          - HV-POLICY-ID
+          - HV-POLICY-TYPE
+          - HV-PREMIUM-AMT
+        where_clause_summary: ""
+        fetch_strategy: single-row
+        sql_preview: "FETCH RNW_CURSOR INTO :HV-POLICY-ID, :HV-CUSTOMER-ID, :HV-POLICY-TYPE, :HV-PREMIUM-AMT, :HV-OLD-EXP-DATE"
+      - statement_type: INSERT
+        target_table: POLICY_T
+        cursor_name: null
+        host_variables:
+          - HV-CUSTOMER-ID
+          - HV-NEW-EFF-DATE
+          - HV-NEW-EXP-DATE
+          - HV-NEW-PREMIUM-AMT
+          - HV-POLICY-ID
+          - HV-POLICY-TYPE
+        where_clause_summary: ""
+        fetch_strategy: n/a
+        sql_preview: "INSERT INTO POLICY_T (POLICY_ID, CUSTOMER_ID, POLICY_TYPE, ANNUAL_PREMIUM, EFFECTIVE_DATE, EXPIRATION_DATE, STATUS, RENEWAL_OF_POLICY_ID, CREATE_TS) VALUES (NEXT VALUE FOR POLICY_SEQ, :HV-CUSTOMER-ID, :HV-POLICY-TYPE, :HV-NEW-PREMIUM-AMT, :"
+      - statement_type: UPDATE
+        target_table: BILLING_PLAN_T
+        cursor_name: null
+        host_variables:
+          - HV-POLICY-ID
+        where_clause_summary: "POLICY_ID = :HV-POLICY-ID"
+        fetch_strategy: n/a
+        sql_preview: "UPDATE BILLING_PLAN_T SET RENEWAL_FLAG = 'Y', LAST_UPDATE_TS = CURRENT_TIMESTAMP WHERE POLICY_ID = :HV-POLICY-ID"
+      - statement_type: CLOSE
+        target_table: null
+        cursor_name: RNW_CURSOR
+        host_variables: []
+        where_clause_summary: ""
+        fetch_strategy: cursor (see FETCH)
+        sql_preview: CLOSE RNW_CURSOR
+      - statement_type: COMMIT
+        target_table: null
+        cursor_name: null
+        host_variables: []
+        where_clause_summary: ""
+        fetch_strategy: n/a
+        sql_preview: COMMIT
+    commit_scope:
+      commit_granularity: per-row
+      rollback_issued: false
+      commit_issued: true
+      audit_write_failure_triggers_rollback: false
+      audit_write_failure_continues: true
+    audit_call_parameters:
+      called: true
+      call_count: 3
+      using_parameter_list:
+        - name: WS-AUDIT-PARMS
+          pic: null
+        - name: WS-AUDIT-PARMS
+          pic: null
+        - name: WS-AUDIT-PARMS
+          pic: null
+      action_code_pic: X(10)
+      old_value_pic: null
+      new_value_pic: null
+      key_field_pic: X(30)
+      notes: Batch vs interactive PIC drift captured via WS-AUD-* definitions (G-04)
+    error_handling_paths:
+      - trigger: IF SQLCODE NOT = 0
+        outcome: DISPLAY-only
+        line: 129
+      - trigger: IF SQLCODE NOT = 0
+        outcome: DISPLAY-only
+        line: 245
+      - trigger: IF SQLCODE NOT = 0 AND SQLCODE NOT = 100
+        outcome: DISPLAY-only
+        line: 262
+    working_storage_tunables:
+      - name: WS-AUD-ACTION
+        pic: X(10)
+        value: SPACES
+      - name: WS-AUD-KEY
+        pic: X(30)
+        value: SPACES
+      - name: WS-AUD-PROGRAM
+        pic: X(10)
+        value: POL006B
+      - name: WS-AUD-RESULT
+        pic: X(4)
+        value: SPACES
+      - name: WS-AUD-TABLE
+        pic: X(20)
+        value: SPACES
+      - name: WS-AUD-USER
+        pic: X(10)
+        value: SPACES
+      - name: WS-CNT-ERRORS
+        pic: S9(7)
+        value: 0
+      - name: WS-CNT-READ
+        pic: S9(7)
+        value: 0
+      - name: WS-CNT-RENEWED
+        pic: S9(7)
+        value: 0
+      - name: WS-CNT-SKIPPED
+        pic: S9(7)
+        value: 0
+      - name: WS-END-OF-CURSOR
+        pic: X
+        value: N
+      - name: WS-RETURN-CODE
+        pic: S9(4)
+        value: 0
+      - name: WS-SKIP-FLAG
+        pic: X
+        value: N
+      - name: WS-SQLCODE-SAVE
+        pic: S9(9)
+        value: 0
+    prologue_contradictions:
+      - prologue_claim: Financial mutations are audited
+        code_evidence: AUDLOG01 failure path is DISPLAY-only; no ROLLBACK of prior COMMIT
+        severity: HIGH
+    calls:
+      - callee: AUDLOG01
+        using:
+          - name: WS-AUDIT-PARMS
+            pic: null
+        line: 106
+      - callee: PRMCLC01
+        using:
+          - name: WS-PRMCLC-PARMS
+            pic: null
+        line: 199
+      - callee: POLVAL01
+        using:
+          - name: WS-POLVAL-PARMS
+            pic: null
+        line: 213
+      - callee: AUDLOG01
+        using:
+          - name: WS-AUDIT-PARMS
+            pic: null
+        line: 270
+      - callee: AUDLOG01
+        using:
+          - name: WS-AUDIT-PARMS
+            pic: null
+        line: 287
+    prologue:
+      description: Policy Renewal Batch
+      calls:
+        - AUDLOG01
+        - POLVAL01
+        - PRMCLC01
+      tables:
+        - BILLING_PLAN_T
+        - BILLING_SCHEDULE_T
+        - COVERAGE_T
+        - POLICY_T
+      ui: []
+  - program_id: PRM005B
+    module: PREMIUM
+    purpose: Premium Delinquency Batch
+    manifest_path: Property_Casualty_Insurance_System/PRM005B.cbl
+    sql_statements:
+      - statement_type: SELECT
+        target_table: BILLING_SCHEDULE_T
+        cursor_name: DLQ_CURSOR
+        host_variables: []
+        where_clause_summary: "B.STATUS IN ('OPEN', 'PART') AND B.DUE_DATE < CURRENT_DATE"
+        fetch_strategy: cursor (see FETCH)
+        sql_preview: "DECLARE DLQ_CURSOR CURSOR FOR SELECT B.SCHED_ID, B.POLICY_ID, P.CUSTOMER_ID, B.DUE_DATE, B.AMOUNT_DUE, B.STATUS, DAYS(CURRENT_DATE) - DAYS(B.DUE_DATE) FROM BILLING_SCHEDULE_T B JOIN POLICY_T P ON P.POLICY_ID = B.POLICY_ID WHERE B.STATUS IN "
+      - statement_type: OPEN
+        target_table: null
+        cursor_name: DLQ_CURSOR
+        host_variables: []
+        where_clause_summary: ""
+        fetch_strategy: cursor (see FETCH)
+        sql_preview: OPEN DLQ_CURSOR
+      - statement_type: FETCH
+        target_table: null
+        cursor_name: DLQ_CURSOR
+        host_variables:
+          - HV-AMOUNT-DUE
+          - HV-CUSTOMER-ID
+          - HV-DAYS-OVERDUE
+          - HV-DUE-DATE
+          - HV-OLD-STATUS
+          - HV-POLICY-ID
+          - HV-SCHED-ID
+        where_clause_summary: ""
+        fetch_strategy: single-row
+        sql_preview: "FETCH DLQ_CURSOR INTO :HV-SCHED-ID, :HV-POLICY-ID, :HV-CUSTOMER-ID, :HV-DUE-DATE, :HV-AMOUNT-DUE, :HV-OLD-STATUS, :HV-DAYS-OVERDUE"
+      - statement_type: UPDATE
+        target_table: BILLING_SCHEDULE_T
+        cursor_name: null
+        host_variables:
+          - HV-SCHED-ID
+        where_clause_summary: "SCHED_ID = :HV-SCHED-ID AND STATUS != 'DLNQ3'"
+        fetch_strategy: n/a
+        sql_preview: "UPDATE BILLING_SCHEDULE_T SET STATUS = 'DLNQ3', LAST_UPDATE_TS = CURRENT_TIMESTAMP WHERE SCHED_ID = :HV-SCHED-ID AND STATUS != 'DLNQ3'"
+      - statement_type: UPDATE
+        target_table: BILLING_SCHEDULE_T
+        cursor_name: null
+        host_variables:
+          - HV-SCHED-ID
+        where_clause_summary: "SCHED_ID = :HV-SCHED-ID AND STATUS != 'DLNQ2'"
+        fetch_strategy: n/a
+        sql_preview: "UPDATE BILLING_SCHEDULE_T SET STATUS = 'DLNQ2', LAST_UPDATE_TS = CURRENT_TIMESTAMP WHERE SCHED_ID = :HV-SCHED-ID AND STATUS != 'DLNQ2'"
+      - statement_type: UPDATE
+        target_table: BILLING_SCHEDULE_T
+        cursor_name: null
+        host_variables:
+          - HV-SCHED-ID
+        where_clause_summary: "SCHED_ID = :HV-SCHED-ID AND STATUS != 'DLNQ1'"
+        fetch_strategy: n/a
+        sql_preview: "UPDATE BILLING_SCHEDULE_T SET STATUS = 'DLNQ1', LAST_UPDATE_TS = CURRENT_TIMESTAMP WHERE SCHED_ID = :HV-SCHED-ID AND STATUS != 'DLNQ1'"
+      - statement_type: CLOSE
+        target_table: null
+        cursor_name: DLQ_CURSOR
+        host_variables: []
+        where_clause_summary: ""
+        fetch_strategy: cursor (see FETCH)
+        sql_preview: CLOSE DLQ_CURSOR
+      - statement_type: COMMIT
+        target_table: null
+        cursor_name: null
+        host_variables: []
+        where_clause_summary: ""
+        fetch_strategy: n/a
+        sql_preview: COMMIT
+    commit_scope:
+      commit_granularity: per-row
+      rollback_issued: false
+      commit_issued: true
+      audit_write_failure_triggers_rollback: false
+      audit_write_failure_continues: true
+    audit_call_parameters:
+      called: true
+      call_count: 3
+      using_parameter_list:
+        - name: WS-AUDIT-PARMS
+          pic: null
+        - name: WS-AUDIT-PARMS
+          pic: null
+        - name: WS-AUDIT-PARMS
+          pic: null
+      action_code_pic: X(10)
+      old_value_pic: null
+      new_value_pic: null
+      key_field_pic: X(30)
+      notes: Batch vs interactive PIC drift captured via WS-AUD-* definitions (G-04)
+    error_handling_paths:
+      - trigger: IF SQLCODE NOT = 0
+        outcome: DISPLAY-only
+        line: 116
+      - trigger: IF SQLCODE = 0
+        outcome: DISPLAY-only
+        line: 192
+      - trigger: IF SQLCODE < 0
+        outcome: DISPLAY-only
+        line: 200
+    working_storage_tunables:
+      - name: WS-AUD-ACTION
+        pic: X(10)
+        value: SPACES
+      - name: WS-AUD-KEY
+        pic: X(30)
+        value: SPACES
+      - name: WS-AUD-PROGRAM
+        pic: X(10)
+        value: PRM005B
+      - name: WS-AUD-RESULT
+        pic: X(4)
+        value: SPACES
+      - name: WS-AUD-TABLE
+        pic: X(20)
+        value: SPACES
+      - name: WS-AUD-USER
+        pic: X(10)
+        value: SPACES
+      - name: WS-CNT-ERRORS
+        pic: S9(7)
+        value: 0
+      - name: WS-CNT-READ
+        pic: S9(7)
+        value: 0
+      - name: WS-CNT-RECALCULATED
+        pic: S9(7)
+        value: 0
+      - name: WS-CNT-UPDATED
+        pic: S9(7)
+        value: 0
+      - name: WS-DELINQ-DAYS
+        pic: S9(4)
+        value: 30
+      - name: WS-END-OF-CURSOR
+        pic: X
+        value: N
+      - name: WS-RETURN-CODE
+        pic: S9(4)
+        value: 0
+      - name: WS-SQLCODE-SAVE
+        pic: S9(9)
+        value: 0
+    prologue_contradictions:
+      - prologue_claim: CALLS includes PRMCLC01
+        code_evidence: "No CALL 'PRMCLC01' in PROCEDURE DIVISION"
+        severity: BLOCK
+      - prologue_claim: Financial mutations are audited
+        code_evidence: AUDLOG01 failure path is DISPLAY-only; no ROLLBACK of prior COMMIT
+        severity: HIGH
+    calls:
+      - callee: AUDLOG01
+        using:
+          - name: WS-AUDIT-PARMS
+            pic: null
+        line: 91
+      - callee: AUDLOG01
+        using:
+          - name: WS-AUDIT-PARMS
+            pic: null
+        line: 198
+      - callee: AUDLOG01
+        using:
+          - name: WS-AUDIT-PARMS
+            pic: null
+        line: 222
+    prologue:
+      description: Premium Delinquency Batch
+      calls:
+        - AUDLOG01
+        - PRMCLC01
+      tables:
+        - BILLING_SCHEDULE_T
+        - CUSTOMER_T
+        - POLICY_T
+      ui: []
+summary:
+  prologue_contradictions:
+    - program_id: AUD002B
+      prologue_claim: Audit archiver program
+      code_evidence: PROCEDURE DIVISION never calls AUDLOG01 (self-audit absence)
+      severity: HIGH
+    - program_id: BIL003B
+      prologue_claim: Financial mutations are audited
+      code_evidence: AUDLOG01 failure path is DISPLAY-only; no ROLLBACK of prior COMMIT
+      severity: HIGH
+    - program_id: BIL003B
+      prologue_claim: HV-INSTALLMENT-NBR is installment number
+      code_evidence: HV-INSTALLMENT-NBR reused as scratch counter for days calculation (parity trap)
+      severity: MEDIUM
+    - program_id: CLM006B
+      prologue_claim: TABLES includes CLAIM_ADJUSTER_T
+      code_evidence: No EXEC SQL referencing CLAIM_ADJUSTER_T
+      severity: HIGH
+    - program_id: CLM006B
+      prologue_claim: Financial mutations are audited
+      code_evidence: AUDLOG01 failure path is DISPLAY-only; no ROLLBACK of prior COMMIT
+      severity: HIGH
+    - program_id: CLM006B
+      prologue_claim: Verifies payment authority / SECCHK01
+      code_evidence: No SECCHK01 call; pays when reserve/claim status approved
+      severity: BLOCK
+    - program_id: CMM001B
+      prologue_claim: Financial mutations are audited
+      code_evidence: AUDLOG01 failure path is DISPLAY-only; no ROLLBACK of prior COMMIT
+      severity: HIGH
+    - program_id: POL006B
+      prologue_claim: Financial mutations are audited
+      code_evidence: AUDLOG01 failure path is DISPLAY-only; no ROLLBACK of prior COMMIT
+      severity: HIGH
+    - program_id: PRM005B
+      prologue_claim: CALLS includes PRMCLC01
+      code_evidence: "No CALL 'PRMCLC01' in PROCEDURE DIVISION"
+      severity: BLOCK
+    - program_id: PRM005B
+      prologue_claim: Financial mutations are audited
+      code_evidence: AUDLOG01 failure path is DISPLAY-only; no ROLLBACK of prior COMMIT
+      severity: HIGH
+  highlights:
+    - "CLM006B authority gap: no SECCHK01 / APPROVAL_T enforcement"
+    - "PRM005B PRMCLC01 gap: prologue CALL not present in PROCEDURE DIVISION"
+    - "AUD002B self-audit gap: does not call AUDLOG01"
+    - Five batch programs swallow AUDLOG01 failures without ROLLBACK

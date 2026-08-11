@@ -1,0 +1,165 @@
+# PCIS SLO alerting rules (WO-141).
+# Batch window thresholds use pcis_batch_window_seconds gauges (ASSUMPTION placeholders).
+groups:
+  - name: pcis-api-slo-alerts
+    interval: 30s
+    rules:
+      - alert: ApiReadLatencyHigh
+        expr: |
+          (
+            max by (service) (
+              pcis:api_request_duration:p95{method=~"GET|HEAD"}
+            ) > 0.5
+          )
+          or
+          (
+            absent(
+              pcis:api_request_duration:p95{method=~"GET|HEAD", service=~".+"}
+            )
+            and on() (hour() >= 6 and hour() <= 22)
+          )
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "API read p95 latency high for {{ $labels.service }} (threshold 500ms)"
+          runbook_url: "observability/runbooks/api-read-latency-high.md"
+
+      - alert: ApiWriteLatencyHigh
+        expr: |
+          max by (service) (
+            pcis:api_request_duration:p95{method=~"POST|PUT|PATCH|DELETE"}
+          ) > 1.0
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "API write p95 latency high for {{ $labels.service }} (threshold 1000ms)"
+          runbook_url: "observability/runbooks/api-write-latency-high.md"
+
+      - alert: ErrorRateHigh
+        expr: |
+          (
+            error_rate_5m > 0.01
+          )
+          or
+          (
+            absent(error_rate_5m{service=~".+"})
+            and on() (hour() >= 6 and hour() <= 22)
+          )
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "5xx error rate above 1% for {{ $labels.service }} over 5 minutes"
+          runbook_url: "observability/runbooks/error-rate-high.md"
+
+  - name: pcis-batch-alerts
+    interval: 30s
+    rules:
+      - alert: BatchJobFailed
+        expr: |
+          (
+            pcis:batch_job_exit_code != 0
+          )
+          or
+          (
+            kube_job_status_failed{namespace=~"pcis-.*"} > 0
+          )
+        for: 0m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Batch job {{ $labels.job_name }} failed with non-zero exit code"
+          runbook_url: "observability/runbooks/batch-job-failed.md"
+
+      - alert: BatchWindowBreached
+        expr: |
+          pcis:batch_window:utilization_ratio > 0.75
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Batch job {{ $labels.job_name }} exceeded 75% of configured window (ASSUMPTION threshold)"
+          runbook_url: "observability/runbooks/batch-window-breached.md"
+
+  - name: pcis-audit-alerts
+    interval: 30s
+    rules:
+      - alert: AuditOutboxLagHigh
+        expr: |
+          (
+            pcis:audit_outbox_lag_seconds > 30
+          )
+          or
+          (
+            absent(pcis:audit_outbox_lag_seconds{service=~".+"})
+            and on() (hour() >= 6 and hour() <= 22)
+          )
+        for: 2m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Audit outbox lag above 30s for {{ $labels.service }}"
+          runbook_url: "observability/runbooks/audit-outbox-lag-high.md"
+
+      - alert: AuditOutboxBacklog
+        expr: pcis:audit_outbox_pending_count > 100
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Audit outbox backlog above 100 pending events for {{ $labels.service }}"
+          runbook_url: "observability/runbooks/audit-outbox-backlog.md"
+
+  - name: pcis-infra-alerts
+    interval: 60s
+    rules:
+      - alert: AuroraReplicaLagWarning
+        expr: |
+          max(pcis_reporting_replica_lag_seconds) > 60
+        for: 2m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Reporting replica lag above 60s for {{ $labels.service }}"
+          runbook_url: "docs/runbooks/aurora-replica-lag.md#aurorareplicalagwarning"
+
+      - alert: AuroraReplicaLagCritical
+        expr: |
+          max(pcis_reporting_replica_lag_seconds) > 300
+        for: 1m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Reporting replica lag above 300s for {{ $labels.service }}"
+          runbook_url: "docs/runbooks/aurora-replica-lag.md#aurorareplicalagcritical"
+
+      - alert: CertificateExpirySoon
+        expr: ssl_certificate_expiry_seconds < 1209600
+        for: 1h
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "TLS certificate for {{ $labels.service }} expires in less than 14 days"
+          runbook_url: "observability/runbooks/certificate-expiry-soon.md"
+
+      - alert: SecretRotationOverdue
+        expr: (time() - pcis_secret_last_rotation_timestamp_seconds) > 7776000
+        for: 1h
+        labels:
+          severity: info
+          team: platform
+        annotations:
+          summary: "Secret {{ $labels.secret_name }} for {{ $labels.service }} not rotated in 90 days"
+          runbook_url: "observability/runbooks/secret-rotation-overdue.md"

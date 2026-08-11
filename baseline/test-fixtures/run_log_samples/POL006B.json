@@ -1,0 +1,20 @@
+{
+  "program": "POL006B",
+  "table": "RPT_RUN_LOG_T",
+  "insert": {
+    "PGM_NAME": "POL006B",
+    "RUN_DATE": "2026-08-11",
+    "REC_SELECTED": 220,
+    "REC_UPDATED": 205,
+    "REC_ERRORS": 4,
+    "REC_DELINQUENT": null,
+    "START_TIMESTAMP": "2026-08-11 04:30:00.000000",
+    "END_TIMESTAMP": "2026-08-11 04:47:11.010000",
+    "CRT_TIMESTAMP": "2026-08-11 04:47:11.015000"
+  },
+  "counter_mapping": {
+    "REC_SELECTED": "WS-CNT-READ",
+    "REC_UPDATED": "WS-CNT-RENEWED",
+    "REC_ERRORS": "WS-CNT-ERRORS"
+  }
+}

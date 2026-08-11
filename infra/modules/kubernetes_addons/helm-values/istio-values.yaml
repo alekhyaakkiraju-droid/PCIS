@@ -1,0 +1,29 @@
+# Istio control plane values (WO-130) — chart version pinned in Terraform
+pilot:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+meshConfig:
+  # Strict mTLS is also enforced via PeerAuthentication default
+  enableAutoMtls: true
+  defaultConfig:
+    holdApplicationUntilProxyStarts: true
+    proxyMetadata:
+      # Exclude kube-system from accidental injection side effects
+      ISTIO_META_DNS_CAPTURE: "true"
+
+sidecarInjectorWebhook:
+  enableNamespacesByDefault: false
+  # Injection enabled via namespace label istio-injection=enabled on pcis-* only
+
+global:
+  proxy:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 500m
+        memory: 256Mi

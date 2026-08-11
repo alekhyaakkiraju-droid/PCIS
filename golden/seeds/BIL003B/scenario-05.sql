@@ -1,0 +1,3 @@
+-- edge I-02: no billing plan / null frequency
+INSERT INTO POLICY_T (POLICY_ID, BILLING_FREQ, ANNUAL_PREMIUM, STATUS)
+VALUES ('POLBIL0005', NULL, 1800.00, 'A');

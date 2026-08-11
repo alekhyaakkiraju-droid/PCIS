@@ -1,0 +1,28 @@
+# Canonical remote backend contract for PCIS infrastructure (WO-129).
+#
+# Environments ship with a local backend so `terraform plan` / `validate`
+# work before the state bucket exists. To adopt remote state:
+#
+#   1. Ensure S3 bucket `pcis-terraform-state` (versioned, SSE) exists
+#   2. Ensure DynamoDB table `pcis-terraform-locks` (LockID hash key) exists
+#   3. Replace the local backend block in environments/<env>/versions.tf with:
+#
+#        backend "s3" {}
+#
+#   4. Run:
+#        terraform init -migrate-state -backend-config=backend.hcl
+#
+# Per-environment keys (see environments/*/backend.hcl):
+#   dev/network/terraform.tfstate
+#   tst/network/terraform.tfstate
+#   prd/network/terraform.tfstate
+
+terraform {
+  backend "s3" {
+    bucket         = "pcis-terraform-state"
+    key            = "ENV/network/terraform.tfstate" # replace ENV
+    region         = "us-east-1"
+    dynamodb_table = "pcis-terraform-locks"
+    encrypt        = true
+  }
+}

@@ -1,0 +1,246 @@
+---
+# Authoritative PCIS batch scheduler reconciliation (WO-003).
+# Sources: PCIS_CRTOBJ.clle, JOBSCHD_NEW_DRIVERS.clle, COBOL batch prologues,
+# docs/modernization/User_Stories.md (JOBSCHD1-3 program lists), architecture
+# CronJob names. Target schedules are ASSUMPTION placeholders until Phase 0
+# batch-window baselines exist.
+version: "1.0.0"
+generated_for: WO-003
+extended_for: WO-238
+sources:
+  - Property_Casualty_Insurance_System/PCIS_CRTOBJ.clle
+  - Property_Casualty_Insurance_System/JOBSCHD_NEW_DRIVERS.clle
+  - Property_Casualty_Insurance_System/{AUD002B,BIL003B,CLM006B,CMM001B,POL006B,PRM005B}.cbl
+  - docs/modernization/User_Stories.md
+conflicts:
+  - id: G-08
+    summary: JOBSCHD1-3 are SBMJOB'd from PCIS_CRTOBJ.clle but have no source in the repository.
+  - id: CL-COMMENT-VS-MAPPING
+    summary: >
+      JOBSCHD_NEW_DRIVERS.clle comment labels (Claims/Billing/Premium/Commission)
+      do not match the program-call mapping used by User Stories and this map
+      (JOBSCHD4=PRM005B+CLM006B, JOBSCHD5=BIL003B+CMM001B, JOBSCHD6=AUD002B,
+      JOBSCHD7=POL006B). Driver programs themselves are not present as .cbl/.clle
+      members — only CRTSQLCBLI/CRTPGM/SBMJOB of JOBSCHD4-7 appear in-repo.
+  - id: X-06
+    summary: >
+      PRM005B naming drift — architecture delinquencyAgingJob vs prologue
+      Premium Delinquency Batch vs story citation Daily Premium Processing;
+      canonical target is premiumProcessingJob.
+
+batch_programs:
+  AUD002B:
+    legacy_description: Audit Archive Batch
+    legacy_schedule: "nightly / month-end archive window (ASSUMPTION — recover JOBSCDE from IBM i; User Stories cite JOBSCHD1 month-end)"
+    target_cronjob_name: auditArchiveJob
+    target_schedule: "ASSUMPTION: 0 3 * * * (pending Phase 0 batch-window baseline)"
+    naming_notes: "Canonical target auditArchiveJob matches architecture and prologue DESCRIPTION."
+    measured_avg_duration_seconds: MEASUREMENT_PENDING
+    measured_max_duration_seconds: MEASUREMENT_PENDING
+    legacy_scheduler_entries:
+      - name: JOBSCHD1
+        source_status: referenced-only
+        source_file: Property_Casualty_Insurance_System/PCIS_CRTOBJ.clle
+        evidence: "SBMJOB CMD(CALL PGM(JOBSCHD1)); program list from User_Stories (PRM005B, CLM006B, month-end AUD002B)"
+        programs_called_in_order: [PRM005B, CLM006B, AUD002B]
+      - name: JOBSCHD6
+        source_status: in-repo
+        source_file: Property_Casualty_Insurance_System/JOBSCHD_NEW_DRIVERS.clle
+        cl_comment_label: Premium Delinquency Scheduler
+        evidence: "CRTSQLCBLI/CRTPGM/SBMJOB JOBSCHD6; program mapping from WO-003 technical_details (AUD002B sole callee)"
+        programs_called_in_order: [AUD002B]
+        schedule_parameters: "none in CL source — ASSUMPTION pending IBM i JOBSCDE recovery"
+
+  BIL003B:
+    legacy_description: Billing Installments Batch
+    legacy_schedule: "nightly (ASSUMPTION — User Stories: JOBSCHD3 with CMM001B)"
+    target_cronjob_name: billingInstallmentJob
+    target_schedule: "ASSUMPTION: 0 1 * * * (pending Phase 0 batch-window baseline)"
+    naming_notes: "Canonical target billingInstallmentJob matches architecture and prologue DESCRIPTION."
+    measured_avg_duration_seconds: MEASUREMENT_PENDING
+    measured_max_duration_seconds: MEASUREMENT_PENDING
+    legacy_scheduler_entries:
+      - name: JOBSCHD3
+        source_status: referenced-only
+        source_file: Property_Casualty_Insurance_System/PCIS_CRTOBJ.clle
+        evidence: "SBMJOB CMD(CALL PGM(JOBSCHD3)); program list from User_Stories (BIL003B, CMM001B)"
+        programs_called_in_order: [BIL003B, CMM001B]
+      - name: JOBSCHD5
+        source_status: in-repo
+        source_file: Property_Casualty_Insurance_System/JOBSCHD_NEW_DRIVERS.clle
+        cl_comment_label: Billing Batch Scheduler
+        evidence: "CRTSQLCBLI/CRTPGM/SBMJOB JOBSCHD5; program order from WO-003 technical_details (BIL003B then CMM001B)"
+        programs_called_in_order: [BIL003B, CMM001B]
+        schedule_parameters: "none in CL source — ASSUMPTION pending IBM i JOBSCDE recovery"
+
+  CLM006B:
+    legacy_description: Claim Payment Batch Processing
+    legacy_schedule: "nightly (ASSUMPTION — User Stories: JOBSCHD1 with PRM005B)"
+    target_cronjob_name: claimPaymentJob
+    target_schedule: "ASSUMPTION: 30 2 * * * (pending Phase 0 batch-window baseline)"
+    naming_notes: "Canonical target claimPaymentJob matches architecture and prologue DESCRIPTION."
+    measured_avg_duration_seconds: MEASUREMENT_PENDING
+    measured_max_duration_seconds: MEASUREMENT_PENDING
+    legacy_scheduler_entries:
+      - name: JOBSCHD1
+        source_status: referenced-only
+        source_file: Property_Casualty_Insurance_System/PCIS_CRTOBJ.clle
+        evidence: "SBMJOB CMD(CALL PGM(JOBSCHD1)); program list from User_Stories"
+        programs_called_in_order: [PRM005B, CLM006B, AUD002B]
+      - name: JOBSCHD4
+        source_status: in-repo
+        source_file: Property_Casualty_Insurance_System/JOBSCHD_NEW_DRIVERS.clle
+        cl_comment_label: Claims Batch Scheduler
+        evidence: "CRTSQLCBLI/CRTPGM/SBMJOB JOBSCHD4; program order from WO-003 technical_details (PRM005B then CLM006B)"
+        programs_called_in_order: [PRM005B, CLM006B]
+        schedule_parameters: "none in CL source — ASSUMPTION pending IBM i JOBSCDE recovery"
+
+  CMM001B:
+    legacy_description: Commission Calculation Batch
+    legacy_schedule: "nightly (ASSUMPTION — User Stories: JOBSCHD3 with BIL003B)"
+    target_cronjob_name: commissionCalcJob
+    target_schedule: "ASSUMPTION: 0 4 * * * (pending Phase 0 batch-window baseline)"
+    naming_notes: "Canonical target commissionCalcJob matches architecture and prologue DESCRIPTION."
+    measured_avg_duration_seconds: MEASUREMENT_PENDING
+    measured_max_duration_seconds: MEASUREMENT_PENDING
+    legacy_scheduler_entries:
+      - name: JOBSCHD3
+        source_status: referenced-only
+        source_file: Property_Casualty_Insurance_System/PCIS_CRTOBJ.clle
+        evidence: "SBMJOB CMD(CALL PGM(JOBSCHD3)); program list from User_Stories (BIL003B, CMM001B)"
+        programs_called_in_order: [BIL003B, CMM001B]
+      - name: JOBSCHD5
+        source_status: in-repo
+        source_file: Property_Casualty_Insurance_System/JOBSCHD_NEW_DRIVERS.clle
+        cl_comment_label: Billing Batch Scheduler
+        evidence: "CRTSQLCBLI/CRTPGM/SBMJOB JOBSCHD5; program order from WO-003 technical_details (BIL003B then CMM001B)"
+        programs_called_in_order: [BIL003B, CMM001B]
+        schedule_parameters: "none in CL source — ASSUMPTION pending IBM i JOBSCDE recovery"
+
+  POL006B:
+    legacy_description: Policy Renewal Batch
+    legacy_schedule: "monthly (ASSUMPTION — User Stories: JOBSCHD2)"
+    target_cronjob_name: policyRenewalJob
+    target_schedule: "ASSUMPTION: 0 5 1 * * (pending Phase 0 batch-window baseline)"
+    naming_notes: "Canonical target policyRenewalJob matches architecture and prologue DESCRIPTION."
+    measured_avg_duration_seconds: MEASUREMENT_PENDING
+    measured_max_duration_seconds: MEASUREMENT_PENDING
+    legacy_scheduler_entries:
+      - name: JOBSCHD2
+        source_status: referenced-only
+        source_file: Property_Casualty_Insurance_System/PCIS_CRTOBJ.clle
+        evidence: "SBMJOB CMD(CALL PGM(JOBSCHD2)); program list from User_Stories (POL006B)"
+        programs_called_in_order: [POL006B]
+      - name: JOBSCHD7
+        source_status: in-repo
+        source_file: Property_Casualty_Insurance_System/JOBSCHD_NEW_DRIVERS.clle
+        cl_comment_label: Commission Batch Scheduler
+        evidence: "CRTSQLCBLI/CRTPGM/SBMJOB JOBSCHD7; program mapping from WO-003 technical_details (POL006B). CL comment label conflicts — see conflicts.CL-COMMENT-VS-MAPPING."
+        programs_called_in_order: [POL006B]
+        schedule_parameters: "none in CL source — ASSUMPTION pending IBM i JOBSCDE recovery"
+
+  PRM005B:
+    legacy_description: Premium Delinquency Batch
+    legacy_name_prologue: Premium Delinquency Batch
+    legacy_name_story_citation: Daily Premium Processing
+    architecture_name: delinquencyAgingJob
+    legacy_schedule: "nightly (ASSUMPTION — User Stories: JOBSCHD1 lead program)"
+    target_cronjob_name: premiumProcessingJob
+    target_schedule: "ASSUMPTION: 0 2 * * * (pending Phase 0 batch-window baseline)"
+    naming_notes: >
+      X-06 resolution: shipped prologue DESCRIPTION is "Premium Delinquency Batch"
+      (not "Daily Premium Processing" as cited in some story text). Architecture
+      maps PRM005B to delinquencyAgingJob. Canonical target CronJob name is
+      premiumProcessingJob — preferred because (1) it aligns with the premium
+      domain service boundary, (2) "delinquency aging" is one behavior inside
+      premium processing rather than the full job identity, and (3) WO-003
+      implementation step explicitly selects premiumProcessingJob.
+    measured_avg_duration_seconds: MEASUREMENT_PENDING
+    measured_max_duration_seconds: MEASUREMENT_PENDING
+    legacy_scheduler_entries:
+      - name: JOBSCHD1
+        source_status: referenced-only
+        source_file: Property_Casualty_Insurance_System/PCIS_CRTOBJ.clle
+        evidence: "SBMJOB CMD(CALL PGM(JOBSCHD1)); program list from User_Stories (PRM005B, CLM006B, month-end AUD002B)"
+        programs_called_in_order: [PRM005B, CLM006B, AUD002B]
+      - name: JOBSCHD4
+        source_status: in-repo
+        source_file: Property_Casualty_Insurance_System/JOBSCHD_NEW_DRIVERS.clle
+        cl_comment_label: Claims Batch Scheduler
+        evidence: "CRTSQLCBLI/CRTPGM/SBMJOB JOBSCHD4; program order from WO-003 technical_details (PRM005B then CLM006B)"
+        programs_called_in_order: [PRM005B, CLM006B]
+        schedule_parameters: "none in CL source — ASSUMPTION pending IBM i JOBSCDE recovery"
+
+scheduler_index:
+  JOBSCHD1:
+    source_status: referenced-only
+    source_file: Property_Casualty_Insurance_System/PCIS_CRTOBJ.clle
+    programs: [PRM005B, CLM006B, AUD002B]
+  JOBSCHD2:
+    source_status: referenced-only
+    source_file: Property_Casualty_Insurance_System/PCIS_CRTOBJ.clle
+    programs: [POL006B]
+  JOBSCHD3:
+    source_status: referenced-only
+    source_file: Property_Casualty_Insurance_System/PCIS_CRTOBJ.clle
+    programs: [BIL003B, CMM001B]
+  JOBSCHD4:
+    source_status: in-repo
+    source_file: Property_Casualty_Insurance_System/JOBSCHD_NEW_DRIVERS.clle
+    programs: [PRM005B, CLM006B]
+  JOBSCHD5:
+    source_status: in-repo
+    source_file: Property_Casualty_Insurance_System/JOBSCHD_NEW_DRIVERS.clle
+    programs: [BIL003B, CMM001B]
+  JOBSCHD6:
+    source_status: in-repo
+    source_file: Property_Casualty_Insurance_System/JOBSCHD_NEW_DRIVERS.clle
+    programs: [AUD002B]
+  JOBSCHD7:
+    source_status: in-repo
+    source_file: Property_Casualty_Insurance_System/JOBSCHD_NEW_DRIVERS.clle
+    programs: [POL006B]
+
+# WO-137: authoritative Kubernetes CronJob names (kebab-case) reconciled from WO-003 map.
+# Schedules are ASSUMPTION placeholders pending Phase 0 batch-window baseline measurement.
+kubernetes_cronjobs:
+  audit-archive-job:
+    batch_program: AUD002B
+    legacy_target_name: auditArchiveJob
+    schedule: "0 3 * * *"
+    schedule_note: "ASSUMPTION placeholder — pending Phase 0 batch-window baseline"
+  billing-installment-job:
+    batch_program: BIL003B
+    legacy_target_name: billingInstallmentJob
+    schedule: "0 1 * * *"
+    schedule_note: "ASSUMPTION placeholder — pending Phase 0 batch-window baseline"
+  claim-payment-job:
+    batch_program: CLM006B
+    legacy_target_name: claimPaymentJob
+    schedule: "30 2 * * *"
+    schedule_note: "ASSUMPTION placeholder — pending Phase 0 batch-window baseline"
+  commission-calc-job:
+    batch_program: CMM001B
+    legacy_target_name: commissionCalcJob
+    schedule: "0 4 * * *"
+    schedule_note: "ASSUMPTION placeholder — pending Phase 0 batch-window baseline"
+  premium-processing-job:
+    batch_program: PRM005B
+    legacy_target_name: premiumProcessingJob
+    schedule: "0 2 * * *"
+    schedule_note: "ASSUMPTION placeholder — pending Phase 0 batch-window baseline"
+  policy-renewal-job:
+    batch_program: POL006B
+    legacy_target_name: policyRenewalJob
+    schedule: "0 5 1 * *"
+    schedule_note: "ASSUMPTION placeholder — pending Phase 0 batch-window baseline"
+
+exit_code_contract:
+  description: "Non-zero Spring Batch exit codes trigger P1 Alertmanager alerts (WO-137)."
+  codes:
+    0: success
+    1: item-error threshold breached
+    2: archive verify mismatch
+    3: cursor-open failure
+    4: audit-write failure
+    5: config failure

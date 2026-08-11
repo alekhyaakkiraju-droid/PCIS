@@ -1,0 +1,50 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  max-inline-size: 100%;
+  padding: var(--pcis-space-1) var(--pcis-space-2);
+  border-radius: var(--pcis-radius-full);
+  font-family: var(--pcis-font-sans);
+  font-size: var(--pcis-font-size-xs);
+  font-weight: var(--pcis-font-weight-semibold);
+  line-height: var(--pcis-line-height-tight);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.neutral {
+  background: var(--pcis-color-neutral-100);
+  color: var(--pcis-color-neutral-800);
+}
+
+.open,
+.active {
+  background: var(--pcis-color-info-50);
+  color: var(--pcis-color-info-700);
+}
+
+.approved,
+.paid,
+.settled {
+  background: var(--pcis-color-success-50);
+  color: var(--pcis-color-success-700);
+}
+
+.denied,
+.cancelled,
+.overdue {
+  background: var(--pcis-color-error-50);
+  color: var(--pcis-color-error-700);
+}
+
+.renewal,
+.expired {
+  background: var(--pcis-color-warning-50);
+  color: var(--pcis-color-warning-700);
+}
+
+.closed {
+  background: var(--pcis-color-neutral-200);
+  color: var(--pcis-color-neutral-700);
+}

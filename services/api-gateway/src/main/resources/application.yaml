@@ -1,0 +1,80 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8080/realms/pcis}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:8080/realms/pcis/protocol/openid-connect/certs}
+  cloud:
+    gateway:
+      server:
+        webflux:
+          default-filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 100
+                redis-rate-limiter.burstCapacity: 200
+                key-resolver: "#{@rateLimitKeyResolver}"
+          routes:
+            - id: customer-svc
+              uri: lb://customer-svc
+              predicates:
+                - Path=/api/v1/customers/**
+            - id: claims-svc
+              uri: lb://claims-svc
+              predicates:
+                - Path=/api/v1/claims/**
+            - id: policy-svc
+              uri: lb://policy-svc
+              predicates:
+                - Path=/api/v1/policies/**
+            - id: premium-svc
+              uri: lb://premium-svc
+              predicates:
+                - Path=/api/v1/rating/**
+            - id: billing-svc
+              uri: lb://billing-svc
+              predicates:
+                - Path=/api/v1/billing/**
+            - id: reporting-svc
+              uri: lb://reporting-svc
+              predicates:
+                - Path=/api/v1/reports/**
+            - id: authz-svc
+              uri: lb://authz-svc
+              predicates:
+                - Path=/api/v1/authz/**
+            - id: audit-svc
+              uri: lb://audit-svc
+              predicates:
+                - Path=/api/v1/audit/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when_authorized
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.pcis.gateway: INFO

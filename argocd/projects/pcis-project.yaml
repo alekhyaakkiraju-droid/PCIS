@@ -1,0 +1,58 @@
+# PCIS Argo CD AppProject (WO-139)
+# Grants pcis-services and pcis-batch ApplicationSets a bounded deployment scope.
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: pcis
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: pcis
+    pcis.work-order: WO-139
+  annotations:
+    pcis.governance/description: >
+      GitOps project for PCIS microservices and batch workloads.
+      Production deployments require manual sync and pcis-admins approval
+      (see argocd/applicationsets/* production approval annotations).
+spec:
+  description: PCIS insurance platform — Helm charts from the PCIS monorepo
+  sourceRepos:
+    - https://github.com/alekhyaakkiraju-droid/PCIS.git
+  destinations:
+    - namespace: pcis-dev
+      server: https://kubernetes.default.svc
+    - namespace: pcis-tst
+      server: https://kubernetes.default.svc
+    - namespace: pcis-prd
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  roles:
+    - name: deployer
+      description: Sync non-production applications and view production status
+      policies:
+        - p, proj:pcis:deployer, applications, get, pcis/*, allow
+        - p, proj:pcis:deployer, applications, sync, pcis/*-dev, allow
+        - p, proj:pcis:deployer, applications, sync, pcis/*-tst, allow
+        - p, proj:pcis:deployer, applications, get, pcis/*-prd, allow
+      groups:
+        - pcis-deployers
+    - name: prod-approver
+      description: Manual production sync after change approval
+      policies:
+        - p, proj:pcis:prod-approver, applications, sync, pcis/*-prd, allow
+        - p, proj:pcis:prod-approver, applications, action/*, pcis/*-prd, allow
+      groups:
+        - pcis-admins
+  syncWindows:
+    - kind: deny
+      schedule: "* * * * *"
+      duration: 24h
+      applications:
+        - pcis-*-prd
+      manualSync: true
+      namespaces:
+        - pcis-prd

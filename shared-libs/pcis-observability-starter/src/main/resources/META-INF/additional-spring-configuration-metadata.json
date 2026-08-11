@@ -1,0 +1,27 @@
+{
+  "properties": [
+    {
+      "name": "pcis.observability.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable PCIS observability auto-configuration.",
+      "defaultValue": true
+    },
+    {
+      "name": "pcis.observability.trace-sample-rate",
+      "type": "java.lang.Double",
+      "description": "OpenTelemetry trace sample rate for successful requests (0.0-1.0).",
+      "defaultValue": 0.1
+    },
+    {
+      "name": "pcis.observability.correlation-header",
+      "type": "java.lang.String",
+      "description": "HTTP header name for correlation identifiers.",
+      "defaultValue": "X-Correlation-ID"
+    },
+    {
+      "name": "pcis.observability.environment",
+      "type": "java.lang.String",
+      "description": "Environment tag applied to Micrometer meters (falls back to spring.profiles.active)."
+    }
+  ]
+}

@@ -1,0 +1,577 @@
+{
+  "source_dir": "/Users/alekhyaakkiraju/PCIS/Property_Casualty_Insurance_System",
+  "generated_at": "2026-08-11T04:19:55Z",
+  "total_file_count": 49,
+  "counts_by_type": {
+    "clle": 2,
+    "cobol": 8,
+    "display-file": 22,
+    "markdown": 17
+  },
+  "files": [
+    {
+      "path": "AUD002B.cbl",
+      "type": "cobol",
+      "line_count": 223,
+      "sha256": "e30f86c594d37a75ebebfda0931133bf5c661e3fc6cc22a814541ac3ce8312bc",
+      "object_name": "AUD002B"
+    },
+    {
+      "path": "AUD_Module_Design_Document.md",
+      "type": "markdown",
+      "line_count": 16,
+      "sha256": "e2f23c2863ddc51dfa4421235fb5f3980f791d7e783012077890459d619262bb",
+      "object_name": null
+    },
+    {
+      "path": "BIL003B.cbl",
+      "type": "cobol",
+      "line_count": 293,
+      "sha256": "d80116628e1b6141f72c06ecf3a9dd5f298521cb19a5124f20224ad85fa4dcbe",
+      "object_name": "BIL003B"
+    },
+    {
+      "path": "BILSTSD1.dspf",
+      "type": "display-file",
+      "line_count": 18,
+      "sha256": "72da4519e1eea61e107407a2cde5815b6b9bc4f0622aaa762458fd26e5c7ebbd",
+      "object_name": "BILSTSD1"
+    },
+    {
+      "path": "BIL_Module_Design_Document.md",
+      "type": "markdown",
+      "line_count": 14,
+      "sha256": "e07592b4ded315950f8947e1a3657e9c9adaec4afa2e21375cce8a374d455629",
+      "object_name": null
+    },
+    {
+      "path": "CLM006B.cbl",
+      "type": "cobol",
+      "line_count": 268,
+      "sha256": "2afaa53035588a7be65ee1b08b3451cebe07aafba9371e0f56b05a7f444a6bc2",
+      "object_name": "CLM006B"
+    },
+    {
+      "path": "CLMADJD1.dspf",
+      "type": "display-file",
+      "line_count": 18,
+      "sha256": "23b014a118de3508b8d33598ba59dfe0d0e8eaee0b3d35f4df5aac67ac10810d",
+      "object_name": "CLMADJD1"
+    },
+    {
+      "path": "CLMAPRD1.dspf",
+      "type": "display-file",
+      "line_count": 18,
+      "sha256": "f3c2c4b9089f345679bcf918cea880d56894a303ddb9c9de9f95a105295ec3f7",
+      "object_name": "CLMAPRD1"
+    },
+    {
+      "path": "CLMCLSD1.dspf",
+      "type": "display-file",
+      "line_count": 18,
+      "sha256": "b43e952c647e2db633a93bc9a1180023d5cd8931b737cf0744c67529ecc4e44c",
+      "object_name": "CLMCLSD1"
+    },
+    {
+      "path": "CLMFNLD1.dspf",
+      "type": "display-file",
+      "line_count": 18,
+      "sha256": "71bc4ae982f0e573d9b3fd190ba42fcbdbbd7e7e13fd166c2d5058bbf59d528a",
+      "object_name": "CLMFNLD1"
+    },
+    {
+      "path": "CLMINQD1.dspf",
+      "type": "display-file",
+      "line_count": 18,
+      "sha256": "8854c86d137f567581603e38e8bc16eecae792720d9f3cb6a602bdc1c5249fda",
+      "object_name": "CLMINQD1"
+    },
+    {
+      "path": "CLMPAYD1.dspf",
+      "type": "display-file",
+      "line_count": 18,
+      "sha256": "53ba420dd594c3fab40e6a8eb1142a8eeb90a77301fbe6a19fe8ac35f2047d59",
+      "object_name": "CLMPAYD1"
+    },
+    {
+      "path": "CLMRSVD1.dspf",
+      "type": "display-file",
+      "line_count": 18,
+      "sha256": "f56d258af0dcd89d09d177f1887c32d473b3a5499f792395d59c4250dcea684f",
+      "object_name": "CLMRSVD1"
+    },
+    {
+      "path": "CLM_Module_Design_Document.md",
+      "type": "markdown",
+      "line_count": 21,
+      "sha256": "f2a306751cd3a40bf655db892d410dcc8486695b841accd8f32b92242edb6b7c",
+      "object_name": null
+    },
+    {
+      "path": "CMM001B.cbl",
+      "type": "cobol",
+      "line_count": 277,
+      "sha256": "3d877e56f654f757c7b290257eec1c761882bff9409468669ea049a794929bbc",
+      "object_name": "CMM001B"
+    },
+    {
+      "path": "CMM_Module_Design_Document.md",
+      "type": "markdown",
+      "line_count": 15,
+      "sha256": "f9379891be3b0674d4be981073de05f97d6c7e8ad3a12ea18357a3029a82d086",
+      "object_name": null
+    },
+    {
+      "path": "COMRPTD1.dspf",
+      "type": "display-file",
+      "line_count": 18,
+      "sha256": "de86d6151d9a495c9983ff1aa1682b009d347235424b4a6793b0ddab902a2637",
+      "object_name": "COMRPTD1"
+    },
+    {
+      "path": "CUS001A.cbl",
+      "type": "cobol",
+      "line_count": 284,
+      "sha256": "adc0f5852787bd76b46fee62c82e581cfbf03a4059e35053d23afe9c771ab8c1",
+      "object_name": "CUS001A"
+    },
+    {
+      "path": "CUSCNTD1.dspf",
+      "type": "display-file",
+      "line_count": 18,
+      "sha256": "73a99430bb10950c5fbed8dca3387b46439d65ffdd0c6ee6136cf99a1855a2eb",
+      "object_name": "CUSCNTD1"
+    },
+    {
+      "path": "CUSDELD1.dspf",
+      "type": "display-file",
+      "line_count": 18,
+      "sha256": "57c38a037dc148fa35e69976ed8fabc5a54d9b610281e426756a849661b08c76",
+      "object_name": "CUSDELD1"
+    },
+    {
+      "path": "CUSINQD1.dspf",
+      "type": "display-file",
+      "line_count": 18,
+      "sha256": "cd1dc8f7fe1213ffa5af38a79f4bb3a2df7cb74c0bf0e224abd483d7009b960a",
+      "object_name": "CUSINQD1"
+    },
+    {
+      "path": "CUSLSTD1.dspf",
+      "type": "display-file",
+      "line_count": 18,
+      "sha256": "9e34a98e38243a881100251ace565a50262e6e144f6211249d8bc8a887243019",
+      "object_name": "CUSLSTD1"
+    },
+    {
+      "path": "CUSMNTD1.dspf",
+      "type": "display-file",
+      "line_count": 18,
+      "sha256": "68609e33a98c9c000d15d46e49f87df21e480b14f8b9a3d29076be721331f232",
+      "object_name": "CUSMNTD1"
+    },
+    {
+      "path": "CUS_Module_Design_Document.md",
+      "type": "markdown",
+      "line_count": 485,
+      "sha256": "788a6bf8b18accf63b336b9bb6912d2dedbddab6edcf68f0776596eb934928b3",
+      "object_name": null
+    },
+    {
+      "path": "JOBSCHD_NEW_DRIVERS.clle",
+      "type": "clle",
+      "line_count": 50,
+      "sha256": "bb1caaefd8c02df11f8414b05dc5c274123e5bef977f93cb364e56cee8b38308",
+      "object_name": "JOBSCHD_NEW_DRIVERS"
+    },
+    {
+      "path": "MENUMD1.dspf",
+      "type": "display-file",
+      "line_count": 18,
+      "sha256": "ca78891c5f35656b25eb72d5a35de5485fda845bf291afb88895675e0a2a746a",
+      "object_name": "MENUMD1"
+    },
+    {
+      "path": "PCIS_Artifact_Gap_Analysis.md",
+      "type": "markdown",
+      "line_count": 16,
+      "sha256": "a834cd15ed5415ade3772d20541e7c999a8b120163b463fa4d8ce0dd2482d50f",
+      "object_name": null
+    },
+    {
+      "path": "PCIS_CRTOBJ.clle",
+      "type": "clle",
+      "line_count": 91,
+      "sha256": "1a9e45099cf3cd774372e8a02ada1256ecf05fa3a976c24ba0970bb10344cf87",
+      "object_name": "PCIS_CRTOBJ"
+    },
+    {
+      "path": "PCIS_Database_Design.md",
+      "type": "markdown",
+      "line_count": 23,
+      "sha256": "d251387035d5cb689ac916d69d7b56fc54a1ecfe683048824761fffb440fb370",
+      "object_name": null
+    },
+    {
+      "path": "PCIS_Enterprise_Architecture.md",
+      "type": "markdown",
+      "line_count": 24,
+      "sha256": "1f0ca46044490bf5dbdd9af0f8c00170e9b1c775b4f62a089e695c7aef5179c5",
+      "object_name": null
+    },
+    {
+      "path": "PCIS_Glossary.md",
+      "type": "markdown",
+      "line_count": 14,
+      "sha256": "5e4db7e1d457cce0e5beb55d0f9695937322fbd92ca2f5b403add62537695c39",
+      "object_name": null
+    },
+    {
+      "path": "PCIS_Intent_Document.md",
+      "type": "markdown",
+      "line_count": 17,
+      "sha256": "9a7b2316047a25b699c23eded581c27cb7e2c99e671f7d623dff906eac1ab366",
+      "object_name": null
+    },
+    {
+      "path": "PCIS_Modernization_Edge_Cases.md",
+      "type": "markdown",
+      "line_count": 18,
+      "sha256": "5baaf235b5b0d03546ddc0c5ca275447585bbf074363e3aec3ab1fca327e7833",
+      "object_name": null
+    },
+    {
+      "path": "PCIS_Operations_Runbook.md",
+      "type": "markdown",
+      "line_count": 20,
+      "sha256": "ba03bb68702a130a066946ddceb16e93778afb7c1d80043558e09e5e416ea3db",
+      "object_name": null
+    },
+    {
+      "path": "PCIS_PRD.md",
+      "type": "markdown",
+      "line_count": 21,
+      "sha256": "d742aaab1602975e0e9bbe150cf1ee187e162f5d0a1b7641559a00de2aec7669",
+      "object_name": null
+    },
+    {
+      "path": "PCIS_Requirements_Traceability_Matrix.md",
+      "type": "markdown",
+      "line_count": 16,
+      "sha256": "abdf190893cceb1347d44215a583493acbd4b98bff571687cbcc3e9abf35407e",
+      "object_name": null
+    },
+    {
+      "path": "PCIS_User_Stories.md",
+      "type": "markdown",
+      "line_count": 13,
+      "sha256": "2ce553f94e0c968b2ce2b818498f34a64c4dda42463aef74469615afc2964cc6",
+      "object_name": null
+    },
+    {
+      "path": "POL001A.cbl",
+      "type": "cobol",
+      "line_count": 256,
+      "sha256": "cd9576ddfd3b88c59d00f3a512eaff4bcb2d1db8464eba91d62b0d11fd9a5f88",
+      "object_name": "POL001A"
+    },
+    {
+      "path": "POL006B.cbl",
+      "type": "cobol",
+      "line_count": 294,
+      "sha256": "934c3aeaa6ab72b82508070da4976370eec0616327889b982904b610e0a47c44",
+      "object_name": "POL006B"
+    },
+    {
+      "path": "POLENDD1.dspf",
+      "type": "display-file",
+      "line_count": 18,
+      "sha256": "573b79973a76417245d359657a9246087749e5b42ae847e5bdb5ece7cf13252d",
+      "object_name": "POLENDD1"
+    },
+    {
+      "path": "POLINQD1.dspf",
+      "type": "display-file",
+      "line_count": 18,
+      "sha256": "2689bd2b67487516c710324d3818160e04d67cc696a0aa55898826d601fc94ce",
+      "object_name": "POLINQD1"
+    },
+    {
+      "path": "POLLSTD1.dspf",
+      "type": "display-file",
+      "line_count": 18,
+      "sha256": "af2796ced8c2f0d383665990112288bd90d7a978bfda4904ca6bbf7e2e5d3a2c",
+      "object_name": "POLLSTD1"
+    },
+    {
+      "path": "POLMNTD1.dspf",
+      "type": "display-file",
+      "line_count": 18,
+      "sha256": "03b24343246873cf3661e9fc5632bf70e9d7e4abb56d971a144af6cc0566ad95",
+      "object_name": "POLMNTD1"
+    },
+    {
+      "path": "POLREND1.dspf",
+      "type": "display-file",
+      "line_count": 18,
+      "sha256": "945e4fbccef42d10b2652c82b7b63cd4291664f32829cbce197a06f3e88c67dd",
+      "object_name": "POLREND1"
+    },
+    {
+      "path": "POL_Module_Design_Document.md",
+      "type": "markdown",
+      "line_count": 15,
+      "sha256": "a48267ac9cc27d43746221063483cff5cf8a44848e1f8f7bbfec14aa1bbe9739",
+      "object_name": null
+    },
+    {
+      "path": "PRM005B.cbl",
+      "type": "cobol",
+      "line_count": 229,
+      "sha256": "f509ae6c2c21076966c3a1f7091bf40c38d5dedac6277efd8331f7e38b793261",
+      "object_name": "PRM005B"
+    },
+    {
+      "path": "PRMINQD1.dspf",
+      "type": "display-file",
+      "line_count": 18,
+      "sha256": "02798e88d617f85674f31711e7e88a4a5eac459e5a33acd4c6d8dec78c3fe9e6",
+      "object_name": "PRMINQD1"
+    },
+    {
+      "path": "PRM_Module_Design_Document.md",
+      "type": "markdown",
+      "line_count": 15,
+      "sha256": "fe9d2883e78875114fc61b6eecaa53056dd4766e5f8d412d010ead3b3f108579",
+      "object_name": null
+    },
+    {
+      "path": "RPTMNUD1.dspf",
+      "type": "display-file",
+      "line_count": 18,
+      "sha256": "200e1e53b52211688c672583dcbb93abad476e42f7b9700a7325d82736cee829",
+      "object_name": "RPTMNUD1"
+    }
+  ],
+  "objects": {
+    "AUD002B": {
+      "name": "AUD002B",
+      "type": "cobol",
+      "path": "AUD002B.cbl"
+    },
+    "BIL003B": {
+      "name": "BIL003B",
+      "type": "cobol",
+      "path": "BIL003B.cbl"
+    },
+    "BILSTSD1": {
+      "name": "BILSTSD1",
+      "type": "display-file",
+      "path": "BILSTSD1.dspf"
+    },
+    "CLM006B": {
+      "name": "CLM006B",
+      "type": "cobol",
+      "path": "CLM006B.cbl"
+    },
+    "CLMADJD1": {
+      "name": "CLMADJD1",
+      "type": "display-file",
+      "path": "CLMADJD1.dspf"
+    },
+    "CLMAPRD1": {
+      "name": "CLMAPRD1",
+      "type": "display-file",
+      "path": "CLMAPRD1.dspf"
+    },
+    "CLMCLSD1": {
+      "name": "CLMCLSD1",
+      "type": "display-file",
+      "path": "CLMCLSD1.dspf"
+    },
+    "CLMFNLD1": {
+      "name": "CLMFNLD1",
+      "type": "display-file",
+      "path": "CLMFNLD1.dspf"
+    },
+    "CLMINQD1": {
+      "name": "CLMINQD1",
+      "type": "display-file",
+      "path": "CLMINQD1.dspf"
+    },
+    "CLMPAYD1": {
+      "name": "CLMPAYD1",
+      "type": "display-file",
+      "path": "CLMPAYD1.dspf"
+    },
+    "CLMRSVD1": {
+      "name": "CLMRSVD1",
+      "type": "display-file",
+      "path": "CLMRSVD1.dspf"
+    },
+    "CMM001B": {
+      "name": "CMM001B",
+      "type": "cobol",
+      "path": "CMM001B.cbl"
+    },
+    "COMRPTD1": {
+      "name": "COMRPTD1",
+      "type": "display-file",
+      "path": "COMRPTD1.dspf"
+    },
+    "CUS001A": {
+      "name": "CUS001A",
+      "type": "cobol",
+      "path": "CUS001A.cbl"
+    },
+    "CUSCNTD1": {
+      "name": "CUSCNTD1",
+      "type": "display-file",
+      "path": "CUSCNTD1.dspf"
+    },
+    "CUSDELD1": {
+      "name": "CUSDELD1",
+      "type": "display-file",
+      "path": "CUSDELD1.dspf"
+    },
+    "CUSINQD1": {
+      "name": "CUSINQD1",
+      "type": "display-file",
+      "path": "CUSINQD1.dspf"
+    },
+    "CUSLSTD1": {
+      "name": "CUSLSTD1",
+      "type": "display-file",
+      "path": "CUSLSTD1.dspf"
+    },
+    "CUSMNTD1": {
+      "name": "CUSMNTD1",
+      "type": "display-file",
+      "path": "CUSMNTD1.dspf"
+    },
+    "JOBSCHD_NEW_DRIVERS": {
+      "name": "JOBSCHD_NEW_DRIVERS",
+      "type": "clle",
+      "path": "JOBSCHD_NEW_DRIVERS.clle"
+    },
+    "MENUMD1": {
+      "name": "MENUMD1",
+      "type": "display-file",
+      "path": "MENUMD1.dspf"
+    },
+    "PCIS_CRTOBJ": {
+      "name": "PCIS_CRTOBJ",
+      "type": "clle",
+      "path": "PCIS_CRTOBJ.clle"
+    },
+    "POL001A": {
+      "name": "POL001A",
+      "type": "cobol",
+      "path": "POL001A.cbl"
+    },
+    "POL006B": {
+      "name": "POL006B",
+      "type": "cobol",
+      "path": "POL006B.cbl"
+    },
+    "POLENDD1": {
+      "name": "POLENDD1",
+      "type": "display-file",
+      "path": "POLENDD1.dspf"
+    },
+    "POLINQD1": {
+      "name": "POLINQD1",
+      "type": "display-file",
+      "path": "POLINQD1.dspf"
+    },
+    "POLLSTD1": {
+      "name": "POLLSTD1",
+      "type": "display-file",
+      "path": "POLLSTD1.dspf"
+    },
+    "POLMNTD1": {
+      "name": "POLMNTD1",
+      "type": "display-file",
+      "path": "POLMNTD1.dspf"
+    },
+    "POLREND1": {
+      "name": "POLREND1",
+      "type": "display-file",
+      "path": "POLREND1.dspf"
+    },
+    "PRM005B": {
+      "name": "PRM005B",
+      "type": "cobol",
+      "path": "PRM005B.cbl"
+    },
+    "PRMINQD1": {
+      "name": "PRMINQD1",
+      "type": "display-file",
+      "path": "PRMINQD1.dspf"
+    },
+    "RPTMNUD1": {
+      "name": "RPTMNUD1",
+      "type": "display-file",
+      "path": "RPTMNUD1.dspf"
+    }
+  },
+  "by_type": {
+    "clle": [
+      "JOBSCHD_NEW_DRIVERS.clle",
+      "PCIS_CRTOBJ.clle"
+    ],
+    "cobol": [
+      "AUD002B.cbl",
+      "BIL003B.cbl",
+      "CLM006B.cbl",
+      "CMM001B.cbl",
+      "CUS001A.cbl",
+      "POL001A.cbl",
+      "POL006B.cbl",
+      "PRM005B.cbl"
+    ],
+    "display-file": [
+      "BILSTSD1.dspf",
+      "CLMADJD1.dspf",
+      "CLMAPRD1.dspf",
+      "CLMCLSD1.dspf",
+      "CLMFNLD1.dspf",
+      "CLMINQD1.dspf",
+      "CLMPAYD1.dspf",
+      "CLMRSVD1.dspf",
+      "COMRPTD1.dspf",
+      "CUSCNTD1.dspf",
+      "CUSDELD1.dspf",
+      "CUSINQD1.dspf",
+      "CUSLSTD1.dspf",
+      "CUSMNTD1.dspf",
+      "MENUMD1.dspf",
+      "POLENDD1.dspf",
+      "POLINQD1.dspf",
+      "POLLSTD1.dspf",
+      "POLMNTD1.dspf",
+      "POLREND1.dspf",
+      "PRMINQD1.dspf",
+      "RPTMNUD1.dspf"
+    ],
+    "markdown": [
+      "AUD_Module_Design_Document.md",
+      "BIL_Module_Design_Document.md",
+      "CLM_Module_Design_Document.md",
+      "CMM_Module_Design_Document.md",
+      "CUS_Module_Design_Document.md",
+      "PCIS_Artifact_Gap_Analysis.md",
+      "PCIS_Database_Design.md",
+      "PCIS_Enterprise_Architecture.md",
+      "PCIS_Glossary.md",
+      "PCIS_Intent_Document.md",
+      "PCIS_Modernization_Edge_Cases.md",
+      "PCIS_Operations_Runbook.md",
+      "PCIS_PRD.md",
+      "PCIS_Requirements_Traceability_Matrix.md",
+      "PCIS_User_Stories.md",
+      "POL_Module_Design_Document.md",
+      "PRM_Module_Design_Document.md"
+    ]
+  }
+}

@@ -1,0 +1,54 @@
+suite: test cronjob rendering
+templates:
+  - cronjob.yaml
+  - serviceaccount.yaml
+tests:
+  - it: renders six CronJobs with placeholder schedule annotations
+    asserts:
+      - hasDocuments:
+          count: 6
+      - isKind:
+          of: CronJob
+      - equal:
+          path: spec.concurrencyPolicy
+          value: Forbid
+      - equal:
+          path: spec.startingDeadlineSeconds
+          value: 300
+      - equal:
+          path: spec.jobTemplate.spec.backoffLimit
+          value: 0
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.restartPolicy
+          value: Never
+      - exists:
+          path: metadata.annotations["pcis.batch/schedule-status"]
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.nodeSelector.node-role
+          value: batch
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.tolerations
+          content:
+            key: batch
+            operator: Equal
+            value: "true"
+            effect: NoSchedule
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.securityContext.runAsNonRoot
+          value: true
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem
+          value: true
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].securityContext.allowPrivilegeEscalation
+          value: false
+
+  - it: audit-archive-job has expected schedule placeholder
+    documentIndex: 0
+    asserts:
+      - equal:
+          path: metadata.name
+          value: audit-archive-job
+      - matchRegex:
+          path: spec.schedule
+          pattern: '^[0-9* ,/-]+$'
