@@ -1,0 +1,50 @@
+.root {
+  font-family: var(--pcis-font-sans);
+  color: var(--pcis-color-text);
+}
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pcis-space-1);
+  border-block-end: 1px solid var(--pcis-color-border);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tab {
+  appearance: none;
+  background: transparent;
+  border: none;
+  border-block-end: 2px solid transparent;
+  padding: var(--pcis-space-2) var(--pcis-space-4);
+  margin-block-end: -1px;
+  font: inherit;
+  font-weight: var(--pcis-font-weight-medium);
+  color: var(--pcis-color-text-muted);
+  cursor: pointer;
+}
+
+.tab:hover:not(:disabled) {
+  color: var(--pcis-color-primary-700);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--pcis-color-focus);
+  outline-offset: 2px;
+}
+
+.tab[aria-selected='true'] {
+  color: var(--pcis-color-primary-700);
+  border-block-end-color: var(--pcis-color-primary-600);
+}
+
+.tab:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.panel {
+  padding: var(--pcis-space-4) 0;
+}

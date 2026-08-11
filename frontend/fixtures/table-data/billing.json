@@ -1,0 +1,12 @@
+[
+  { "id": "INV-9001", "policyId": "POL-3001", "status": "Open", "amountDue": 355.13, "dueDate": "2026-05-01" },
+  { "id": "INV-9002", "policyId": "POL-3002", "status": "Paid", "amountDue": 245, "dueDate": "2026-04-01" },
+  { "id": "INV-9003", "policyId": "POL-3003", "status": "Cancelled", "amountDue": 0, "dueDate": "2026-03-01" },
+  { "id": "INV-9004", "policyId": "POL-3004", "status": "Overdue", "amountDue": 80.06, "dueDate": "2026-03-15" },
+  { "id": "INV-9005", "policyId": "POL-3005", "status": "Cancelled", "amountDue": 0, "dueDate": "2026-02-01" },
+  { "id": "INV-9006", "policyId": "POL-3006", "status": "Open", "amountDue": 1350, "dueDate": "2026-05-10" },
+  { "id": "INV-9007", "policyId": "POL-3007", "status": "Paid", "amountDue": 276.44, "dueDate": "2026-04-12" },
+  { "id": "INV-9008", "policyId": "POL-3008", "status": "Open", "amountDue": 68.75, "dueDate": "2026-05-20" },
+  { "id": "INV-9009", "policyId": "POL-3009", "status": "Overdue", "amountDue": 422.1, "dueDate": "2026-03-28" },
+  { "id": "INV-9010", "policyId": "POL-3010", "status": "Paid", "amountDue": 0, "dueDate": "2026-02-15" }
+]

@@ -1,0 +1,55 @@
+.region {
+  position: fixed;
+  inset-block-end: var(--pcis-space-4);
+  inset-inline-end: var(--pcis-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--pcis-space-2);
+  z-index: 1100;
+  max-inline-size: min(24rem, calc(100vw - 2rem));
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--pcis-space-3);
+  padding: var(--pcis-space-3) var(--pcis-space-4);
+  border-radius: var(--pcis-radius-md);
+  box-shadow: var(--pcis-shadow-lg);
+  font-family: var(--pcis-font-sans);
+  font-size: var(--pcis-font-size-sm);
+  color: var(--pcis-color-neutral-0);
+}
+
+.success {
+  background: var(--pcis-color-success-700);
+}
+
+.error {
+  background: var(--pcis-color-error-700);
+}
+
+.warning {
+  background: var(--pcis-color-warning-700);
+}
+
+.info {
+  background: var(--pcis-color-info-700);
+}
+
+.dismiss {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: var(--pcis-font-size-lg);
+  line-height: 1;
+  padding: 0;
+}
+
+.dismiss:focus-visible {
+  outline: 2px solid var(--pcis-color-neutral-0);
+  outline-offset: 2px;
+}
