@@ -1,0 +1,35 @@
+pcis:
+  sync:
+    enabled: false
+    poll-interval-ms: 300000
+    chunk-size: 2
+    source:
+      url: jdbc:h2:mem:source;MODE=DB2;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=FALSE
+      username: sa
+      password:
+      driver-class-name: org.h2.Driver
+    domains:
+      customer:
+        source-table: CUSTOMER_T
+        target-table: sync_customer
+        watermark-column: UPD_TIMESTAMP
+        primary-key: CUST_ID
+        columns:
+          - CUST_ID
+          - CUST_NAME
+          - CUST_STATUS
+          - UPD_TIMESTAMP
+  classification:
+    registry-location: classpath:pcis-data-classification-test.yaml
+    drift-detection-enabled: false
+    loader-enabled: false
+
+spring:
+  flyway:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
