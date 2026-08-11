@@ -3,20 +3,21 @@ package com.pcis.customer.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pcis.customer.domain.exception.CustomerNotFoundException;
 import com.pcis.customer.domain.exception.DuplicateTaxIdException;
 import com.pcis.customer.domain.model.CreateCustomerCommand;
 import com.pcis.customer.domain.model.UpdateCustomerCommand;
 import com.pcis.customer.domain.repository.CustomerRepository;
-import com.pcis.customer.outbox.OutboxEvent;
-import com.pcis.customer.outbox.OutboxEventRepository;
+import com.pcis.customer.outbox.CustomerOutboxWriter;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,15 +29,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class CustomerDomainServiceTest {
 
   @Mock private CustomerRepository customerRepository;
-  @Mock private OutboxEventRepository outboxEventRepository;
+  @Mock private CustomerOutboxWriter customerOutboxWriter;
 
   private CustomerDomainService customerDomainService;
 
   @BeforeEach
   void setUp() {
     customerDomainService =
-        new CustomerDomainService(
-            customerRepository, outboxEventRepository, new ObjectMapper());
+        new CustomerDomainService(customerRepository, customerOutboxWriter);
   }
 
   @Test
@@ -58,10 +58,8 @@ class CustomerDomainServiceTest {
     CustomerEntity result = customerDomainService.create(command);
 
     assertThat(result.getCustId()).isEqualTo(42);
-    ArgumentCaptor<OutboxEvent> outboxCaptor = ArgumentCaptor.forClass(OutboxEvent.class);
-    verify(outboxEventRepository).save(outboxCaptor.capture());
-    assertThat(outboxCaptor.getValue().getEventType()).isEqualTo("CustomerCreated");
-    assertThat(outboxCaptor.getValue().getAggregateId()).isEqualTo("42");
+    verify(customerOutboxWriter)
+        .writeDomainEvent(eq("42"), eq("CustomerCreated"), any(Map.class), any(UUID.class));
   }
 
   @Test
@@ -80,7 +78,8 @@ class CustomerDomainServiceTest {
         .hasMessageContaining("123456789");
 
     verify(customerRepository, never()).save(any());
-    verify(outboxEventRepository, never()).save(any());
+    verify(customerOutboxWriter, never())
+        .writeDomainEvent(any(), any(), any(), any(UUID.class));
   }
 
   @Test
@@ -111,7 +110,8 @@ class CustomerDomainServiceTest {
 
     assertThat(result.getCustName()).isEqualTo("Jane Smith");
     assertThat(result.getCustStatus()).isEqualTo("I");
-    verify(outboxEventRepository).save(any(OutboxEvent.class));
+    verify(customerOutboxWriter)
+        .writeDomainEvent(eq("7"), eq("CustomerUpdated"), any(Map.class), any(UUID.class));
   }
 
   @Test
@@ -177,6 +177,7 @@ class CustomerDomainServiceTest {
 
     assertThat(result.getAddresses()).hasSize(1);
     assertThat(result.getContacts()).hasSize(1);
-    verify(outboxEventRepository).save(any(OutboxEvent.class));
+    verify(customerOutboxWriter)
+        .writeDomainEvent(eq("10"), eq("CustomerCreated"), any(Map.class), any(UUID.class));
   }
 }

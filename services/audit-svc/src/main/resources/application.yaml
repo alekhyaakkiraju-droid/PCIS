@@ -4,6 +4,16 @@ server:
 spring:
   application:
     name: audit-svc
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: audit-svc-outbox-relay
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      enable-auto-commit: false
+    listener:
+      ack-mode: record
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/pcis_audit}
     username: ${DATABASE_USERNAME:pcis_audit_app}
@@ -34,6 +44,15 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+pcis:
+  outbox:
+    relay-enabled: false
+    kafka-topic: ${PCIS_OUTBOX_KAFKA_TOPIC:pcis.domain.events}
+  audit:
+    kafka:
+      consumer-enabled: true
+      consumer-group: audit-svc-outbox-relay
 
 management:
   endpoints:

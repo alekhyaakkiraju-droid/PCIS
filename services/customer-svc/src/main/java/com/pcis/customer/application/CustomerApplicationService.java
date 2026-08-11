@@ -116,6 +116,9 @@ public class CustomerApplicationService {
   }
 
   private void writeOutboxEvent(String aggregateId, String eventType, Map<String, Object> payload) {
-    customerOutboxWriter.writeAuditEvent(aggregateId, eventType, payload);
+    java.util.UUID idempotencyKey =
+        java.util.UUID.nameUUIDFromBytes(
+            ("Customer:" + aggregateId + ":" + eventType + ":" + payload.hashCode()).getBytes());
+    customerOutboxWriter.writeDomainEvent(aggregateId, eventType, payload, idempotencyKey);
   }
 }

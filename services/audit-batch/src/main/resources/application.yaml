@@ -24,6 +24,14 @@ pcis:
     retention-days: 365
     chunk-size: 1000
     program-name: AUD002B
+  tunables:
+    numeric-defaults:
+      audit.retention.days: 365
+      audit.archive.chunkSize: 1000
+      billing.leadDays: 15
+      premium.graceDays: 30
+      policy.renewalWindowDays: 60
+      claims.reinsurance.cessionThreshold: 100000.00
   batch:
     oauth2:
       token-uri: ${PCIS_BATCH_OAUTH2_TOKEN_URI:}

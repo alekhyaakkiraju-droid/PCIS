@@ -74,6 +74,11 @@
       <artifactId>pcis-error</artifactId>
       <version>0.1.0-SNAPSHOT</version>
     </dependency>
+    <dependency>
+      <groupId>com.pcis</groupId>
+      <artifactId>pcis-outbox</artifactId>
+      <version>0.1.0-SNAPSHOT</version>
+    </dependency>
 
     <!-- Web + Validation -->
     <dependency>
@@ -122,6 +127,11 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.kafka</groupId>
+      <artifactId>spring-kafka</artifactId>
     </dependency>
 
     <!-- OpenFeign for authz-svc and audit-svc clients -->

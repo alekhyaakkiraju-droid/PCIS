@@ -35,6 +35,8 @@ management:
           include: ping,db
 
 pcis:
+  outbox:
+    relay-enabled: false
   authz-svc:
     url: http://localhost:9999
   audit-svc:

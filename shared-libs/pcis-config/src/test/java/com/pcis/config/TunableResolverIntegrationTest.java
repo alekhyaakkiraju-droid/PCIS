@@ -51,5 +51,4 @@ class TunableResolverIntegrationTest {
     assertThat(resolver.getBigDecimal(TunableKey.CLAIMS_REINSURANCE_CESSION_THRESHOLD))
         .isEqualByComparingTo("100000.00");
   }
-
 }

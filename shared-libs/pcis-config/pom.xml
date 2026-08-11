@@ -118,6 +118,9 @@
   <build>
     <resources>
       <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+      <resource>
         <directory>${project.basedir}/db</directory>
         <targetPath>db</targetPath>
       </resource>

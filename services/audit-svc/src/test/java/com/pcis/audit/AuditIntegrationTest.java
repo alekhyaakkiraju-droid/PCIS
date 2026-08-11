@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pcis.audit.infrastructure.persistence.repository.AuditIngestionIdempotencyRepository;
 import com.pcis.audit.infrastructure.persistence.repository.AuditLogRepository;
 import com.pcis.audit.support.FixtureLoader;
 import com.pcis.audit.support.PostgresTestContainer;
@@ -14,6 +15,7 @@ import com.pcis.audit.support.TestSecurityConfig;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +42,14 @@ class AuditIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private AuditLogRepository auditLogRepository;
+  @Autowired private AuditIngestionIdempotencyRepository auditIngestionIdempotencyRepository;
   @Autowired private ObjectMapper objectMapper;
+
+  @BeforeEach
+  void cleanAuditTables() {
+    auditLogRepository.deleteAll();
+    auditIngestionIdempotencyRepository.deleteAll();
+  }
 
   @Test
   void postAuditEventPersistsToPartition() throws Exception {

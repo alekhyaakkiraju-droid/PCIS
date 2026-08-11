@@ -9,6 +9,8 @@ import com.pcis.audit.contract.AuditEventRequest;
 import com.pcis.audit.contract.AuditOperation;
 import com.pcis.audit.infrastructure.masking.MaskingService;
 import com.pcis.audit.infrastructure.persistence.entity.AuditLogEntity;
+import com.pcis.audit.infrastructure.persistence.AuditLogJdbcWriter;
+import com.pcis.audit.infrastructure.persistence.repository.AuditIngestionIdempotencyRepository;
 import com.pcis.audit.infrastructure.persistence.repository.AuditLogRepository;
 import java.time.Instant;
 import java.util.UUID;
@@ -23,13 +25,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class AuditEventServiceTest {
 
   @Mock private AuditLogRepository auditLogRepository;
+  @Mock private AuditIngestionIdempotencyRepository idempotencyRepository;
+  @Mock private AuditLogJdbcWriter auditLogJdbcWriter;
   @Mock private MaskingService maskingService;
 
   private AuditEventService service;
 
   @BeforeEach
   void setUp() {
-    service = new AuditEventService(auditLogRepository, maskingService);
+    service =
+        new AuditEventService(
+            auditLogRepository, idempotencyRepository, auditLogJdbcWriter, maskingService);
   }
 
   @Test
@@ -42,7 +48,7 @@ class AuditEventServiceTest {
     saved.setCorrelationId(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"));
     saved.setOperation(AuditOperation.UPDATE.name());
     saved.setEventTimestamp(Instant.parse("2026-08-11T12:00:00Z"));
-    when(auditLogRepository.save(any())).thenReturn(saved);
+    when(auditLogJdbcWriter.insert(any())).thenReturn(saved);
 
     var response =
         service.recordEvent(
@@ -62,7 +68,7 @@ class AuditEventServiceTest {
     assertThat(response.operation()).isEqualTo("UPDATE");
 
     ArgumentCaptor<AuditLogEntity> captor = ArgumentCaptor.forClass(AuditLogEntity.class);
-    verify(auditLogRepository).save(captor.capture());
+    verify(auditLogJdbcWriter).insert(captor.capture());
     assertThat(captor.getValue().getNewValue()).isEqualTo("se***@example.com");
     assertThat(captor.getValue().getActionCd()).isEqualTo("UPD");
   }
