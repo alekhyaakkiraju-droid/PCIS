@@ -1,0 +1,21 @@
+spring:
+  batch:
+    job:
+      enabled: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  main:
+    allow-bean-definition-overriding: true
+  autoconfigure:
+    exclude:
+      - com.pcis.batch.auth.config.BatchAuthAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+
+pcis:
+  billing:
+    generation:
+      reference-date: 2024-06-15
+      lead-days: 15
+    commission:
+      reference-date: 2024-06-15

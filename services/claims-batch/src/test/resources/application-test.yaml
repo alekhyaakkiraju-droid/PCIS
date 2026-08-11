@@ -1,0 +1,20 @@
+spring:
+  batch:
+    job:
+      enabled: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  autoconfigure:
+    exclude:
+      - com.pcis.batch.auth.config.BatchAuthAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+
+pcis:
+  claims:
+    payment:
+      chunk-size: 1
+      cession-threshold: 100000.00
+  tunables:
+    numeric-defaults:
+      claims.reinsurance.cessionThreshold: 100000.00

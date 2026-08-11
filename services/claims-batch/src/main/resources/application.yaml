@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: claims-batch
+  main:
+    web-application-type: none
+  batch:
+    job:
+      name: claimPaymentJob
+    jdbc:
+      initialize-schema: always
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/pcis}
+    username: ${DATABASE_USERNAME:pcis}
+    password: ${DATABASE_PASSWORD:}
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+    validate-migration-naming: true
+
+pcis:
+  claims:
+    payment:
+      chunk-size: 1
+      program-name: CLM006B
+      cession-threshold: 100000.00
+  tunables:
+    numeric-defaults:
+      billing.leadDays: 15
+      premium.graceDays: 10
+      claims.reinsurance.cessionThreshold: 100000.00
+  batch:
+    oauth2:
+      token-uri: ${PCIS_BATCH_OAUTH2_TOKEN_URI:}
+      client-id: ${PCIS_BATCH_OAUTH2_CLIENT_ID:batch-claims}
+      client-secret: ${PCIS_BATCH_OAUTH2_CLIENT_SECRET:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+
+logging:
+  level:
+    root: INFO
+    com.pcis.batch.claims: INFO
