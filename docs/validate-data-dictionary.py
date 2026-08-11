@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Validate docs/data-dictionary.yaml against DDL design and COBOL baseline (WO-128).
+Validate docs/data-dictionary.yaml against DDL design and COBOL baseline (WO-128, WO-150).
 
 Checks:
   1. Every table in PCIS_Database_Design.md has a dictionary entry
   2. Every baseline host variable that references a table column is mapped
   3. No resolution field is empty
-  4. Dictionary reports 55 tables
+  4. Dictionary reports at least 55 tables (57 with Flyway extras)
 
 Exits 0 on success, 1 on failure. Stdlib only.
 """
@@ -26,11 +26,11 @@ from build_data_dictionary import (  # noqa: E402
     DdlParser,
     load_simple_yaml,
 )
-
 DEFAULT_DICT = REPO_ROOT / "docs" / "data-dictionary.yaml"
 DEFAULT_DDL = REPO_ROOT / "Property_Casualty_Insurance_System" / "PCIS_Database_Design.md"
 DEFAULT_BASELINE = REPO_ROOT / "baseline" / "cobol-baseline.yaml"
 DEFAULT_COBOL_DIR = REPO_ROOT / "Property_Casualty_Insurance_System"
+MIN_TABLE_COUNT = 55
 
 # Host variables that are scratch / control and need not map to a persisted column
 SCRATCH_HOSTS = {
@@ -128,10 +128,14 @@ def validate(
     }
 
     table_count = dictionary.get("table_count") or len(dict_tables)
-    if int(table_count) != 55:
-        errors.append(f"Expected 55 tables in dictionary, found table_count={table_count}")
-    if len(dict_tables) != 55:
-        errors.append(f"Expected 55 table entries, found {len(dict_tables)}")
+    if int(table_count) < MIN_TABLE_COUNT:
+        errors.append(
+            f"Expected at least {MIN_TABLE_COUNT} tables in dictionary, found table_count={table_count}"
+        )
+    if len(dict_tables) < MIN_TABLE_COUNT:
+        errors.append(
+            f"Expected at least {MIN_TABLE_COUNT} table entries, found {len(dict_tables)}"
+        )
 
     for name in sorted(ddl_tables):
         if name not in dict_tables:

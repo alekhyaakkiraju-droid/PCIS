@@ -1,5 +1,5 @@
 """
-Unit tests for docs/build_data_dictionary.py (WO-128)
+Unit tests for docs/build_data_dictionary.py (WO-128, WO-150)
 
 Run: python3 -m unittest discover -s docs/tests -v
 """
@@ -186,8 +186,18 @@ class TestFullBuildSmoke(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp) / "data-dictionary.yaml"
             doc = build_dictionary(ddl, baseline, cobol, out)
-            self.assertEqual(doc["table_count"], 55)
+            self.assertGreaterEqual(doc["table_count"], 55)
             self.assertTrue(out.is_file())
+            # WO-150: classification tiers and PII flags on every table/column
+            for table in doc["tables"]:
+                self.assertIn(
+                    table.get("classification_tier"),
+                    {"Public", "Internal", "Confidential", "Restricted"},
+                )
+                for col in table["columns"]:
+                    self.assertIn("pii", col)
+                    self.assertIn("mask_strategy", col)
+                    self.assertIn("cobol_host_variable", col)
             # CUSTOMER_T critical resolutions present
             cust = next(t for t in doc["tables"] if t["table_name"] == "CUSTOMER_T")
             by_ddl = {c["ddl_column_name"]: c for c in cust["columns"] if c["ddl_column_name"]}
