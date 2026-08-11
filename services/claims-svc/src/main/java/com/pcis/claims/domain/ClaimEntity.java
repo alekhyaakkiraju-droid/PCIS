@@ -4,6 +4,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.time.LocalDate;
 
 @Entity
@@ -26,7 +28,8 @@ public class ClaimEntity extends AuditableEntity {
   @Column(name = "claim_type", nullable = false, length = 3)
   private String claimType;
 
-  @Column(name = "claim_status", nullable = false, length = 1)
+  @Column(name = "claim_status", nullable = false, length = 1, columnDefinition = "char(1)")
+  @JdbcTypeCode(SqlTypes.CHAR)
   private String claimStatus;
 
   public String getClaimNbr() { return claimNbr; }

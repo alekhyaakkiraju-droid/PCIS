@@ -1,4 +1,6 @@
 spring:
+  main:
+    allow-bean-definition-overriding: true
   jpa:
     hibernate:
       ddl-auto: validate
@@ -10,6 +12,23 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost/test-issuer
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,readiness,info
+  endpoint:
+    health:
+      probes:
+        enabled: false
+      group:
+        liveness:
+          include: ping
+        readiness:
+          include: ping,db
+        startup:
+          include: ping,db
 
 logging:
   level:

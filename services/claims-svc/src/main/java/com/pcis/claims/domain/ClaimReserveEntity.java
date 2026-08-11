@@ -9,6 +9,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.math.BigDecimal;
 
 @Entity
@@ -33,7 +35,8 @@ public class ClaimReserveEntity extends AuditableEntity {
   @Column(name = "paid_to_date", nullable = false, precision = 11, scale = 2)
   private BigDecimal paidToDate;
 
-  @Column(name = "reserve_status", nullable = false, length = 1)
+  @Column(name = "reserve_status", nullable = false, length = 1, columnDefinition = "char(1)")
+  @JdbcTypeCode(SqlTypes.CHAR)
   private String reserveStatus;
 
   public Long getReserveId() { return reserveId; }

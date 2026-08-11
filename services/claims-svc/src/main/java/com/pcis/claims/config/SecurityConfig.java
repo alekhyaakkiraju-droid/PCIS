@@ -5,11 +5,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -17,7 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -31,11 +30,6 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 
-/**
- * Deny-by-default Spring Security 6 configuration for claims-svc.
- * /actuator/health and /actuator/readiness are permitted without authentication.
- * /api/v1/claims/** requires a valid JWT. All other paths are denied.
- */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -75,7 +69,7 @@ public class SecurityConfig {
   @Bean
   JwtAuthenticationConverter jwtAuthenticationConverter() {
     JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-    converter.setJwtGrantedAuthoritiesConverter(new RealmAccessRolesConverter());
+    converter.setJwtGrantedAuthoritiesConverter(new RoleAndScopeConverter());
     return converter;
   }
 
@@ -106,37 +100,31 @@ public class SecurityConfig {
     objectMapper.writeValue(response.getOutputStream(), problem);
   }
 
-  /**
-   * Extracts roles from Keycloak's {@code realm_access.roles} claim and maps them to
-   * {@code ROLE_*} Spring Security authorities.
-   * Returns empty authorities rather than throwing when the claim is absent or malformed.
-   */
-  static final class RealmAccessRolesConverter
-      implements Converter<Jwt, Collection<GrantedAuthority>> {
+  static final class RoleAndScopeConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
 
     @Override
     public Collection<GrantedAuthority> convert(Jwt jwt) {
-      Object realmAccess = jwt.getClaim("realm_access");
-      if (!(realmAccess instanceof Map<?, ?> realmMap)) {
-        return Collections.emptyList();
+      Stream<String> scopes = Stream.empty();
+      Object scopeClaim = jwt.getClaim("scope");
+      if (scopeClaim instanceof String s) {
+        scopes = Stream.of(s.split("\\s+"));
+      } else if (scopeClaim instanceof Collection<?> c) {
+        scopes = c.stream().map(Object::toString);
       }
-      Object rolesObj = realmMap.get("roles");
-      if (!(rolesObj instanceof List<?> rolesList)) {
-        return Collections.emptyList();
+
+      Stream<String> roles = Stream.empty();
+      Object rolesClaim = jwt.getClaim("roles");
+      if (rolesClaim instanceof Collection<?> c) {
+        roles = c.stream().map(Object::toString);
       }
-      List<GrantedAuthority> authorities = new ArrayList<>(rolesList.size());
-      for (Object role : rolesList) {
-        if (role == null) {
-          continue;
-        }
-        String roleName = role.toString().trim();
-        if (roleName.isBlank()) {
-          continue;
-        }
-        String prefixed = roleName.startsWith("ROLE_") ? roleName : "ROLE_" + roleName;
-        authorities.add(new SimpleGrantedAuthority(prefixed));
-      }
-      return authorities;
+
+      List<GrantedAuthority> authorities =
+          Stream.concat(scopes, roles)
+              .filter(s -> s != null && !s.isBlank())
+              .map(SimpleGrantedAuthority::new)
+              .collect(Collectors.toList());
+
+      return authorities.isEmpty() ? Collections.emptyList() : authorities;
     }
   }
 }
