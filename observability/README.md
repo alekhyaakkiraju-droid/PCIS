@@ -15,7 +15,8 @@ monitoring. Consumes Micrometer metrics from Spring Boot services (`http_server_
 | `alertmanager/templates/pcis.tmpl` | Notification templates with runbook and Grafana links |
 | `alertmanager/amtool-check.sh` | CI validation via `amtool` or static YAML fallback |
 | `test-fixtures/sample-metrics.txt` | Prometheus exposition samples (normal + breach) |
-| `test/test-rules.sh` | Integration test (optional Docker) |
+| `runbooks/TEMPLATE.md` | Six-section runbook template (WO-144) |
+| `runbooks/validate-runbook-links.sh` | CI validation — runbook_url paths and H2 sections |
 | `docker-compose.test.yaml` | Prometheus + pushgateway test stack |
 
 ## SLI Recording Rules
@@ -46,15 +47,15 @@ baseline measurement completes. Update gauge values without changing rule struct
 
 | Alert | Severity | Threshold | For | Runbook | Team |
 |-------|----------|-----------|-----|---------|------|
-| ApiReadLatencyHigh | warning | p95 > 500ms (GET/HEAD) | 5m | `docs/runbooks/api-latency.md#api-read-latency-high` | platform |
-| ApiWriteLatencyHigh | warning | p95 > 1000ms (POST/PUT/PATCH/DELETE) | 5m | `docs/runbooks/api-latency.md#api-write-latency-high` | platform |
-| ErrorRateHigh | critical | 5xx rate > 1% | 5m | `docs/runbooks/error-rate-high.md` | platform |
-| BatchJobFailed | critical | exit code ≠ 0 or `kube_job_status_failed` | 0m | `docs/runbooks/batch-job-failure.md` | platform |
-| BatchWindowBreached | warning | duration > 75% of window | 5m | `docs/runbooks/batch-window-overrun.md` | platform |
-| AuditOutboxLagHigh | critical | lag > 30s | 2m | `docs/runbooks/audit-outbox-backlog.md#lag-high` | platform |
-| AuditOutboxBacklog | warning | pending > 100 | 5m | `docs/runbooks/audit-outbox-backlog.md#backlog` | platform |
-| CertificateExpirySoon | warning | expiry < 14 days | 1h | `docs/runbooks/certificate-expiry.md` | platform |
-| SecretRotationOverdue | info | last rotation > 90 days | 1h | `docs/runbooks/secret-rotation.md` | platform |
+| ApiReadLatencyHigh | warning | p95 > 500ms (GET/HEAD) | 5m | `observability/runbooks/api-read-latency-high.md` | platform |
+| ApiWriteLatencyHigh | warning | p95 > 1000ms (POST/PUT/PATCH/DELETE) | 5m | `observability/runbooks/api-write-latency-high.md` | platform |
+| ErrorRateHigh | critical | 5xx rate > 1% | 5m | `observability/runbooks/error-rate-high.md` | platform |
+| BatchJobFailed | critical | exit code ≠ 0 or `kube_job_status_failed` | 0m | `observability/runbooks/batch-job-failed.md` | platform |
+| BatchWindowBreached | warning | duration > 75% of window | 5m | `observability/runbooks/batch-window-breached.md` | platform |
+| AuditOutboxLagHigh | critical | lag > 30s | 2m | `observability/runbooks/audit-outbox-lag-high.md` | platform |
+| AuditOutboxBacklog | warning | pending > 100 | 5m | `observability/runbooks/audit-outbox-backlog.md` | platform |
+| CertificateExpirySoon | warning | expiry < 14 days | 1h | `observability/runbooks/certificate-expiry-soon.md` | platform |
+| SecretRotationOverdue | info | last rotation > 90 days | 1h | `observability/runbooks/secret-rotation-overdue.md` | platform |
 
 ### Alert routing (Alertmanager WO-143)
 
@@ -82,6 +83,12 @@ PagerDuty and Slack credentials are injected at deploy time via `${PAGERDUTY_KEY
 ```bash
 # Primary CI gate (requires promtool)
 make lint-prometheus
+
+# Runbook link and section validation (WO-144)
+make lint-runbooks
+
+# All observability lint targets
+make lint
 
 # Alertmanager config (amtool when installed, else static YAML validation)
 make lint-alertmanager

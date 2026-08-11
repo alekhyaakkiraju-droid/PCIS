@@ -26,7 +26,7 @@ spec:
               reported failure. Spring Batch exit codes 1-5 indicate operational failures per
               the WO-137 exit code contract (1=item threshold, 2=archive mismatch,
               3=cursor failure, 4=audit write failure, 5=config failure).
-            runbook_url: "docs/runbooks/batch-job-failure.md"
+            runbook_url: "observability/runbooks/batch-job-failed.md"
         - alert: PcisBatchJobExitCodeNonZero
           expr: |
             kube_job_failed{namespace="{{ .Values.namespace }}", condition="true"} == 1
@@ -37,5 +37,5 @@ spec:
           annotations:
             summary: "PCIS batch job {{`{{`}} $labels.job_name {{`}}`}} exited non-zero"
             description: "Job failure detected via kube_job_failed for Alertmanager P1 routing."
-            runbook_url: "docs/runbooks/batch-job-failure.md"
+            runbook_url: "observability/runbooks/batch-job-failed.md"
 {{- end }}
