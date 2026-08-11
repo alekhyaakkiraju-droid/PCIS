@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -64,6 +65,24 @@ public class DataClassificationRegistry {
               return entityCompare != 0 ? entityCompare : a.columnName().compareTo(b.columnName());
             })
         .collect(Collectors.toList());
+  }
+
+  /** Distinct entity (table) names present in the registry. */
+  public Set<String> getClassifiedEntityNames() {
+    return entries.values().stream()
+        .map(ClassificationEntry::entityName)
+        .map(DataClassificationRegistry::normalizeEntity)
+        .collect(Collectors.toCollection(java.util.TreeSet::new));
+  }
+
+  public List<ClassificationEntry> getAllEntries() {
+    return entries.values().stream()
+        .sorted(
+            (a, b) -> {
+              int entityCompare = a.entityName().compareTo(b.entityName());
+              return entityCompare != 0 ? entityCompare : a.columnName().compareTo(b.columnName());
+            })
+        .toList();
   }
 
   public int size() {

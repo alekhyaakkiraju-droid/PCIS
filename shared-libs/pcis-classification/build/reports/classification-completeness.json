@@ -1,0 +1,8 @@
+{
+  "totalSchemaTables" : 57,
+  "totalClassifiedTables" : 57,
+  "unclassifiedTables" : [ ],
+  "restrictedColumnsWithoutStrategy" : [ ],
+  "invalidMaskStrategies" : [ ],
+  "status" : "PASS"
+}
