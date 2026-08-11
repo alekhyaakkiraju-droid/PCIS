@@ -1,0 +1,9 @@
+{
+  "calculationId": "calc-renewal-refer",
+  "returnCode": "01",
+  "underwritingDecision": "REFER",
+  "baseRate": "1200.00",
+  "ratingFactor": "1.1000",
+  "basePremium": "1320.00",
+  "finalPremium": "1452.00"
+}

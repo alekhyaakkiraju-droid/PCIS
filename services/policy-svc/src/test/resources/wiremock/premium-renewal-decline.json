@@ -1,0 +1,9 @@
+{
+  "calculationId": "calc-renewal-decline",
+  "returnCode": "02",
+  "underwritingDecision": "DECLINE",
+  "baseRate": "0.00",
+  "ratingFactor": "0.0000",
+  "basePremium": "0.00",
+  "finalPremium": "0.00"
+}

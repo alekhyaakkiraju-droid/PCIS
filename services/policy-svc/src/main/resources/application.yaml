@@ -4,6 +4,11 @@ server:
 spring:
   application:
     name: policy-svc
+  batch:
+    job:
+      enabled: false
+    jdbc:
+      initialize-schema: always
   datasource:
     url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/pcis_policy}
     username: ${DATASOURCE_USERNAME:pcis_policy_app}
@@ -72,6 +77,15 @@ pcis:
     kafka-topic: ${PCIS_OUTBOX_KAFKA_TOPIC:pcis.domain.events}
   authz-svc:
     url: ${AUTHZ_SVC_URL:http://authz-svc:8083}
+  premium:
+    renewal-window-days: ${PCIS_PREMIUM_RENEWAL_WINDOW_DAYS:60}
+    svc-url: ${PREMIUM_SVC_URL:http://premium-svc:8085}
+  batch:
+    skip-threshold: 100
+    policy-renewal:
+      chunk-size: 1
+      skip-limit: 100
+      program-name: POL006B
 
 resilience4j:
   circuitbreaker:
@@ -85,12 +99,16 @@ resilience4j:
     instances:
       authz-svc:
         baseConfig: default
+      premium-svc:
+        baseConfig: default
   timelimiter:
     configs:
       default:
         timeoutDuration: 5s
     instances:
       authz-svc:
+        baseConfig: default
+      premium-svc:
         baseConfig: default
 
 spring.cloud.openfeign.circuitbreaker.enabled: true
