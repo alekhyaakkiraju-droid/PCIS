@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "ApprovalGranted",
+  "namespace": "com.pcis.claims.events",
+  "doc": "Reserve approval granted by supervisor.",
+  "fields": [
+    {"name": "claimNbr", "type": "string"},
+    {"name": "reserveId", "type": "long"},
+    {"name": "approverId", "type": "string"},
+    {"name": "approvedAmt", "type": "string"}
+  ]
+}

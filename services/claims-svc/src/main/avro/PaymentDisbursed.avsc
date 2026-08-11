@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "PaymentDisbursed",
+  "namespace": "com.pcis.claims.events",
+  "doc": "Claim payment disbursed against an approved reserve.",
+  "fields": [
+    {"name": "claimNbr", "type": "string"},
+    {"name": "reserveId", "type": "long"},
+    {"name": "paymentAmt", "type": "string"},
+    {"name": "disburserPrincipal", "type": ["null", "string"], "default": null}
+  ]
+}

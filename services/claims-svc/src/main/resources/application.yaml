@@ -36,13 +36,29 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: ${OIDC_ISSUER_URI:https://idp.example.com/realms/pcis}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+
+pcis:
+  outbox:
+    relay-enabled: ${PCIS_OUTBOX_RELAY_ENABLED:true}
+    relay-interval-ms: ${PCIS_OUTBOX_POLL_INTERVAL_MS:5000}
+    relay-max-retries: 3
+    kafka-topic: ${PCIS_CLAIMS_EVENTS_TOPIC:claims-events}
+    dlq-kafka-topic: ${PCIS_CLAIMS_EVENTS_DLQ_TOPIC:claims-events-dlq}
+    metrics-namespace: claims_outbox
 
 management:
   endpoints:
     web:
       exposure:
-        # Only expose health, readiness, and info — all others disabled
-        include: health,readiness,info
+        include: health,readiness,info,prometheus
   endpoint:
     health:
       probes:

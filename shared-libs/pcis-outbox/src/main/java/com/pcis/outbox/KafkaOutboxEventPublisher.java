@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
+import org.springframework.util.StringUtils;
 
 public class KafkaOutboxEventPublisher {
 
@@ -30,20 +31,43 @@ public class KafkaOutboxEventPublisher {
   }
 
   public void publish(OutboxEvent event) {
+    publishToTopic(properties.getKafkaTopic(), event, null, null);
+  }
+
+  public void publishToDeadLetter(OutboxEvent event, int retryCount, String errorReason) {
+    if (!StringUtils.hasText(properties.getDlqKafkaTopic())) {
+      return;
+    }
+    publishToTopic(properties.getDlqKafkaTopic(), event, retryCount, errorReason);
+  }
+
+  private void publishToTopic(
+      String topic, OutboxEvent event, Integer retryCount, String errorReason) {
     String payloadJson = serializePayload(event);
     ProducerRecord<String, String> record =
-        new ProducerRecord<>(properties.getKafkaTopic(), event.getAggregateId(), payloadJson);
+        new ProducerRecord<>(topic, event.getAggregateId(), payloadJson);
     record
         .headers()
         .add(new RecordHeader("event-type", bytes(event.getEventType())))
         .add(new RecordHeader("aggregate-type", bytes(event.getAggregateType())))
         .add(new RecordHeader("idempotency-key", bytes(event.getIdempotencyKey().toString())));
+    if (retryCount != null) {
+      record
+          .headers()
+          .add(new RecordHeader("X-Original-Topic", bytes(properties.getKafkaTopic())))
+          .add(new RecordHeader("X-Retry-Count", bytes(String.valueOf(retryCount))))
+          .add(
+              new RecordHeader(
+                  "X-Error-Reason",
+                  bytes(StringUtils.hasText(errorReason) ? errorReason : "publish failed")));
+    }
 
     try {
       SendResult<String, String> result = kafkaTemplate.send(record).get();
       log.debug(
-          "Published outbox event id={} to partition={} offset={}",
+          "Published outbox event id={} to topic={} partition={} offset={}",
           event.getId(),
+          topic,
           result.getRecordMetadata().partition(),
           result.getRecordMetadata().offset());
     } catch (InterruptedException ex) {

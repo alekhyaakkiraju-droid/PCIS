@@ -17,7 +17,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,readiness,info
+        include: health,readiness,info,prometheus
   endpoint:
     health:
       probes:
