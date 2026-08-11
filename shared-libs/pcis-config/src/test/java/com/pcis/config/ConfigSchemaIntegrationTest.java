@@ -3,10 +3,8 @@ package com.pcis.config;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.nio.file.Path;
 import java.sql.SQLException;
 import javax.sql.DataSource;
-import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -56,6 +54,15 @@ class ConfigSchemaIntegrationTest {
             "SELECT value_text FROM config_tunable_t WHERE tunable_key = 'batch.actor.audit'",
             String.class);
     assertThat(auditActor).isEqualTo("BATCH_AUD");
+  }
+
+  @Test
+  void seedsDelinquencyStatusTransitionRuleSet() {
+    Integer count =
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM config_rule_set_t WHERE rule_set_key = 'delinquency-status-transition'",
+            Integer.class);
+    assertThat(count).isEqualTo(1);
   }
 
   @Test
@@ -149,14 +156,6 @@ class ConfigSchemaIntegrationTest {
   }
 
   private static org.flywaydb.core.api.output.MigrateResult migrate(DataSource dataSource) {
-    Path migrations = Path.of("db/migration").toAbsolutePath();
-    if (!migrations.resolve("V1__config_tunables.sql").toFile().exists()) {
-      migrations = Path.of("..", "db", "migration").toAbsolutePath();
-    }
-    return Flyway.configure()
-        .dataSource(dataSource)
-        .locations("filesystem:" + migrations)
-        .load()
-        .migrate();
+    return SharedMigrationSupport.migrateConfig(dataSource);
   }
 }

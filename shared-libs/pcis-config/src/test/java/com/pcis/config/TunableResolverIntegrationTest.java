@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import javax.sql.DataSource;
-import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -37,7 +36,7 @@ class TunableResolverIntegrationTest {
 
     DataSource dataSource =
         new DriverManagerDataSource(container.getJdbcUrl(), container.getUsername(), container.getPassword());
-    PathMigrations.migrate(dataSource);
+    SharedMigrationSupport.migrateConfig(dataSource);
 
     PcisTunableProperties properties = new PcisTunableProperties();
     resolver =
@@ -53,17 +52,4 @@ class TunableResolverIntegrationTest {
         .isEqualByComparingTo("100000.00");
   }
 
-  private static final class PathMigrations {
-    private static void migrate(DataSource dataSource) {
-      java.nio.file.Path migrations = java.nio.file.Path.of("db/migration").toAbsolutePath();
-      if (!migrations.resolve("V1__config_tunables.sql").toFile().exists()) {
-        migrations = java.nio.file.Path.of("..", "db", "migration").toAbsolutePath();
-      }
-      Flyway.configure()
-          .dataSource(dataSource)
-          .locations("filesystem:" + migrations)
-          .load()
-          .migrate();
-    }
-  }
 }
