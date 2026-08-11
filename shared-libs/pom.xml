@@ -19,5 +19,6 @@
     <module>pcis-observability-starter</module>
     <module>pcis-batch-auth</module>
     <module>pcis-test-support</module>
+    <module>pcis-schema</module>
   </modules>
 </project>
