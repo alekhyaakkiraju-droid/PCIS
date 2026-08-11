@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/pcis_claims
+    username: pcis_claims_app
+    password: dev_password
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/pcis
+  flyway:
+    locations: classpath:db/migration/claims
+
+logging:
+  level:
+    root: INFO
+    com.pcis.claims: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
