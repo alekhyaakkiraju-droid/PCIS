@@ -1,0 +1,9 @@
+{
+  "authenticated": true,
+  "user": {
+    "sub": "finance-frank",
+    "name": "Frank Finance",
+    "email": "frank.finance@pcis.example.com",
+    "roles": ["FINANCE"]
+  }
+}
