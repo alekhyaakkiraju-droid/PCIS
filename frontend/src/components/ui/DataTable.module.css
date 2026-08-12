@@ -1,6 +1,9 @@
 .wrapper {
   font-family: var(--pcis-font-sans);
   color: var(--pcis-color-text);
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .table {

@@ -48,3 +48,8 @@
   background: var(--pcis-color-neutral-200);
   color: var(--pcis-color-neutral-700);
 }
+
+.pending {
+  background: var(--pcis-color-error-50);
+  color: var(--pcis-color-error-700);
+}

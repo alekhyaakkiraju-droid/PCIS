@@ -22,59 +22,6 @@
   border-style: dashed;
 }
 
-.corner {
-  position: absolute;
-  width: 11px;
-  height: 11px;
-  color: var(--pcis-color-primary-400);
-  pointer-events: none;
-}
-
-.corner::before,
-.corner::after {
-  content: '';
-  position: absolute;
-  background: currentColor;
-}
-
-.corner::before {
-  left: 5px;
-  top: 0;
-  width: 1px;
-  height: 100%;
-}
-
-.corner::after {
-  top: 5px;
-  left: 0;
-  width: 100%;
-  height: 1px;
-}
-
-.cornerTl {
-  composes: corner;
-  top: -6px;
-  left: -6px;
-}
-
-.cornerTr {
-  composes: corner;
-  top: -6px;
-  right: -6px;
-}
-
-.cornerBl {
-  composes: corner;
-  bottom: -6px;
-  left: -6px;
-}
-
-.cornerBr {
-  composes: corner;
-  bottom: -6px;
-  right: -6px;
-}
-
 .kicker {
   font-size: var(--pcis-font-size-xs);
   text-transform: uppercase;

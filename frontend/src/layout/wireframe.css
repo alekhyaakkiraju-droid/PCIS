@@ -82,6 +82,7 @@
   padding: var(--pcis-space-4);
   background: var(--pcis-color-surface);
   border: 1px solid var(--pcis-color-border);
+  box-shadow: var(--pcis-shadow-sm);
 }
 
 .wf-kpi-value {
@@ -184,6 +185,7 @@
   padding: var(--pcis-space-3) var(--pcis-space-4);
   border: 1px solid var(--pcis-color-border);
   background: var(--pcis-color-surface);
+  box-shadow: var(--pcis-shadow-sm);
 }
 
 .wf-metric-card strong {

@@ -131,12 +131,18 @@
 
   --pcis-color-success-50: var(--pcis-token-success-bg);
   --pcis-color-success-500: var(--pcis-token-success);
+  --pcis-color-success-700: var(--pcis-token-success);
   --pcis-color-warning-50: var(--pcis-token-warning-bg);
   --pcis-color-warning-500: var(--pcis-token-warning);
+  --pcis-color-warning-700: var(--pcis-token-warning);
   --pcis-color-error-50: var(--pcis-token-error-bg);
   --pcis-color-error-500: var(--pcis-token-error);
+  --pcis-color-error-700: var(--pcis-token-error);
   --pcis-color-info-50: var(--pcis-token-info-bg);
   --pcis-color-info-500: var(--pcis-token-info);
+  --pcis-color-info-700: var(--pcis-token-info);
+  --pcis-color-neutral-700: #c6c6c6;
+  --pcis-color-neutral-800: #f4f4f4;
 
   --pcis-color-bg: var(--pcis-token-background);
   --pcis-color-surface: var(--pcis-token-surface);

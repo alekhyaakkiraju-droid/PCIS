@@ -19,13 +19,12 @@ type InquiryRow = {
   adjuster: string
   reserve: string
   status: string
-  tagClass: string
 }
 
-function tagStatus(tagClass: string): 'Active' | 'Pending' | 'Inactive' {
-  if (tagClass === 'outline') return 'Pending'
-  if (tagClass === 'neutral') return 'Inactive'
-  return 'Active'
+function statusBadge(status: string): 'Open' | 'Review' | 'Settled' {
+  if (status === 'Pending approval') return 'Review'
+  if (status === 'Closed — paid') return 'Settled'
+  return 'Open'
 }
 
 function claimToRow(claim: ClaimListItem, tab: InquiryTab): InquiryRow {
@@ -44,12 +43,6 @@ function claimToRow(claim: ClaimListItem, tab: InquiryTab): InquiryRow {
     adjuster: claim.adjusterName ?? 'K. Alvarez',
     reserve,
     status: statusLabel,
-    tagClass:
-      claim.claimStatus === 'C'
-        ? 'accent'
-        : claim.pendingApproval || tab === 'pending'
-          ? 'neutral'
-          : 'outline',
   }
 }
 
@@ -171,7 +164,7 @@ export function ClaimInquiryPage() {
             { id: 'lossDate', label: 'Loss date', accessor: (r) => r.lossDate },
             { id: 'adjuster', label: 'Adjuster', accessor: (r) => r.adjuster },
             { id: 'reserve', label: 'Reserve', accessor: (r) => r.reserve, render: (r) => <span className="mono">{r.reserve}</span> },
-            { id: 'status', label: 'Status', accessor: (r) => r.status, render: (r) => <Badge status={tagStatus(r.tagClass)}>{r.status}</Badge> },
+            { id: 'status', label: 'Status', accessor: (r) => r.status, render: (r) => <Badge status={statusBadge(r.status)}>{r.status}</Badge> },
             {
               id: 'action',
               label: '',

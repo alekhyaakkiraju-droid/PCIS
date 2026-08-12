@@ -37,10 +37,6 @@ export function BlueprintCard({
 
   return (
     <article className={classes} {...rest}>
-      <i className={styles.cornerTl} aria-hidden="true" />
-      <i className={styles.cornerTr} aria-hidden="true" />
-      <i className={styles.cornerBl} aria-hidden="true" />
-      <i className={styles.cornerBr} aria-hidden="true" />
       {kicker ? <div className={styles.kicker}>{kicker}</div> : null}
       {title ? <h2 className={styles.title}>{title}</h2> : null}
       {meta ? <div className={styles.meta}>{meta}</div> : null}

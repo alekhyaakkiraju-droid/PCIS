@@ -4,7 +4,14 @@ import styles from './Badge.module.css'
 export type ClaimStatus = 'Open' | 'Approved' | 'Denied' | 'Settled' | 'Closed'
 export type PolicyStatus = 'Active' | 'Renewal' | 'Cancelled' | 'Expired'
 export type BillingStatus = 'Open' | 'Paid' | 'Overdue' | 'Cancelled'
-export type BadgeStatus = ClaimStatus | PolicyStatus | BillingStatus | 'Neutral'
+export type BadgeStatus =
+  | ClaimStatus
+  | PolicyStatus
+  | BillingStatus
+  | 'Neutral'
+  | 'Pending'
+  | 'Inactive'
+  | 'Review'
 
 const statusClass: Record<string, string | undefined> = {
   Open: styles.open,
@@ -19,6 +26,9 @@ const statusClass: Record<string, string | undefined> = {
   Paid: styles.paid,
   Overdue: styles.overdue,
   Neutral: styles.neutral,
+  Pending: styles.pending,
+  Inactive: styles.closed,
+  Review: styles.renewal,
 }
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
