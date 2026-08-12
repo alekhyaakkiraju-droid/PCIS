@@ -74,15 +74,6 @@ export interface ListClaimsParams {
   view?: 'open' | 'pending' | 'closed' | 'escalated'
 }
 
-export type PolicySnapshot = {
-  policyNumber: string
-  customerId: number
-  policyType: string
-  status: string
-  effectiveDate: string
-  expirationDate: string
-}
-
 function claimPath(claimNbr: string): string {
   return encodeURIComponent(normalizeClaimNbr(claimNbr))
 }
@@ -112,10 +103,6 @@ export const claimsApi = {
     return apiClient.put<ClaimDetail>(`/v1/claims/${claimPath(claimNbr)}`, data, {
       headers,
     })
-  },
-
-  async lookupPolicy(polNbr: string): Promise<PolicySnapshot> {
-    return apiClient.get<PolicySnapshot>(`/v1/policies/${encodeURIComponent(polNbr)}`)
   },
 
   async listReserves(claimNbr: string): Promise<ClaimReserve[]> {
