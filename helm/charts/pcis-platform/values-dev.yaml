@@ -6,6 +6,9 @@ kafka:
   enabled: true
 
 keycloak:
+  hostname: pcis-dev.agent.opsera.dev
+  hostnameUrl: https://pcis-dev.agent.opsera.dev
+  proxyHeaders: xforwarded
   resources:
     requests:
       cpu: 200m

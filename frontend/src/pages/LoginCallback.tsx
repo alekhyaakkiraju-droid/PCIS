@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
+import { UserManager } from 'oidc-client-ts'
+import { isBearerAuthMode } from '../auth/auth-mode'
 import { consumeReturnUrl, useAuth } from '../auth/AuthContext'
+import { createOidcSettings } from '../auth/oidc-config'
 import { establishSession } from '../auth/session-api'
 
 export function LoginCallback() {
@@ -15,11 +18,16 @@ export function LoginCallback() {
         const code = searchParams.get('code')
         const state = searchParams.get('state')
 
-        if (!code) {
-          throw new Error('Missing authorization code')
+        if (isBearerAuthMode()) {
+          const manager = new UserManager(createOidcSettings())
+          await manager.signinRedirectCallback()
+        } else {
+          if (!code) {
+            throw new Error('Missing authorization code')
+          }
+          await establishSession(code, state ?? '')
         }
 
-        await establishSession(code, state ?? '')
         await refreshSession()
 
         const returnUrl = state && state.startsWith('/') ? state : consumeReturnUrl()

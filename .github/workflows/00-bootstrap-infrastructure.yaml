@@ -82,6 +82,7 @@ jobs:
         run: |
           REPOS=(
             "opsera/pcis-api-gateway"
+            "opsera/pcis-frontend"
             "opsera/pcis-authz-svc"
             "opsera/pcis-config-svc"
             "opsera/pcis-customer-svc"

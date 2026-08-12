@@ -25,7 +25,7 @@ env:
   SPRING_DATASOURCE_USERNAME: pcis
   SPRING_DATASOURCE_PASSWORD: pcis
   DATABASE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_config
-  OIDC_ISSUER_URI: http://keycloak.pcis-dev.svc.cluster.local/realms/pcis
+  OIDC_ISSUER_URI: https://pcis-dev.agent.opsera.dev/realms/pcis
 image:
   repository: 792373136340.dkr.ecr.us-west-2.amazonaws.com/opsera/pcis-config-svc
   tag: dev-0d175ae-20260812173907-amd64

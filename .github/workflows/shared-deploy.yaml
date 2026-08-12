@@ -36,6 +36,11 @@ on:
         description: "Dockerfile path relative to repo root"
         required: true
         type: string
+      docker_build_args:
+        description: "Optional docker build-arg lines (KEY=value per line)"
+        required: false
+        type: string
+        default: ""
       ingress_host:
         description: "Optional public ingress host for api-gateway"
         required: false
@@ -117,7 +122,15 @@ jobs:
 
       - name: Build Docker Image
         run: |
+          BUILD_ARGS=""
+          if [ -n "${{ inputs.docker_build_args }}" ]; then
+            while IFS= read -r line; do
+              [ -z "$line" ] && continue
+              BUILD_ARGS="${BUILD_ARGS} --build-arg ${line}"
+            done <<< "${{ inputs.docker_build_args }}"
+          fi
           docker build --platform linux/amd64 \
+            ${BUILD_ARGS} \
             -f "${{ inputs.dockerfile }}" \
             -t ${{ steps.ecr.outputs.uri }}:${{ steps.tag.outputs.tag }} \
             .

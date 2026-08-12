@@ -1,0 +1,45 @@
+appName: frontend
+fullnameOverride: frontend
+nameOverride: frontend
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/pcis/frontend
+  tag: "1.0.0"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+serviceAccount:
+  create: true
+  automount: false
+  name: ""
+
+ingress:
+  enabled: false
+  className: nginx
+  host: ""
+  path: /
+  pathType: Prefix
+  annotations:
+    kubernetes.io/ingress.class: nginx
+
+proxy:
+  apiGatewayHost: api-gateway.pcis-dev.svc.cluster.local
+  apiGatewayPort: 80
+  configSvcHost: config-svc.pcis-dev.svc.cluster.local
+  configSvcPort: 80
+  keycloakHost: keycloak.pcis-dev.svc.cluster.local
+  keycloakPort: 8080
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 128Mi

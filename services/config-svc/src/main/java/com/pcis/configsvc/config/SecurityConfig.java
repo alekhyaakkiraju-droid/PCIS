@@ -52,6 +52,9 @@ public class SecurityConfig {
 
   static final class ScopeAndRoleConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
 
+    private static final java.util.Set<String> CONFIG_ADMIN_ROLES =
+        java.util.Set.of("ADMIN", "COMPLIANCE", "BATCH_SVC", "CLAIMS_SUPERVISOR");
+
     @Override
     public Collection<GrantedAuthority> convert(Jwt jwt) {
       Object scopeClaim = jwt.getClaim("scope");
@@ -72,11 +75,26 @@ public class SecurityConfig {
         roles = Stream.empty();
       }
 
+      Object realmAccess = jwt.getClaim("realm_access");
+      Stream<String> realmRoles = Stream.empty();
+      if (realmAccess instanceof java.util.Map<?, ?> realmAccessMap) {
+        Object nestedRoles = realmAccessMap.get("roles");
+        if (nestedRoles instanceof Collection<?> realmRoleCollection) {
+          realmRoles = realmRoleCollection.stream().map(Object::toString);
+        }
+      }
+
       List<GrantedAuthority> authorities =
-          Stream.concat(scopes, roles)
+          Stream.concat(Stream.concat(scopes, roles), realmRoles)
               .filter(s -> s != null && !s.isBlank())
               .map(SimpleGrantedAuthority::new)
-              .collect(Collectors.toList());
+              .collect(Collectors.toCollection(java.util.ArrayList::new));
+
+      boolean configAdmin =
+          Stream.concat(roles, realmRoles).anyMatch(CONFIG_ADMIN_ROLES::contains);
+      if (configAdmin) {
+        authorities.add(new SimpleGrantedAuthority("configuration-admin"));
+      }
 
       return authorities.isEmpty() ? Collections.emptyList() : authorities;
     }

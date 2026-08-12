@@ -1,4 +1,6 @@
 import { trace } from '@opentelemetry/api'
+import { isBearerAuthMode } from '../auth/auth-mode'
+import { getAccessToken } from '../auth/token-provider'
 import { ConnectionError } from './types'
 import { withRetry, DEFAULT_RETRY_CONFIG, type RetryConfig } from './retry'
 import { handleErrorResponse } from './error-handler'
@@ -94,29 +96,37 @@ export class ApiClient {
     const correlationId = getCorrelationId()
     const url = `${this.baseUrl}${path}`
 
-    const buildInit = (): RequestInit => {
+    const buildInit = async (): Promise<RequestInit> => {
       const headers = new Headers(options.headers)
       headers.set(CORRELATION_HEADER, correlationId)
       headers.set('Accept', CONTENT_TYPE_JSON)
       if (options.body !== undefined && options.body !== null) {
         headers.set('Content-Type', CONTENT_TYPE_JSON)
       }
+      if (isBearerAuthMode()) {
+        const token = await getAccessToken()
+        if (token) {
+          headers.set('Authorization', `Bearer ${token}`)
+        }
+      }
       return {
         ...options,
         method,
         headers,
-        credentials: 'include',
+        credentials: isBearerAuthMode() ? 'same-origin' : 'include',
         body:
           options.body !== undefined && options.body !== null
             ? JSON.stringify(options.body)
-            : options.body as BodyInit | null | undefined,
+            : (options.body as BodyInit | null | undefined),
       }
     }
 
     const doFetch = (): Promise<Response> =>
-      fetch(url, buildInit()).catch((cause: unknown) => {
-        throw new ConnectionError(cause, correlationId)
-      })
+      buildInit()
+        .then((init) => fetch(url, init))
+        .catch((cause: unknown) => {
+          throw new ConnectionError(cause, correlationId)
+        })
 
     let response = await withRetry(doFetch, method, this.retryConfig)
 
@@ -135,9 +145,11 @@ export class ApiClient {
       try {
         const shouldRetry = await handleErrorResponse(response, refresher)
         if (shouldRetry) {
-          response = await fetch(url, buildInit()).catch((cause: unknown) => {
-            throw new ConnectionError(cause, correlationId)
-          })
+          response = await buildInit()
+            .then((init) => fetch(url, init))
+            .catch((cause: unknown) => {
+              throw new ConnectionError(cause, correlationId)
+            })
           if (!response.ok) {
             await handleErrorResponse(response, null)
           }

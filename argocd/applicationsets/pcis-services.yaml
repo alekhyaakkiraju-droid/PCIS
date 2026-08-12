@@ -23,6 +23,7 @@ spec:
           - list:
               elements:
                 - service: api-gateway
+                - service: frontend
                 - service: authz-svc
                 - service: config-svc
                 - service: audit-svc

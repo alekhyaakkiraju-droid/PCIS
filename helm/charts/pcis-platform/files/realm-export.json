@@ -42,13 +42,13 @@
     "realm": [
       {
         "name": "CLAIMS_ADJUSTER",
-        "description": "Claims adjuster — payment authority bounded by authority_limit claim",
+        "description": "Claims adjuster \u2014 payment authority bounded by authority_limit claim",
         "composite": false,
         "clientRole": false
       },
       {
         "name": "CLAIMS_SUPERVISOR",
-        "description": "Claims supervisor — oversight and elevated claim actions",
+        "description": "Claims supervisor \u2014 oversight and elevated claim actions",
         "composite": false,
         "clientRole": false
       },
@@ -81,25 +81,41 @@
         "description": "Non-human batch / service workload identity",
         "composite": false,
         "clientRole": false
+      },
+      {
+        "name": "ADMIN",
+        "description": "Full-access administrator for dev/demo environments",
+        "composite": false,
+        "clientRole": false
       }
     ]
   },
-  "defaultDefaultClientScopes": [
-    "role_list",
-    "profile",
-    "email",
-    "roles",
-    "web-origins",
-    "acr",
-    "authority_limit"
-  ],
-  "defaultOptionalClientScopes": [
-    "offline_access",
-    "address",
-    "phone",
-    "microprofile-jwt"
-  ],
   "clientScopes": [
+    {
+      "name": "configuration-admin",
+      "description": "Grants configuration-admin scope for config-svc admin APIs",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "configuration-admin-scope",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-hardcoded-claim-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "scope",
+            "claim.value": "configuration-admin",
+            "jsonType.label": "String",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "false"
+          }
+        }
+      ]
+    },
     {
       "name": "authority_limit",
       "description": "Maps user attribute authority_limit into access tokens (absent when unset)",
@@ -134,7 +150,7 @@
     {
       "clientId": "pcis-spa",
       "name": "PCIS React SPA",
-      "description": "Public browser client — Authorization Code + PKCE (S256)",
+      "description": "Public browser client \u2014 Authorization Code + PKCE (S256)",
       "enabled": true,
       "publicClient": true,
       "bearerOnly": false,
@@ -144,44 +160,35 @@
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": false,
       "protocol": "openid-connect",
-      "rootUrl": "http://localhost:3000",
+      "rootUrl": "https://pcis-dev.agent.opsera.dev",
       "baseUrl": "/",
       "redirectUris": [
         "http://localhost:3000/*",
+        "https://pcis-dev.agent.opsera.dev/*",
         "https://app.dev.pcis.example.com/*",
         "https://app.tst.pcis.example.com/*",
         "https://app.pcis.example.com/*"
       ],
       "webOrigins": [
         "+",
-        "http://localhost:3000"
+        "http://localhost:3000",
+        "https://pcis-dev.agent.opsera.dev"
       ],
       "attributes": {
         "pkce.code.challenge.method": "S256",
-        "post.logout.redirect.uris": "http://localhost:3000/*##https://app.dev.pcis.example.com/*##https://app.tst.pcis.example.com/*##https://app.pcis.example.com/*",
+        "post.logout.redirect.uris": "http://localhost:3000/*##https://pcis-dev.agent.opsera.dev/*##https://app.dev.pcis.example.com/*##https://app.tst.pcis.example.com/*##https://app.pcis.example.com/*",
         "oauth2.device.authorization.grant.enabled": "false",
         "oidc.ciba.grant.enabled": "false",
         "backchannel.logout.session.required": "true",
         "client_credentials.use_refresh_token": "false",
         "access.token.lifespan": "900"
       },
-      "fullScopeAllowed": true,
-      "defaultClientScopes": [
-        "web-origins",
-        "acr",
-        "profile",
-        "roles",
-        "email",
-        "authority_limit"
-      ],
-      "optionalClientScopes": [
-        "offline_access"
-      ]
+      "fullScopeAllowed": true
     },
     {
       "clientId": "pcis-gateway",
       "name": "PCIS API Gateway",
-      "description": "Confidential gateway client — auth code + token introspection",
+      "description": "Confidential gateway client \u2014 auth code + token introspection",
       "enabled": true,
       "publicClient": false,
       "bearerOnly": false,
@@ -209,18 +216,7 @@
         "oauth2.device.authorization.grant.enabled": "false",
         "backchannel.logout.session.required": "true"
       },
-      "fullScopeAllowed": true,
-      "defaultClientScopes": [
-        "web-origins",
-        "acr",
-        "profile",
-        "roles",
-        "email",
-        "authority_limit"
-      ],
-      "optionalClientScopes": [
-        "offline_access"
-      ]
+      "fullScopeAllowed": true
     },
     {
       "clientId": "pcis-batch",
@@ -241,15 +237,7 @@
         "client_credentials.use_refresh_token": "false",
         "oauth2.device.authorization.grant.enabled": "false"
       },
-      "fullScopeAllowed": true,
-      "defaultClientScopes": [
-        "web-origins",
-        "acr",
-        "roles",
-        "profile",
-        "email"
-      ],
-      "optionalClientScopes": []
+      "fullScopeAllowed": true
     },
     {
       "clientId": "batch-audit",
@@ -270,9 +258,7 @@
         "client_credentials.use_refresh_token": "false",
         "oauth2.device.authorization.grant.enabled": "false"
       },
-      "fullScopeAllowed": true,
-      "defaultClientScopes": ["web-origins", "acr", "roles", "profile", "email"],
-      "optionalClientScopes": []
+      "fullScopeAllowed": true
     },
     {
       "clientId": "batch-billing",
@@ -293,9 +279,7 @@
         "client_credentials.use_refresh_token": "false",
         "oauth2.device.authorization.grant.enabled": "false"
       },
-      "fullScopeAllowed": true,
-      "defaultClientScopes": ["web-origins", "acr", "roles", "profile", "email"],
-      "optionalClientScopes": []
+      "fullScopeAllowed": true
     },
     {
       "clientId": "batch-claims",
@@ -316,9 +300,7 @@
         "client_credentials.use_refresh_token": "false",
         "oauth2.device.authorization.grant.enabled": "false"
       },
-      "fullScopeAllowed": true,
-      "defaultClientScopes": ["web-origins", "acr", "roles", "profile", "email"],
-      "optionalClientScopes": []
+      "fullScopeAllowed": true
     },
     {
       "clientId": "batch-commission",
@@ -339,9 +321,7 @@
         "client_credentials.use_refresh_token": "false",
         "oauth2.device.authorization.grant.enabled": "false"
       },
-      "fullScopeAllowed": true,
-      "defaultClientScopes": ["web-origins", "acr", "roles", "profile", "email"],
-      "optionalClientScopes": []
+      "fullScopeAllowed": true
     },
     {
       "clientId": "batch-premium",
@@ -362,9 +342,7 @@
         "client_credentials.use_refresh_token": "false",
         "oauth2.device.authorization.grant.enabled": "false"
       },
-      "fullScopeAllowed": true,
-      "defaultClientScopes": ["web-origins", "acr", "roles", "profile", "email"],
-      "optionalClientScopes": []
+      "fullScopeAllowed": true
     },
     {
       "clientId": "batch-renewal",
@@ -385,9 +363,7 @@
         "client_credentials.use_refresh_token": "false",
         "oauth2.device.authorization.grant.enabled": "false"
       },
-      "fullScopeAllowed": true,
-      "defaultClientScopes": ["web-origins", "acr", "roles", "profile", "email"],
-      "optionalClientScopes": []
+      "fullScopeAllowed": true
     }
   ],
   "users": [
@@ -399,10 +375,16 @@
       "lastName": "Adjuster",
       "email": "alice.adjuster@pcis.example.com",
       "attributes": {
-        "persona": ["Claims Adjuster"],
-        "authority_limit": ["25000"]
+        "persona": [
+          "Claims Adjuster"
+        ],
+        "authority_limit": [
+          "25000"
+        ]
       },
-      "realmRoles": ["CLAIMS_ADJUSTER"],
+      "realmRoles": [
+        "CLAIMS_ADJUSTER"
+      ],
       "credentials": [
         {
           "type": "password",
@@ -419,9 +401,13 @@
       "lastName": "Supervisor",
       "email": "bob.supervisor@pcis.example.com",
       "attributes": {
-        "persona": ["Claims Supervisor"]
+        "persona": [
+          "Claims Supervisor"
+        ]
       },
-      "realmRoles": ["CLAIMS_SUPERVISOR"],
+      "realmRoles": [
+        "CLAIMS_SUPERVISOR"
+      ],
       "credentials": [
         {
           "type": "password",
@@ -438,9 +424,13 @@
       "lastName": "Rep",
       "email": "carol.csr@pcis.example.com",
       "attributes": {
-        "persona": ["CSR"]
+        "persona": [
+          "CSR"
+        ]
       },
-      "realmRoles": ["CSR"],
+      "realmRoles": [
+        "CSR"
+      ],
       "credentials": [
         {
           "type": "password",
@@ -457,9 +447,13 @@
       "lastName": "Underwriter",
       "email": "dave.underwriter@pcis.example.com",
       "attributes": {
-        "persona": ["Underwriter"]
+        "persona": [
+          "Underwriter"
+        ]
       },
-      "realmRoles": ["UNDERWRITER"],
+      "realmRoles": [
+        "UNDERWRITER"
+      ],
       "credentials": [
         {
           "type": "password",
@@ -476,9 +470,13 @@
       "lastName": "Billing",
       "email": "erin.billing@pcis.example.com",
       "attributes": {
-        "persona": ["Billing Clerk"]
+        "persona": [
+          "Billing Clerk"
+        ]
       },
-      "realmRoles": ["FINANCE"],
+      "realmRoles": [
+        "FINANCE"
+      ],
       "credentials": [
         {
           "type": "password",
@@ -495,9 +493,14 @@
       "lastName": "BatchOps",
       "email": "frank.batchops@pcis.example.com",
       "attributes": {
-        "persona": ["Batch Operations Operator"]
+        "persona": [
+          "Batch Operations Operator"
+        ]
       },
-      "realmRoles": ["BATCH_SVC"],
+      "realmRoles": [
+        "BATCH_SVC",
+        "ADMIN"
+      ],
       "credentials": [
         {
           "type": "password",
@@ -514,9 +517,13 @@
       "lastName": "Compliance",
       "email": "grace.compliance@pcis.example.com",
       "attributes": {
-        "persona": ["Compliance Officer"]
+        "persona": [
+          "Compliance Officer"
+        ]
       },
-      "realmRoles": ["COMPLIANCE"],
+      "realmRoles": [
+        "COMPLIANCE"
+      ],
       "credentials": [
         {
           "type": "password",
@@ -533,9 +540,13 @@
       "lastName": "Admin",
       "email": "helen.itadmin@pcis.example.com",
       "attributes": {
-        "persona": ["IT Admin"]
+        "persona": [
+          "IT Admin"
+        ]
       },
-      "realmRoles": ["COMPLIANCE"],
+      "realmRoles": [
+        "COMPLIANCE"
+      ],
       "credentials": [
         {
           "type": "password",
@@ -552,9 +563,13 @@
       "lastName": "Analyst",
       "email": "ivan.analyst@pcis.example.com",
       "attributes": {
-        "persona": ["Reporting Analyst"]
+        "persona": [
+          "Reporting Analyst"
+        ]
       },
-      "realmRoles": ["FINANCE"],
+      "realmRoles": [
+        "FINANCE"
+      ],
       "credentials": [
         {
           "type": "password",
@@ -567,43 +582,57 @@
       "username": "service-account-pcis-batch",
       "enabled": true,
       "serviceAccountClientId": "pcis-batch",
-      "realmRoles": ["BATCH_SVC"]
+      "realmRoles": [
+        "BATCH_SVC"
+      ]
     },
     {
       "username": "service-account-batch-audit",
       "enabled": true,
       "serviceAccountClientId": "batch-audit",
-      "realmRoles": ["BATCH_SVC"]
+      "realmRoles": [
+        "BATCH_SVC"
+      ]
     },
     {
       "username": "service-account-batch-billing",
       "enabled": true,
       "serviceAccountClientId": "batch-billing",
-      "realmRoles": ["BATCH_SVC"]
+      "realmRoles": [
+        "BATCH_SVC"
+      ]
     },
     {
       "username": "service-account-batch-claims",
       "enabled": true,
       "serviceAccountClientId": "batch-claims",
-      "realmRoles": ["BATCH_SVC"]
+      "realmRoles": [
+        "BATCH_SVC"
+      ]
     },
     {
       "username": "service-account-batch-commission",
       "enabled": true,
       "serviceAccountClientId": "batch-commission",
-      "realmRoles": ["BATCH_SVC"]
+      "realmRoles": [
+        "BATCH_SVC"
+      ]
     },
     {
       "username": "service-account-batch-premium",
       "enabled": true,
       "serviceAccountClientId": "batch-premium",
-      "realmRoles": ["BATCH_SVC"]
+      "realmRoles": [
+        "BATCH_SVC"
+      ]
     },
     {
       "username": "service-account-batch-renewal",
       "enabled": true,
       "serviceAccountClientId": "batch-renewal",
-      "realmRoles": ["BATCH_SVC"]
+      "realmRoles": [
+        "BATCH_SVC"
+      ]
     },
     {
       "username": "multi.role",
@@ -613,10 +642,17 @@
       "lastName": "Role",
       "email": "multi.role@pcis.example.com",
       "attributes": {
-        "persona": ["Edge-case multi-role"],
-        "authority_limit": ["10000"]
+        "persona": [
+          "Edge-case multi-role"
+        ],
+        "authority_limit": [
+          "10000"
+        ]
       },
-      "realmRoles": ["CLAIMS_ADJUSTER", "CSR"],
+      "realmRoles": [
+        "CLAIMS_ADJUSTER",
+        "CSR"
+      ],
       "credentials": [
         {
           "type": "password",

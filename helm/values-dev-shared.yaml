@@ -33,7 +33,7 @@ probes:
     periodSeconds: 15
 env:
   SPRING_PROFILES_ACTIVE: dev
-  OIDC_ISSUER_URI: http://keycloak.pcis-dev.svc.cluster.local/realms/pcis
+  OIDC_ISSUER_URI: https://pcis-dev.agent.opsera.dev/realms/pcis
   KAFKA_BOOTSTRAP_SERVERS: kafka.pcis-dev.svc.cluster.local:9092
   OTEL_SDK_DISABLED: "true"
   SPRING_AUTOCONFIGURE_EXCLUDE: io.opentelemetry.instrumentation.spring.autoconfigure.OpenTelemetryAutoConfiguration

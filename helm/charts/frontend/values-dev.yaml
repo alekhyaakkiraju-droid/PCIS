@@ -1,0 +1,21 @@
+replicaCount: 1
+
+ingress:
+  enabled: true
+  host: pcis-dev.agent.opsera.dev
+
+image:
+  repository: 792373136340.dkr.ecr.us-west-2.amazonaws.com/opsera/pcis-frontend
+  tag: dev-local-20260812132544-amd64
+  pullPolicy: Always
+
+imagePullSecrets:
+  - name: ecr-registry-secret
+
+proxy:
+  apiGatewayHost: api-gateway.pcis-dev.svc.cluster.local
+  apiGatewayPort: 80
+  configSvcHost: config-svc.pcis-dev.svc.cluster.local
+  configSvcPort: 80
+  keycloakHost: keycloak.pcis-dev.svc.cluster.local
+  keycloakPort: 8080

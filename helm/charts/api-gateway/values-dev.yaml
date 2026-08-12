@@ -21,7 +21,7 @@ resources:
     memory: 1Gi
 env:
   SPRING_PROFILES_ACTIVE: dev
-  KEYCLOAK_ISSUER_URI: http://keycloak.pcis-dev.svc.cluster.local/realms/pcis
+  KEYCLOAK_ISSUER_URI: https://pcis-dev.agent.opsera.dev/realms/pcis
   KEYCLOAK_JWK_SET_URI: http://keycloak.pcis-dev.svc.cluster.local/realms/pcis/protocol/openid-connect/certs
   PCIS_REDIS_HOST: redis.pcis-dev.svc.cluster.local
   PCIS_REDIS_PORT: '6379'

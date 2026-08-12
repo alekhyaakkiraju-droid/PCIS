@@ -182,6 +182,18 @@ spec:
               value: "false"
             - name: KC_HOSTNAME_STRICT_HTTPS
               value: "false"
+            {{- if .Values.keycloak.hostname }}
+            - name: KC_HOSTNAME
+              value: {{ .Values.keycloak.hostname | quote }}
+            {{- end }}
+            {{- if .Values.keycloak.hostnameUrl }}
+            - name: KC_HOSTNAME_URL
+              value: {{ .Values.keycloak.hostnameUrl | quote }}
+            {{- end }}
+            {{- if .Values.keycloak.proxyHeaders }}
+            - name: KC_PROXY_HEADERS
+              value: {{ .Values.keycloak.proxyHeaders | quote }}
+            {{- end }}
           volumeMounts:
             {{- if .Values.keycloak.realmImport.enabled }}
             - name: realm-import

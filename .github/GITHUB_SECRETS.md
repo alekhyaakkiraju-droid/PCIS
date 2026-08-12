@@ -20,7 +20,9 @@ Configure these secrets in **Settings → Secrets and variables → Actions** fo
 | Hub cluster | `argocd-usw2` |
 | Spoke cluster | `opsera-usw2-np` |
 | Namespace | `pcis-dev` |
-| ArgoCD server | `argocd-usw2.agent.opsera.dev` |
+| ArgoCD server | `argocd-usw2.agent.opsera.dev` (use port-forward: `https://127.0.0.1:8080`) |
+| **Application URL (UI)** | **`https://pcis-dev.agent.opsera.dev`** |
+| API gateway (direct) | `https://pcis-api-gateway-dev.agent.opsera.dev` |
 
 ## Deployment Order
 

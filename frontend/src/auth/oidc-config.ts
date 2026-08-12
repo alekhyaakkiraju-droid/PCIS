@@ -1,4 +1,5 @@
 import { WebStorageStateStore, type UserManagerSettings } from 'oidc-client-ts'
+import { isBearerAuthMode } from './auth-mode'
 
 const defaultRedirectUri = () =>
   typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : ''
@@ -27,6 +28,8 @@ export function readOidcEnv() {
 export function createOidcSettings(overrides?: Partial<UserManagerSettings>): UserManagerSettings {
   const env = readOidcEnv()
 
+  const bearerMode = isBearerAuthMode()
+
   return {
     authority: env.authority,
     client_id: env.clientId,
@@ -34,10 +37,14 @@ export function createOidcSettings(overrides?: Partial<UserManagerSettings>): Us
     post_logout_redirect_uri: env.postLogoutRedirectUri,
     response_type: 'code',
     scope: env.scope,
-    automaticSilentRenew: false,
-    loadUserInfo: false,
+    automaticSilentRenew: bearerMode,
+    loadUserInfo: bearerMode,
     monitorSession: false,
     stateStore:
+      typeof window !== 'undefined'
+        ? new WebStorageStateStore({ store: window.sessionStorage })
+        : undefined,
+    userStore:
       typeof window !== 'undefined'
         ? new WebStorageStateStore({ store: window.sessionStorage })
         : undefined,

@@ -58,6 +58,10 @@ spring:
               uri: lb://audit-svc
               predicates:
                 - Path=/api/v1/audit/**
+            - id: config-svc
+              uri: lb://config-svc
+              predicates:
+                - Path=/api/v1/admin/**
 
 management:
   endpoints:

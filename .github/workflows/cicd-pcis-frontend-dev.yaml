@@ -1,0 +1,38 @@
+name: "CI/CD - pcis frontend (dev)"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - frontend/**
+      - helm/charts/frontend/**
+      - .github/workflows/cicd-pcis-frontend-dev.yaml
+      - .github/workflows/shared-deploy.yaml
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Reason for manual trigger"
+        required: false
+        default: "manual deploy"
+
+permissions:
+  contents: write
+  security-events: write
+  id-token: write
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/shared-deploy.yaml
+    secrets: inherit
+    with:
+      service: "frontend"
+      port: "8080"
+      ecr_repo: "opsera/pcis-frontend"
+      dockerfile: "frontend/Dockerfile"
+      ingress_host: "pcis-dev.agent.opsera.dev"
+      docker_build_args: |
+        VITE_OIDC_AUTHORITY=https://pcis-dev.agent.opsera.dev/realms/pcis
+        VITE_OIDC_CLIENT_ID=pcis-spa
+        VITE_OIDC_SCOPE=openid profile email roles
+        VITE_API_BASE_URL=/api
+        VITE_AUTH_MODE=bearer
