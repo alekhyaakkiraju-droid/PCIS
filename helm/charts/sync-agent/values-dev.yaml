@@ -20,9 +20,8 @@ env:
   DATABASE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_sync
   DATABASE_USERNAME: pcis
   DATABASE_PASSWORD: pcis
-  # Disable IBM i polling until SYNC_SOURCE_* credentials are provisioned
-  PCIS_SYNC_ENABLED: "false"
+  PCIS_SYNC_ENABLED: 'false'
 image:
   repository: 792373136340.dkr.ecr.us-west-2.amazonaws.com/opsera/pcis-sync-agent
-  tag: dev-759ed6a-20260812163940-amd64
+  tag: dev-0d175ae-20260812173903-amd64
   pullPolicy: Always
