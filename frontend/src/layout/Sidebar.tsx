@@ -3,6 +3,7 @@ import { useAuth } from '../auth/AuthContext'
 import { useCapabilities } from '../auth/useCapabilities'
 import { allNavSections } from './nav-config'
 import { formatRoleList } from '../demo/demo-role'
+import { useNavBadges } from './useNavBadges'
 
 function NavIcon({ name }: { name: string }) {
   const props = { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5 }
@@ -115,23 +116,13 @@ export function Sidebar() {
   const { user, status, login, logout } = useAuth()
   const { canAccessNavItem } = useCapabilities()
   const sections = user && status === 'authenticated' ? allNavSections() : []
+  const liveBadges = useNavBadges()
 
   return (
     <aside className="app-sidebar" aria-label="Module navigation">
       <div className="app-sidebar__brand">
-        <strong>
-          PCIS <span className="app-sidebar__brand-version">v2</span>
-        </strong>
-        <span className="app-sidebar__tagline">Modernization Platform</span>
+        <strong>PCIS</strong>
       </div>
-      {status === 'authenticated' ? (
-        <input
-          className="app-sidebar__search"
-          type="search"
-          placeholder="Search customer, policy, claim…"
-          aria-label="Search customer, policy, claim"
-        />
-      ) : null}
       <nav aria-label="Primary">
         {sections.map((section) => (
           <div key={section.title ?? 'root'} className="app-sidebar__section">
@@ -142,6 +133,7 @@ export function Sidebar() {
                 link.roles.length > 0
                   ? `Requires ${formatRoleList(link.roles)} role`
                   : undefined
+              const badge = liveBadges[link.to] ?? link.badge
 
               if (!allowed) {
                 return (
@@ -154,7 +146,7 @@ export function Sidebar() {
                     role="link"
                   >
                     <NavIcon name={ICON_BY_PATH[link.to] ?? 'dashboard'} />
-                    <NavItemLabel label={link.label} badge={link.badge} />
+                    <NavItemLabel label={link.label} badge={badge} />
                   </span>
                 )
               }
@@ -169,7 +161,7 @@ export function Sidebar() {
                   title={deniedTitle}
                 >
                   <NavIcon name={ICON_BY_PATH[link.to] ?? 'dashboard'} />
-                  <NavItemLabel label={link.label} badge={link.badge} />
+                  <NavItemLabel label={link.label} badge={badge} />
                 </NavLink>
               )
             })}

@@ -158,6 +158,7 @@ export function ClaimInquiryPage() {
         <DataTable
           aria-label="Claim inquiry results"
           rows={rows}
+          highlightRowId={highlightClaim ?? undefined}
           columns={[
             { id: 'id', label: 'Claim', accessor: (r) => r.id, render: (r) => <span className="mono">{r.id}</span> },
             { id: 'name', label: 'Insured', accessor: (r) => r.name },

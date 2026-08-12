@@ -138,6 +138,25 @@
   font-weight: var(--pcis-font-weight-semibold);
 }
 
+.wf-footer-links {
+  display: flex;
+  align-items: center;
+  gap: var(--pcis-space-4);
+  margin-top: var(--pcis-space-6);
+  padding-top: var(--pcis-space-4);
+  border-top: 1px solid var(--pcis-color-border);
+  font-size: var(--pcis-font-size-sm);
+}
+
+.wf-footer-links a {
+  color: var(--pcis-token-primary);
+  text-decoration: underline;
+}
+
+.wf-footer-links a:hover {
+  color: var(--pcis-token-primary-hover);
+}
+
 .wf-sticky-footer {
   position: sticky;
   bottom: 0;

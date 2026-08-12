@@ -100,6 +100,18 @@ export function FnolWizardPage() {
     return Object.keys(next).length === 0
   }
 
+  const stepValidators = [validatePolicyStep, validateLossStep, () => !reserveInvalid, () => true]
+
+  const goToStep = (index: number) => {
+    if (index > activeStep && !stepValidators.slice(activeStep, index).every((validate) => validate())) {
+      return
+    }
+    setActiveStep(index)
+  }
+
+  const handleContinue = () => goToStep(activeStep + 1)
+  const handleBack = () => goToStep(activeStep - 1)
+
   const handleSubmit = async () => {
     if (!validatePolicyStep() || !validateLossStep()) return
     setSubmitting(true)
@@ -139,7 +151,7 @@ export function FnolWizardPage() {
 
   return (
     <section aria-labelledby="fnol-heading">
-      <h1 id="fnol-heading">Register claim — first notice of loss (FNOL)</h1>
+      <h1 id="fnol-heading">FNOL Intake — Register Claim</h1>
       <p className="wf-page-lede">Policy validation, reserve setup, and indexed documents commit atomically on register.</p>
 
       <div className="page-grid-split" style={{ maxWidth: 1220 }}>
@@ -151,7 +163,7 @@ export function FnolWizardPage() {
                 <button
                   type="button"
                   className={`wf-stepper__pill${index === activeStep ? ' wf-stepper__pill--active' : ''}`}
-                  onClick={() => setActiveStep(index)}
+                  onClick={() => goToStep(index)}
                 >
                   {index + 1} {label}
                 </button>
@@ -159,6 +171,7 @@ export function FnolWizardPage() {
             ))}
           </div>
 
+          {activeStep === 0 ? (
           <BlueprintCard kicker="Policy lookup" style={{ marginBottom: 'var(--pcis-space-4)' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--pcis-space-4)' }}>
               <Input
@@ -197,7 +210,9 @@ export function FnolWizardPage() {
               </p>
             ) : null}
           </BlueprintCard>
+          ) : null}
 
+          {activeStep === 1 ? (
           <BlueprintCard kicker="Loss details" style={{ marginBottom: 'var(--pcis-space-4)' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--pcis-space-4)' }}>
               <Input
@@ -227,7 +242,9 @@ export function FnolWizardPage() {
               rows={3}
             />
           </BlueprintCard>
+          ) : null}
 
+          {activeStep === 2 ? (
           <BlueprintCard kicker="Initial reserve" style={{ marginBottom: 'var(--pcis-space-4)' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--pcis-space-4)' }}>
               <Input
@@ -248,7 +265,9 @@ export function FnolWizardPage() {
               </div>
             </div>
           </BlueprintCard>
+          ) : null}
 
+          {activeStep === 3 ? (
           <BlueprintCard kicker="Documents & photos" dashed style={{ marginBottom: 'var(--pcis-space-6)' }}>
             <div className="drop-zone">Drop files or click to attach (PDF, JPG, PNG)</div>
             <ul className="wf-file-list">
@@ -260,6 +279,7 @@ export function FnolWizardPage() {
               ))}
             </ul>
           </BlueprintCard>
+          ) : null}
 
           {successClaimId ? (
             <Alert variant="success" title="Claim registered">
@@ -281,10 +301,23 @@ export function FnolWizardPage() {
           ) : null}
 
           <div className="page-actions">
-            <Button variant="secondary">Save draft</Button>
-            <Button variant="primary" onClick={handleSubmit} loading={submitting} disabled={Boolean(successClaimId) || reserveInvalid}>
-              Register claim
-            </Button>
+            {activeStep > 0 ? (
+              <Button variant="secondary" onClick={handleBack}>
+                Back
+              </Button>
+            ) : null}
+            {activeStep < STEPS.length - 1 ? (
+              <Button variant="primary" onClick={handleContinue}>
+                Continue →
+              </Button>
+            ) : (
+              <>
+                <Button variant="secondary">Save draft</Button>
+                <Button variant="primary" onClick={handleSubmit} loading={submitting} disabled={Boolean(successClaimId) || reserveInvalid}>
+                  Register claim
+                </Button>
+              </>
+            )}
           </div>
         </div>
 

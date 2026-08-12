@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Button } from './Button'
 import styles from './DataTable.module.css'
 
@@ -17,6 +17,7 @@ export interface DataTableProps<T> {
   pageSize?: number
   emptyMessage?: string
   selectable?: boolean
+  highlightRowId?: string
   'aria-label'?: string
 }
 
@@ -29,6 +30,7 @@ export function DataTable<T>({
   pageSize = 5,
   emptyMessage = 'No records found.',
   selectable = false,
+  highlightRowId,
   'aria-label': ariaLabel = 'Data table',
 }: DataTableProps<T>) {
   const [sortId, setSortId] = useState<string | null>(null)
@@ -61,6 +63,12 @@ export function DataTable<T>({
   const pageCount = Math.max(1, Math.ceil(sorted.length / pageSize))
   const safePage = Math.min(page, pageCount - 1)
   const pageRows = sorted.slice(safePage * pageSize, safePage * pageSize + pageSize)
+
+  useEffect(() => {
+    if (!highlightRowId) return
+    const idx = sorted.findIndex((row) => getRowId(row) === highlightRowId)
+    if (idx >= 0) setPage(Math.floor(idx / pageSize))
+  }, [highlightRowId, sorted, pageSize, getRowId])
 
   const toggleSort = (columnId: string) => {
     if (sortId === columnId) {
@@ -119,7 +127,7 @@ export function DataTable<T>({
           {pageRows.map((row) => {
             const id = getRowId(row)
             return (
-              <tr key={id} className={selected.has(id) ? styles.selectedRow : undefined}>
+              <tr key={id} className={selected.has(id) || id === highlightRowId ? styles.selectedRow : undefined}>
                 {selectable ? (
                   <td className={styles.td}>
                     <input

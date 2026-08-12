@@ -19,10 +19,7 @@ export type NavSection = {
 export const NAV_SECTIONS: NavSection[] = [
   {
     title: 'Platform',
-    items: [
-      { to: '/', label: 'Dashboard', menuOption: 'HOME', roles: [] },
-      { to: '/design-system', label: 'Design System', menuOption: 'DS', roles: [] },
-    ],
+    items: [{ to: '/', label: 'Dashboard', menuOption: 'HOME', roles: [] }],
   },
   {
     title: 'Operations',
@@ -35,14 +32,14 @@ export const NAV_SECTIONS: NavSection[] = [
       },
       {
         to: '/claims',
-        label: 'Claim Inquiry',
+        label: 'Claims',
         menuOption: 'CLMINQ',
         badge: '34',
         roles: ['CLAIMS_ADJUSTER', 'CLAIMS_SUPERVISOR'],
       },
       {
         to: '/claims/payments',
-        label: 'Payment & Authority',
+        label: 'Payments',
         menuOption: 'CLMPAY',
         roles: ['CLAIMS_ADJUSTER', 'CLAIMS_SUPERVISOR'],
       },
@@ -54,14 +51,14 @@ export const NAV_SECTIONS: NavSection[] = [
       },
       {
         to: '/policies',
-        label: 'Policy Issuance',
+        label: 'Policies',
         menuOption: 'POL',
         badge: '7',
         roles: ['UNDERWRITER', 'CLAIMS_SUPERVISOR'],
       },
       {
         to: '/billing',
-        label: 'Billing Reconciliation',
+        label: 'Billing',
         menuOption: 'BIL',
         badge: '12',
         roles: ['COMPLIANCE', 'CLAIMS_SUPERVISOR', 'FINANCE'],

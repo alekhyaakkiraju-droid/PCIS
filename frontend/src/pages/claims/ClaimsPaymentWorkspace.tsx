@@ -623,9 +623,8 @@ export function ClaimsPaymentWorkspace() {
         {authorityPanel}
       </div>
 
-      <p style={{ marginTop: 'var(--pcis-space-4)' }}>
+      <p className="wf-footer-links">
         <Link to="/claims/fnol">Start FNOL →</Link>
-        {' · '}
         <Link to="/claims">Claim Inquiry →</Link>
       </p>
     </section>

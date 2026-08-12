@@ -56,27 +56,6 @@ body {
   color: var(--pcis-color-nav-text);
 }
 
-.app-sidebar__brand-version {
-  color: var(--pcis-token-primary);
-  font-weight: var(--pcis-font-weight-bold);
-}
-
-.app-sidebar__search {
-  width: calc(100% - var(--pcis-space-4));
-  margin: 0 var(--pcis-space-2) var(--pcis-space-3);
-  padding: var(--pcis-space-2) var(--pcis-space-3);
-  border: 1px solid color-mix(in srgb, var(--pcis-color-nav-text) 18%, transparent);
-  border-radius: var(--pcis-radius-md);
-  background: color-mix(in srgb, var(--pcis-color-nav-text) 6%, transparent);
-  color: var(--pcis-color-nav-text);
-  font: inherit;
-  font-size: var(--pcis-font-size-sm);
-}
-
-.app-sidebar__search::placeholder {
-  color: var(--pcis-color-nav-text-muted);
-}
-
 .app-sidebar__link-badge {
   margin-left: auto;
   min-width: 18px;
@@ -90,15 +69,6 @@ body {
   font-family: var(--pcis-font-mono);
   color: var(--pcis-color-nav-text-muted);
   background: color-mix(in srgb, var(--pcis-color-nav-text) 12%, transparent);
-}
-
-.app-sidebar__tagline {
-  display: block;
-  font-size: 11px;
-  color: var(--pcis-color-nav-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-top: 2px;
 }
 
 .app-sidebar nav {
