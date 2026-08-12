@@ -25,8 +25,8 @@ env:
   DATABASE_USERNAME: pcis
   DATABASE_PASSWORD: pcis
   SPRING_AUTOCONFIGURE_EXCLUDE: io.opentelemetry.instrumentation.spring.autoconfigure.OpenTelemetryAutoConfiguration,com.pcis.masking.PiiMaskingAutoConfiguration
-  SPRING_MAIN_ALLOW_BEAN_DEFINITION_OVERRIDING: "false"
+  SPRING_MAIN_ALLOW_BEAN_DEFINITION_OVERRIDING: 'false'
 image:
   repository: 792373136340.dkr.ecr.us-west-2.amazonaws.com/opsera/pcis-audit-svc
-  tag: dev-759ed6a-20260812163940-amd64
+  tag: dev-0d175ae-20260812173905-amd64
   pullPolicy: Always
