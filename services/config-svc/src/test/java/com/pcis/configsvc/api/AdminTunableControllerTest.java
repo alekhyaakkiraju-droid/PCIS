@@ -44,14 +44,14 @@ class AdminTunableControllerTest {
 
   @Test
   void listRequiresConfigurationAdmin() throws Exception {
-    mockMvc.perform(get("/v1/admin/tunables")).andExpect(status().isUnauthorized());
+    mockMvc.perform(get("/api/v1/admin/tunables")).andExpect(status().isUnauthorized());
   }
 
   @Test
   void listForbiddenWithoutAdminAuthority() throws Exception {
     mockMvc
         .perform(
-            get("/v1/admin/tunables")
+            get("/api/v1/admin/tunables")
                 .with(
                     SecurityMockMvcRequestPostProcessors.jwt()
                         .jwt(TestJwtGenerator.unauthorizedReader("csr-1"))
@@ -80,7 +80,7 @@ class AdminTunableControllerTest {
 
     mockMvc
         .perform(
-            get("/v1/admin/tunables")
+            get("/api/v1/admin/tunables")
                 .with(
                     SecurityMockMvcRequestPostProcessors.jwt()
                         .jwt(TestJwtGenerator.configAdmin("admin-1"))
@@ -119,7 +119,7 @@ class AdminTunableControllerTest {
 
     mockMvc
         .perform(
-            put("/v1/admin/tunables/billing.leadDays")
+            put("/api/v1/admin/tunables/billing.leadDays")
                 .with(
                     SecurityMockMvcRequestPostProcessors.jwt()
                         .jwt(TestJwtGenerator.configAdmin("admin-1"))

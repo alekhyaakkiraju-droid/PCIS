@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type ReactNode } from 'react'
+import { Link } from 'react-router'
 import auditFixture from '../../../fixtures/customer-360/audit.json'
 import billingFixture from '../../../fixtures/customer-360/billing.json'
 import claimsFixture from '../../../fixtures/customer-360/claims.json'
@@ -18,7 +19,7 @@ import type {
 } from '@/api/customer360-types'
 import type { Customer } from '@/api/customer-api'
 import { maskPiiValue } from '@/hooks/useMaskedField'
-import { Badge, BlueprintCard, DataTable, MoneyDisplay, Skeleton, Tabs, UnmaskModal, Avatar, Alert, Button } from '@/components/ui'
+import { Badge, BlueprintCard, DataTable, MoneyDisplay, Skeleton, Tabs, UnmaskModal, Avatar, Alert, Button, Modal, Input } from '@/components/ui'
 import type { TabItem } from '@/components/ui'
 
 type TabPanelProps = {
@@ -498,6 +499,18 @@ export function Customer360Page({ customerId }: Customer360PageProps) {
     .slice(0, 2)
     .toUpperCase()
 
+  const queryClient = useQueryClient()
+  const [editOpen, setEditOpen] = useState(false)
+  const [editName, setEditName] = useState('')
+
+  const updateMutation = useMutation({
+    mutationFn: () => customerApi.update(customerId, { custName: editName }),
+    onSuccess: () => {
+      setEditOpen(false)
+      queryClient.invalidateQueries({ queryKey: ['customer360', customerId] })
+    },
+  })
+
   return (
     <section aria-labelledby="customer-360-heading">
       <UnmaskModal
@@ -524,10 +537,37 @@ export function Customer360Page({ customerId }: Customer360PageProps) {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 'var(--pcis-space-2)' }}>
-          <Button variant="ghost">New quote</Button>
-          <Button variant="primary">Edit customer</Button>
+          <Link to="/policies">
+            <Button variant="ghost">New quote</Button>
+          </Link>
+          <Button
+            variant="primary"
+            onClick={() => {
+              setEditName(profile?.custName ?? '')
+              setEditOpen(true)
+            }}
+          >
+            Edit customer
+          </Button>
         </div>
       </div>
+
+      <Modal
+        open={editOpen}
+        title="Edit customer"
+        onClose={() => setEditOpen(false)}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setEditOpen(false)}>Cancel</Button>
+            <Button variant="primary" onClick={() => updateMutation.mutate()} loading={updateMutation.isPending}>
+              Save
+            </Button>
+          </>
+        }
+      >
+        <Input label="Customer name" name="editName" value={editName} onChange={(e) => setEditName(e.target.value)} />
+        {updateMutation.error ? <p role="alert">Update failed.</p> : null}
+      </Modal>
 
       {customerId === 19284 ? (
         <Alert variant="warning" title="Possible duplicate tax ID" role="alert">

@@ -63,6 +63,24 @@ export type PolicyCancelRequest = {
   reason: string
 }
 
+export type PolicyCreateRequest = {
+  customerId: number
+  agentId: string
+  policyType: string
+  annualPremium: number
+  effectiveDate: string
+  expirationDate: string
+  coverages: Array<{
+    coverageType: string
+    coverageLimit: number
+    premiumAmount: number
+  }>
+  billingPlan: {
+    billingFrequency: string
+    installmentCount: number
+  }
+}
+
 export interface ListPoliciesParams {
   customerId?: number
   status?: string
@@ -71,6 +89,10 @@ export interface ListPoliciesParams {
 }
 
 export const policyApi = {
+  async create(request: PolicyCreateRequest): Promise<Policy> {
+    return apiClient.post<Policy>('/v1/policies', request)
+  },
+
   async list(params?: ListPoliciesParams): Promise<PolicyPage> {
     const search = new URLSearchParams()
     if (params?.customerId !== undefined) search.set('customerId', String(params.customerId))

@@ -36,6 +36,10 @@ spring:
               uri: http://127.0.0.1:8085
               predicates:
                 - Path=/api/v1/billing/**,/api/v1/payments/**
+            - id: config-svc
+              uri: http://127.0.0.1:8087
+              predicates:
+                - Path=/api/v1/admin/**
 
 management:
   endpoint:

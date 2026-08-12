@@ -1,6 +1,11 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { policyApi, type Policy, type PolicyCancelRequest, type PolicyEndorseRequest } from '@/api/policy-api'
+import {
+  policyApi,
+  type Policy,
+  type PolicyCancelRequest,
+  type PolicyEndorseRequest,
+} from '@/api/policy-api'
 import { BlueprintCard, Button, DataTable, Input, Modal, MoneyDisplay, Skeleton, Alert } from '@/components/ui'
 
 type PolicyMode = 'create' | 'endorse' | 'inquiry'
@@ -22,6 +27,29 @@ export function PolicyAdminPage() {
     queryKey: ['policies'],
     queryFn: () => policyApi.list({ size: 50 }),
   })
+
+  const issueMutation = useMutation({
+    mutationFn: () =>
+      policyApi.create({
+        customerId: 19284,
+        agentId: 'AGT00412',
+        policyType: 'HO-3',
+        annualPremium: 2140.0,
+        effectiveDate: '2027-01-01',
+        expirationDate: '2028-01-01',
+        coverages: COVERAGES.map((c) => ({
+          coverageType: c.name.includes('Dwelling') ? 'DWEL' : c.name.includes('property') ? 'PROP' : 'LIAB',
+          coverageLimit: Number.parseFloat(c.limit.replace(/[$,]/g, '')),
+          premiumAmount: Number.parseFloat(c.premium.replace(/[$,]/g, '')),
+        })),
+        billingPlan: { billingFrequency: 'M', installmentCount: 12 },
+      }),
+    onSuccess: () => {
+      setIssuedPolicy(true)
+      queryClient.invalidateQueries({ queryKey: ['policies'] })
+    },
+  })
+  const [issuedPolicy, setIssuedPolicy] = useState(false)
 
   return (
     <section aria-labelledby="policies-heading">
@@ -137,12 +165,24 @@ export function PolicyAdminPage() {
       {mode !== 'inquiry' ? (
         <div className="wf-sticky-footer">
           <span style={{ fontSize: 'var(--pcis-font-size-sm)', color: 'var(--pcis-color-text-muted)' }}>
-            {rated ? 'Rated and eligible for issue — snapshot RTG-8817342 persisted' : 'Rate coverages before issuing'}
+            {issuedPolicy
+              ? 'Policy issued'
+              : rated
+                ? 'Rated and eligible for issue — snapshot RTG-8817342 persisted'
+                : 'Rate coverages before issuing'}
           </span>
           <div style={{ display: 'flex', gap: 'var(--pcis-space-2)' }}>
             <Button variant="secondary">Save quote</Button>
-            <Button variant="primary" disabled={!rated}>Issue policy</Button>
+            <Button
+              variant="primary"
+              disabled={!rated || issuedPolicy}
+              onClick={() => issueMutation.mutate()}
+              loading={issueMutation.isPending}
+            >
+              Issue policy
+            </Button>
           </div>
+          {issueMutation.error ? <p role="alert">Unable to issue policy.</p> : null}
         </div>
       ) : null}
 

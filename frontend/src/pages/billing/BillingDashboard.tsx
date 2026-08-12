@@ -1,33 +1,30 @@
 import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { billingApi } from '@/api/billing-api'
 import { BlueprintCard, Button, Badge, Alert, DataTable, MoneyDisplay, Tabs, type TabItem } from '@/components/ui'
 
 function InstallmentsView() {
-  const rows = [
-    { id: '1', policyId: 'POL-000011204', freq: 'M', annual: 2140, cobolInst: 7, cobolDue: '2026-08-15', cobolAmt: 178.33, javaInst: 7, javaDue: '2026-08-15', javaAmt: 178.33, result: 'Match' },
-    { id: '2', policyId: 'POL-000011876', freq: 'Q', annual: 3300, cobolInst: 4, cobolDue: '2026-08-15', cobolAmt: 825, javaInst: 4, javaDue: '2026-08-15', javaAmt: 825, result: 'Break - freq fallback' },
-    { id: '3', policyId: 'POL-000011204', freq: 'M', annual: 2140, cobolInst: 8, cobolDue: '2026-09-15', cobolAmt: 178.33, javaInst: 8, javaDue: '2026-09-15', javaAmt: 178.33, result: 'Match' },
-  ]
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['billing-installments'],
+    queryFn: () => billingApi.listInstallments(),
+  })
+
+  if (isLoading) return <p style={{ fontSize: 'var(--pcis-font-size-sm)' }}>Loading installments…</p>
+  if (error) return <p role="alert">Unable to load installments.</p>
+
   return (
     <DataTable
-      aria-label="Installment comparison"
-      rows={rows}
+      aria-label="Installment schedule"
+      rows={data ?? []}
       columns={[
         { id: 'policyId', label: 'Policy', accessor: (r) => r.policyId, render: (r) => <span className="mono">{r.policyId}</span> },
-        { id: 'freq', label: 'Freq', accessor: (r) => r.freq },
-        { id: 'annual', label: 'Annual', accessor: (r) => r.annual, render: (r) => <MoneyDisplay value={r.annual} className="mono" /> },
-        { id: 'cobolInst', label: 'COBOL inst.', accessor: (r) => r.cobolInst, render: (r) => <span className="mono">{r.cobolInst}</span> },
-        { id: 'cobolDue', label: 'COBOL due', accessor: (r) => r.cobolDue },
-        { id: 'cobolAmt', label: 'COBOL amt', accessor: (r) => r.cobolAmt, render: (r) => <MoneyDisplay value={r.cobolAmt} className="mono" /> },
-        { id: 'javaInst', label: 'Java inst.', accessor: (r) => r.javaInst, render: (r) => <span className="mono">{r.javaInst}</span> },
-        { id: 'javaDue', label: 'Java due', accessor: (r) => r.javaDue },
-        { id: 'javaAmt', label: 'Java amt', accessor: (r) => r.javaAmt, render: (r) => <MoneyDisplay value={r.javaAmt} className="mono" /> },
+        { id: 'dueDate', label: 'Due date', accessor: (r) => r.dueDate },
+        { id: 'amount', label: 'Amount', accessor: (r) => r.amount, render: (r) => <MoneyDisplay value={r.amount} className="mono" /> },
         {
-          id: 'match',
-          label: 'Result',
-          accessor: (r) => r.result,
-          render: (r) => (
-            <Badge status={r.result.startsWith('Break') ? 'Denied' : 'Approved'}>{r.result}</Badge>
-          ),
+          id: 'status',
+          label: 'Status',
+          accessor: (r) => r.status,
+          render: (r) => <Badge status={r.status === 'PAID' ? 'Approved' : 'Active'}>{r.status}</Badge>,
         },
       ]}
       getRowId={(r) => r.id}
