@@ -42,10 +42,16 @@ SERVICES=(
   "api-gateway:services/api-gateway/Dockerfile:opsera/pcis-api-gateway"
 )
 
-IFS=',' read -ra SKIP_LIST <<< "${SKIP:-}"
+SKIP_LIST=()
+if [[ -n "${SKIP:-}" ]]; then
+  IFS=',' read -ra SKIP_LIST <<< "${SKIP}"
+fi
 
 should_skip() {
   local name="$1"
+  if ((${#SKIP_LIST[@]} == 0)); then
+    return 1
+  fi
   for s in "${SKIP_LIST[@]}"; do
     [[ -z "${s}" ]] && continue
     [[ "${s}" == "${name}" ]] && return 0

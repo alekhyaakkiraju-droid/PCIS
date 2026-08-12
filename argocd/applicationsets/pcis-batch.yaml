@@ -40,15 +40,9 @@ spec:
       annotations:
         argocd.argoproj.io/sync-wave: "2"
         pcis.governance/sync-mode: "{{ if eq .automated \"true\" }}automated{{ else }}manual{{ end }}"
-        {{- if eq .env "prd" }}
-        pcis.governance/approval-required: "true"
-        pcis.governance/approver-group: pcis-admins
-        pcis.governance/change-ticket-required: "true"
-        notifications.argoproj.io/subscribe.on-sync-running.slack: pcis-prod-deployments
-        notifications.argoproj.io/subscribe.on-sync-succeeded.slack: pcis-prod-deployments
-        notifications.argoproj.io/subscribe.on-sync-failed.slack: pcis-prod-alerts
-        notifications.argoproj.io/subscribe.on-health-degraded.slack: pcis-prod-alerts
-        {{- end }}
+        pcis.governance/approval-required: "{{ if eq .env \"prd\" }}true{{ else }}false{{ end }}"
+        pcis.governance/approver-group: "{{ if eq .env \"prd\" }}pcis-admins{{ else }}none{{ end }}"
+        pcis.governance/change-ticket-required: "{{ if eq .env \"prd\" }}true{{ else }}false{{ end }}"
     spec:
       project: pcis
       source:
@@ -61,20 +55,10 @@ spec:
             - values.yaml
             - "{{ .valuesFile }}"
       destination:
-        server: https://kubernetes.default.svc
+        name: opsera-usw2-np
         namespace: "{{ .namespace }}"
       revisionHistoryLimit: 5
-      {{- if eq .automated "true" }}
-      syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
-        syncOptions:
-          - CreateNamespace=false
-          - RespectIgnoreDifferences=true
-      {{- else }}
       syncPolicy:
         syncOptions:
           - CreateNamespace=false
           - RespectIgnoreDifferences=true
-      {{- end }}

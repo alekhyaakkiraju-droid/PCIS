@@ -19,11 +19,11 @@ spec:
     - https://github.com/alekhyaakkiraju-droid/PCIS.git
   destinations:
     - namespace: pcis-dev
-      server: https://kubernetes.default.svc
+      name: opsera-usw2-np
     - namespace: pcis-tst
-      server: https://kubernetes.default.svc
+      name: opsera-usw2-np
     - namespace: pcis-prd
-      server: https://kubernetes.default.svc
+      name: opsera-usw2-np
   clusterResourceWhitelist:
     - group: ""
       kind: Namespace

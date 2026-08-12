@@ -80,7 +80,7 @@ spec:
             - "{{ .valuesFile }}"
             - "{{ .sharedValuesFile }}"
       destination:
-        server: https://kubernetes.default.svc
+        name: opsera-usw2-np
         namespace: "{{ .namespace }}"
       revisionHistoryLimit: 5
       syncPolicy:
