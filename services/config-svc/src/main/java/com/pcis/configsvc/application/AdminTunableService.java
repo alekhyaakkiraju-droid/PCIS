@@ -171,7 +171,7 @@ public class AdminTunableService {
     }
     current.setUpdUser(actor());
     current.setUpdTimestamp(Instant.now());
-    tunableRepository.save(current);
+    tunableRepository.saveAndFlush(current);
   }
 
   private static ConfigTunableEntity copyWithNewVersion(

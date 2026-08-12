@@ -1,4 +1,6 @@
 package com.pcis.batch.claims.domain;
 
-public record SkipRecord(
-    String claimNbr, Long reserveId, SkipReasonCode reasonCode, String detail) {}
+import java.io.Serializable;
+
+public record SkipRecord(String claimNbr, Long reserveId, SkipReasonCode reasonCode, String detail)
+    implements Serializable {}

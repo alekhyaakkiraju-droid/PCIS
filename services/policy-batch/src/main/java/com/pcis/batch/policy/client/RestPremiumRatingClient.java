@@ -5,6 +5,7 @@ import com.pcis.batch.policy.domain.RatingUnavailableException;
 import com.pcis.batch.policy.domain.RenewalCandidateRow;
 import java.math.BigDecimal;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -15,7 +16,9 @@ public class RestPremiumRatingClient implements PremiumRatingClient {
   private final RestTemplate restTemplate;
   private final PolicyRenewalProperties properties;
 
-  public RestPremiumRatingClient(RestTemplate restTemplate, PolicyRenewalProperties properties) {
+  public RestPremiumRatingClient(
+      @Qualifier("batchAuthRestTemplate") RestTemplate restTemplate,
+      PolicyRenewalProperties properties) {
     this.restTemplate = restTemplate;
     this.properties = properties;
   }

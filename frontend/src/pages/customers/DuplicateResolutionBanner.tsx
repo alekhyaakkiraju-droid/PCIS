@@ -118,7 +118,7 @@ export function DuplicateResolutionBanner({
             onChange={(event) => setOverrideReason(event.target.value)}
           />
           {error ? (
-            <p role="alert" style={{ color: 'var(--c-error, #da1e28)', marginTop: 8 }}>
+            <p role="alert" style={{ color: 'var(--pcis-token-error)', marginTop: 8 }}>
               {error}
             </p>
           ) : null}

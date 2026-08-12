@@ -491,7 +491,7 @@ export function ClaimsPaymentWorkspace() {
 
   if (detailQuery.error && !detail) {
     return (
-      <p role="alert" style={{ color: 'var(--c-error, #da1e28)' }}>
+      <p role="alert" style={{ color: 'var(--pcis-token-error)' }}>
         {(detailQuery.error as Error).message}
       </p>
     )

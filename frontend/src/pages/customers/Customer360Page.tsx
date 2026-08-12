@@ -32,7 +32,7 @@ function TabPanel({ loading, error, children }: TabPanelProps) {
   if (loading) return <Skeleton variant="text" lines={4} />
   if (error) {
     return (
-      <p role="alert" style={{ color: 'var(--c-error, #da1e28)' }}>
+      <p role="alert" style={{ color: 'var(--pcis-token-error)' }}>
         {error.message}
       </p>
     )

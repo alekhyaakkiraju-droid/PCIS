@@ -1,187 +1,149 @@
 import { useState } from 'react'
-import batchFixture from '../../../fixtures/batch/jobs.json'
-import { Badge, BlueprintCard, Button, DataTable, Modal } from '@/components/ui'
-
-type BatchJob = (typeof batchFixture.jobs)[number]
-
-const CHUNK_DOTS = Array.from({ length: 20 }, (_, i) => ({
-  filled: i < 13,
-  failed: i === 13,
-}))
-
-const STRUCTURED_LOG = `{"ts":"2026-08-10T03:27:41Z","level":"ERROR","job":"audit-archive-job","chunk":14,"actor":"svc-audit-archive-job","resource":"audit_log","operation":"archive_copy","error":"deadlock detected","retry":3,"action":"chunk rolled back"}
-{"ts":"2026-08-10T03:27:42Z","level":"ERROR","job":"audit-archive-job","event":"error_threshold_exceeded","threshold":2,"count":3}`
+import { useQuery } from '@tanstack/react-query'
+import { batchStatusApi, type BatchJobRun } from '@/api/batch-status-api'
+import { Badge, BlueprintCard, Button, DataTable } from '@/components/ui'
 
 function statusBadge(status: string): 'Active' | 'Pending' | 'Inactive' {
-  if (status === 'Failed') return 'Pending'
-  if (status === 'Parallel run') return 'Inactive'
+  if (status === 'FAILED' || status === 'UNKNOWN') return 'Pending'
+  if (status === 'STARTED' || status === 'STARTING') return 'Inactive'
   return 'Active'
 }
 
-const DEFAULT_JOB = batchFixture.jobs.find((j) => j.canRestart) ?? batchFixture.jobs[0]
+function formatTimestamp(value: string | null): string {
+  if (!value) return '—'
+  return new Date(value).toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })
+}
 
-function JobDetailPanel({
-  job,
-  onRestart,
-}: {
-  job: BatchJob
-  onRestart: () => void
-}) {
+function formatDuration(start: string | null, end: string | null): string {
+  if (!start || !end) return '—'
+  const ms = new Date(end).getTime() - new Date(start).getTime()
+  if (ms < 1000) return `${ms}ms`
+  return `${(ms / 1000).toFixed(1)}s`
+}
+
+function JobDetailPanel({ job }: { job: BatchJobRun }) {
   return (
-    <BlueprintCard kicker={`${job.name} — run detail`} elevation="md">
-      <p style={{ fontSize: 'var(--pcis-font-size-sm)' }}>{job.detail}</p>
-      {'showActor' in job && job.showActor ? (
-        <p style={{ fontSize: 'var(--pcis-font-size-xs)', color: 'var(--pcis-color-text-muted)' }}>{job.actorLine}</p>
-      ) : null}
-      {job.canRestart ? (
-        <>
-          <div style={{ display: 'flex', gap: 2, margin: 'var(--pcis-space-3) 0' }}>
-            {CHUNK_DOTS.map((dot, i) => (
-              <div
-                key={i}
-                style={{
-                  width: 10,
-                  height: 10,
-                  background: dot.failed
-                    ? 'var(--pcis-color-primary-900)'
-                    : dot.filled
-                      ? 'var(--pcis-color-primary-600)'
-                      : 'var(--pcis-color-neutral-300)',
-                }}
-              />
-            ))}
-          </div>
-          <div style={{ fontSize: 'var(--pcis-font-size-xs)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, marginBottom: 'var(--pcis-space-2)' }}>
-            <div>
-              Restart point <strong>chunk 14, offset 13,000</strong>
-            </div>
-            <div>
-              Chunk size <strong>1,000 (configurable)</strong>
-            </div>
-            <div>
-              Skip policy <strong>skip 5, retry 3, backoff 2s</strong>
-            </div>
-            <div>
-              Principal <strong>svc-audit-archive-job</strong>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: 'var(--pcis-space-2)', flexWrap: 'wrap' }}>
-            <Button variant="secondary">Skip &amp; continue</Button>
-            <Button variant="primary" onClick={onRestart}>
-              Restart from last committed chunk
-            </Button>
-            <Button variant="ghost">Download structured log</Button>
-          </div>
-          <div className="mono" style={{ marginTop: 'var(--pcis-space-4)', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--pcis-color-primary-600)' }}>
-            Structured error log
-          </div>
-          <pre
-            style={{
-              background: 'var(--pcis-color-neutral-100)',
-              border: '1px solid var(--pcis-color-border)',
-              padding: 'var(--pcis-space-3)',
-              fontSize: 11,
-              fontFamily: 'var(--pcis-font-mono)',
-              whiteSpace: 'pre-wrap',
-              marginTop: 6,
-            }}
-          >
-            {STRUCTURED_LOG}
-          </pre>
-        </>
-      ) : (
-        <p style={{ fontSize: 'var(--pcis-font-size-xs)', color: 'var(--pcis-color-text-muted)', marginTop: 'var(--pcis-space-3)' }}>
-          Window {job.window} · exit code {job.exit}
-        </p>
-      )}
+    <BlueprintCard kicker={`${job.jobName} — run detail (execution #${job.jobExecutionId})`} elevation="md">
+      <p style={{ fontSize: 'var(--pcis-font-size-sm)' }}>
+        Domain <strong>{job.domain}</strong> · Started {formatTimestamp(job.startTime)} · Duration{' '}
+        {formatDuration(job.startTime, job.endTime)}
+      </p>
+      <DataTable
+        aria-label="Step executions"
+        rows={job.steps}
+        columns={[
+          { id: 'stepName', label: 'Step', accessor: (r) => r.stepName },
+          {
+            id: 'status',
+            label: 'Status',
+            accessor: (r) => r.status,
+            render: (r) => <Badge status={statusBadge(r.status)}>{r.status}</Badge>,
+          },
+          { id: 'read', label: 'Read', accessor: (r) => r.readCount, render: (r) => <span className="mono">{r.readCount}</span> },
+          { id: 'written', label: 'Written', accessor: (r) => r.writeCount, render: (r) => <span className="mono">{r.writeCount}</span> },
+          { id: 'skipped', label: 'Skipped', accessor: (r) => r.skipCount, render: (r) => <span className="mono">{r.skipCount}</span> },
+          { id: 'exit', label: 'Exit', accessor: (r) => r.exitCode ?? '—' },
+        ]}
+        getRowId={(r) => r.stepName}
+        emptyMessage="No steps recorded."
+      />
+      <div style={{ display: 'flex', gap: 'var(--pcis-space-2)', flexWrap: 'wrap', marginTop: 'var(--pcis-space-4)' }}>
+        <Button variant="secondary" disabled title="Interactive restart is not wired up yet">
+          Skip &amp; continue
+        </Button>
+        <Button variant="primary" disabled title="Interactive restart is not wired up yet">
+          Restart from last committed chunk
+        </Button>
+      </div>
     </BlueprintCard>
   )
 }
 
 export function BatchOperationsPage() {
-  const [selectedJob, setSelectedJob] = useState<BatchJob>(DEFAULT_JOB)
-  const [restartOpen, setRestartOpen] = useState(false)
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['batch-runs'],
+    queryFn: () => batchStatusApi.listRuns(),
+  })
+
+  const runs = data ?? []
+  const [selectedKey, setSelectedKey] = useState<string | null>(null)
+  const rowKey = (r: BatchJobRun) => `${r.domain}-${r.jobExecutionId}`
+  const selectedJob = runs.find((r) => rowKey(r) === selectedKey) ?? runs[0]
 
   return (
     <section aria-labelledby="batch-heading">
       <h1 id="batch-heading">Batch operations</h1>
       <p className="wf-page-lede">
-        Nightly window jobs — scheduler health, chunk restart points, and structured error logs for failed runs.
+        Real Spring Batch run history for the converted COBOL programs — read from each job's own execution
+        metadata.
       </p>
 
-      <BlueprintCard kicker={batchFixture.windowLabel.toUpperCase()} style={{ marginBottom: 'var(--pcis-space-4)' }}>
-        <p style={{ fontSize: 'var(--pcis-font-size-sm)', margin: 0 }}>
-          Scheduler healthy · alerting on · audit-write failure alert armed
-        </p>
-        <div className="progress-bar">
-          <div className="progress-bar__fill" style={{ width: `${batchFixture.windowUsedPct}%` }} />
+      {isLoading ? (
+        <p style={{ fontSize: 'var(--pcis-font-size-sm)' }}>Loading batch run history…</p>
+      ) : error ? (
+        <p role="alert">Unable to load batch run history.</p>
+      ) : runs.length === 0 ? (
+        <p style={{ fontSize: 'var(--pcis-font-size-sm)' }}>No batch runs recorded yet.</p>
+      ) : (
+        <div className="wf-batch-layout">
+          <DataTable
+            aria-label="Batch jobs"
+            rows={runs}
+            columns={[
+              { id: 'name', label: 'Job', accessor: (r) => r.jobName },
+              { id: 'domain', label: 'Domain', accessor: (r) => r.domain },
+              { id: 'started', label: 'Started', accessor: (r) => r.startTime, render: (r) => <span className="mono">{formatTimestamp(r.startTime)}</span> },
+              {
+                id: 'duration',
+                label: 'Duration',
+                accessor: (r) => r.startTime,
+                render: (r) => <span className="mono">{formatDuration(r.startTime, r.endTime)}</span>,
+              },
+              { id: 'read', label: 'Read', accessor: (r) => r.readCount, render: (r) => <span className="mono">{r.readCount}</span> },
+              { id: 'written', label: 'Written', accessor: (r) => r.writeCount, render: (r) => <span className="mono">{r.writeCount}</span> },
+              { id: 'skipped', label: 'Skipped', accessor: (r) => r.skipCount, render: (r) => <span className="mono">{r.skipCount}</span> },
+              {
+                id: 'status',
+                label: 'Status',
+                accessor: (r) => r.status,
+                render: (r) => <Badge status={statusBadge(r.status)}>{r.status}</Badge>,
+              },
+              { id: 'exit', label: 'Exit', accessor: (r) => r.exitCode ?? '—' },
+              {
+                id: 'details',
+                label: '',
+                accessor: () => '',
+                render: (r) => (
+                  <button
+                    type="button"
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--pcis-color-primary-700)',
+                      cursor: 'pointer',
+                      fontSize: 'var(--pcis-font-size-sm)',
+                      fontWeight: selectedJob && rowKey(selectedJob) === rowKey(r) ? 600 : 400,
+                    }}
+                    onClick={() => setSelectedKey(rowKey(r))}
+                  >
+                    {selectedJob && rowKey(selectedJob) === rowKey(r) ? 'Selected' : 'Details →'}
+                  </button>
+                ),
+              },
+            ]}
+            getRowId={(r) => `${r.domain}-${r.jobExecutionId}`}
+            emptyMessage="No batch jobs."
+          />
+
+          {selectedJob ? <JobDetailPanel job={selectedJob} /> : null}
         </div>
-      </BlueprintCard>
-
-      <div className="wf-batch-layout">
-        <DataTable
-          aria-label="Batch jobs"
-          rows={batchFixture.jobs}
-          columns={[
-            { id: 'name', label: 'Job', accessor: (r) => r.name },
-            { id: 'started', label: 'Started', accessor: (r) => r.started, render: (r) => <span className="mono">{r.started}</span> },
-            { id: 'duration', label: 'Duration', accessor: (r) => r.duration, render: (r) => <span className="mono">{r.duration}</span> },
-            { id: 'read', label: 'Read', accessor: (r) => r.read, render: (r) => <span className="mono">{r.read}</span> },
-            { id: 'written', label: 'Written', accessor: (r) => r.written, render: (r) => <span className="mono">{r.written}</span> },
-            { id: 'skipped', label: 'Skipped', accessor: (r) => r.skipped, render: (r) => <span className="mono">{r.skipped}</span> },
-            {
-              id: 'status',
-              label: 'Status',
-              accessor: (r) => r.status,
-              render: (r) => <Badge status={statusBadge(r.status)}>{r.status}</Badge>,
-            },
-            { id: 'exit', label: 'Exit', accessor: (r) => r.exit, render: (r) => <span className="mono">{r.exit}</span> },
-            {
-              id: 'details',
-              label: '',
-              accessor: () => '',
-              render: (r) => (
-                <button
-                  type="button"
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--pcis-color-primary-700)',
-                    cursor: 'pointer',
-                    fontSize: 'var(--pcis-font-size-sm)',
-                    fontWeight: selectedJob.key === r.key ? 600 : 400,
-                  }}
-                  onClick={() => setSelectedJob(r)}
-                >
-                  {selectedJob.key === r.key ? 'Selected' : 'Details →'}
-                </button>
-              ),
-            },
-          ]}
-          getRowId={(r) => r.key}
-          emptyMessage="No batch jobs."
-        />
-
-        <JobDetailPanel job={selectedJob} onRestart={() => setRestartOpen(true)} />
-      </div>
-
-      <Modal
-        open={restartOpen}
-        title={`Restart ${selectedJob.name}?`}
-        onClose={() => setRestartOpen(false)}
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setRestartOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="primary" onClick={() => setRestartOpen(false)}>
-              Restart job
-            </Button>
-          </>
-        }
-      >
-        <p>Resumes from the last committed chunk. No row already archived and verified will be re-processed or duplicated.</p>
-      </Modal>
+      )}
     </section>
   )
 }

@@ -16,7 +16,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
   com.pcis.claims.security.SecurityPrincipalAccessor.class
 })
 @EntityScan(basePackages = {"com.pcis.claims.domain", "com.pcis.outbox"})
-@EnableJpaRepositories(basePackages = {"com.pcis.claims.domain.repository"})
+@EnableJpaRepositories(basePackages = {"com.pcis.claims.domain.repository", "com.pcis.outbox"})
 @ComponentScan(
     basePackages = {"com.pcis.batch.claims"},
     excludeFilters =
