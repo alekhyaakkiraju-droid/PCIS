@@ -1,0 +1,37 @@
+name: "CI/CD - pcis api-gateway (dev)"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - services/api-gateway/**
+      - helm/charts/api-gateway/**
+      - .github/workflows/cicd-pcis-api-gateway-dev.yaml
+      - shared-libs/**
+      - config/**
+      - pom.xml
+      - docker/**
+      - helm/values-dev-shared.yaml
+      - .github/workflows/shared-deploy.yaml
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Reason for manual trigger"
+        required: false
+        default: "manual deploy"
+
+permissions:
+  contents: write
+  security-events: write
+  id-token: write
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/shared-deploy.yaml
+    secrets: inherit
+    with:
+      service: "api-gateway"
+      port: "8080"
+      ecr_repo: "opsera/pcis-api-gateway"
+      dockerfile: "services/api-gateway/Dockerfile"
+      ingress_host: "pcis-api-gateway-dev.agent.opsera.dev"

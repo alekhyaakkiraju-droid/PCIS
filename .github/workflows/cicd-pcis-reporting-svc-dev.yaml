@@ -1,0 +1,36 @@
+name: "CI/CD - pcis reporting-svc (dev)"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - services/reporting-svc/**
+      - helm/charts/reporting-svc/**
+      - .github/workflows/cicd-pcis-reporting-svc-dev.yaml
+      - shared-libs/**
+      - config/**
+      - pom.xml
+      - docker/**
+      - helm/values-dev-shared.yaml
+      - .github/workflows/shared-deploy.yaml
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Reason for manual trigger"
+        required: false
+        default: "manual deploy"
+
+permissions:
+  contents: write
+  security-events: write
+  id-token: write
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/shared-deploy.yaml
+    secrets: inherit
+    with:
+      service: "reporting-svc"
+      port: "8086"
+      ecr_repo: "opsera/pcis-reporting-svc"
+      dockerfile: "services/reporting-svc/Dockerfile"

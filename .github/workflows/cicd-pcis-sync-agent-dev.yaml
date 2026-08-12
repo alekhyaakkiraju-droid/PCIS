@@ -1,0 +1,36 @@
+name: "CI/CD - pcis sync-agent (dev)"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - services/sync-agent/**
+      - helm/charts/sync-agent/**
+      - .github/workflows/cicd-pcis-sync-agent-dev.yaml
+      - shared-libs/**
+      - config/**
+      - pom.xml
+      - docker/**
+      - helm/values-dev-shared.yaml
+      - .github/workflows/shared-deploy.yaml
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Reason for manual trigger"
+        required: false
+        default: "manual deploy"
+
+permissions:
+  contents: write
+  security-events: write
+  id-token: write
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/shared-deploy.yaml
+    secrets: inherit
+    with:
+      service: "sync-agent"
+      port: "8080"
+      ecr_repo: "opsera/pcis-sync-agent"
+      dockerfile: "services/sync-agent/Dockerfile"

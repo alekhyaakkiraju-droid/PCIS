@@ -1,0 +1,36 @@
+name: "CI/CD - pcis policy-svc (dev)"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - services/policy-svc/**
+      - helm/charts/policy-svc/**
+      - .github/workflows/cicd-pcis-policy-svc-dev.yaml
+      - shared-libs/**
+      - config/**
+      - pom.xml
+      - docker/**
+      - helm/values-dev-shared.yaml
+      - .github/workflows/shared-deploy.yaml
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Reason for manual trigger"
+        required: false
+        default: "manual deploy"
+
+permissions:
+  contents: write
+  security-events: write
+  id-token: write
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/shared-deploy.yaml
+    secrets: inherit
+    with:
+      service: "policy-svc"
+      port: "8084"
+      ecr_repo: "opsera/pcis-policy-svc"
+      dockerfile: "services/policy-svc/Dockerfile"

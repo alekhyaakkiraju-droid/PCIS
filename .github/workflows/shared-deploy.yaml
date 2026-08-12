@@ -1,0 +1,568 @@
+# Reusable deployment workflow for all PCIS microservices.
+# Modeled on gayathri-opsera/Ai-Tutor-Agent shared-deploy.yaml (WO-017 pattern).
+# Adapted for Helm charts in helm/charts/{service} and pcis-dev namespace.
+#
+# Stages:
+#   01 - Security Scan
+#   02 - Build Image
+#   03 - Grype Vulnerability Scan
+#   04 - Push to ECR
+#   05 - Update Helm Manifests
+#   06 - Create ArgoCD Application
+#   07 - Refresh ECR Secret
+#   08 - ArgoCD Sync
+#   09 - Verify Deployment
+#   10 - Deployment Landscape
+#   11 - Deployment Notification
+
+name: "Shared — Deploy PCIS Service"
+
+on:
+  workflow_call:
+    inputs:
+      service:
+        description: "Service name (e.g. authz-svc)"
+        required: true
+        type: string
+      port:
+        description: "Container port (e.g. '8083')"
+        required: true
+        type: string
+      ecr_repo:
+        description: "ECR repository path (e.g. opsera/pcis-authz-svc)"
+        required: true
+        type: string
+      dockerfile:
+        description: "Dockerfile path relative to repo root"
+        required: true
+        type: string
+      ingress_host:
+        description: "Optional public ingress host for api-gateway"
+        required: false
+        type: string
+        default: ""
+
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      GH_PAT:
+        required: true
+
+permissions:
+  contents: write
+  security-events: write
+  id-token: write
+
+env:
+  AWS_REGION: us-west-2
+  HUB_CLUSTER: argocd-usw2
+  SPOKE_CLUSTER: opsera-usw2-np
+  NAMESPACE: pcis-dev
+  HELM_CHART: helm/charts/${{ inputs.service }}
+
+jobs:
+  security-scan:
+    name: "01 - Security Scan"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    continue-on-error: true
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-image:
+    name: "02 - Build Image"
+    runs-on: ubuntu-latest
+    needs: [security-scan]
+    permissions:
+      contents: read
+    outputs:
+      image_tag: ${{ steps.tag.outputs.tag }}
+      ecr_uri: ${{ steps.ecr.outputs.uri }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Generate Image Tag
+        id: tag
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+          echo "tag=dev-${SHORT_SHA}-${TIMESTAMP}-amd64" >> $GITHUB_OUTPUT
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get ECR URI
+        id: ecr
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          echo "uri=${ACCOUNT_ID}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ inputs.ecr_repo }}" >> $GITHUB_OUTPUT
+
+      - name: Build Docker Image
+        run: |
+          docker build --platform linux/amd64 \
+            -f "${{ inputs.dockerfile }}" \
+            -t ${{ steps.ecr.outputs.uri }}:${{ steps.tag.outputs.tag }} \
+            .
+
+      - name: Save Image Artifact
+        run: |
+          docker save ${{ steps.ecr.outputs.uri }}:${{ steps.tag.outputs.tag }} \
+            -o /tmp/${{ inputs.service }}-image.tar
+
+      - name: Upload Image Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.service }}-image
+          path: /tmp/${{ inputs.service }}-image.tar
+          retention-days: 1
+
+  grype-scan:
+    name: "03 - Grype Vulnerability Scan"
+    runs-on: ubuntu-latest
+    needs: [build-image]
+    continue-on-error: true
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Download Image Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.service }}-image
+          path: /tmp
+
+      - name: Load Image
+        run: docker load -i /tmp/${{ inputs.service }}-image.tar
+
+      - name: Run Grype Scan
+        uses: anchore/scan-action@v7
+        id: scan
+        with:
+          image: ${{ needs.build-image.outputs.ecr_uri }}:${{ needs.build-image.outputs.image_tag }}
+          fail-build: false
+          severity-cutoff: high
+          output-format: sarif
+
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.scan.outputs.sarif }}
+        continue-on-error: true
+
+  push-to-ecr:
+    name: "04 - Push to ECR"
+    runs-on: ubuntu-latest
+    needs: [build-image, grype-scan]
+    if: always() && needs.build-image.result == 'success'
+    permissions:
+      contents: read
+    steps:
+      - name: Download Image Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.service }}-image
+          path: /tmp
+
+      - name: Load Image
+        run: docker load -i /tmp/${{ inputs.service }}-image.tar
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Push to ECR
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          aws ecr get-login-password --region ${{ env.AWS_REGION }} | \
+            docker login --username AWS --password-stdin \
+            "${ACCOUNT_ID}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
+          docker push ${{ needs.build-image.outputs.ecr_uri }}:${{ needs.build-image.outputs.image_tag }}
+          echo "Pushed ${{ needs.build-image.outputs.image_tag }}"
+
+  update-manifests:
+    name: "05 - Update Manifests"
+    runs-on: ubuntu-latest
+    needs: [build-image, push-to-ecr]
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+          fetch-depth: 0
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update Helm values-dev.yaml Image
+        run: |
+          pip install --quiet pyyaml
+          python3 - <<'PYEOF'
+          import yaml
+          from pathlib import Path
+
+          service = "${{ inputs.service }}"
+          ecr_uri = "${{ needs.build-image.outputs.ecr_uri }}"
+          tag = "${{ needs.build-image.outputs.image_tag }}"
+          values_path = Path(f"helm/charts/{service}/values-dev.yaml")
+
+          data = yaml.safe_load(values_path.read_text()) or {}
+          data["image"] = {
+              "repository": ecr_uri,
+              "tag": tag,
+              "pullPolicy": "Always",
+          }
+          values_path.write_text(yaml.dump(data, default_flow_style=False, sort_keys=False))
+          print(f"Updated {values_path} -> {ecr_uri}:{tag}")
+          PYEOF
+
+      - name: Validate Helm Chart
+        run: |
+          helm dependency build "${{ env.HELM_CHART }}"
+          helm template "${{ inputs.service }}" "${{ env.HELM_CHART }}" \
+            -f "${{ env.HELM_CHART }}/values.yaml" \
+            -f "${{ env.HELM_CHART }}/values-dev.yaml" \
+            -f helm/values-dev-shared.yaml > /dev/null
+          echo "Helm template validation passed"
+
+      - name: Commit and Push Manifest Update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          VALUES_FILE="helm/charts/${{ inputs.service }}/values-dev.yaml"
+
+          if git diff --quiet "${VALUES_FILE}"; then
+            echo "No changes to commit"
+            exit 0
+          fi
+
+          git add "${VALUES_FILE}"
+          git commit -m "chore(deploy): update ${{ inputs.service }} to ${{ needs.build-image.outputs.image_tag }} [skip ci]"
+
+          for i in $(seq 1 10); do
+            if git push origin main; then
+              echo "Pushed manifest update on attempt ${i}"
+              exit 0
+            fi
+            WAIT=$(( (RANDOM % 10) + (i * 5) ))
+            echo "Push conflict on attempt ${i}/10 — rebasing and retrying in ${WAIT}s"
+            git fetch origin main
+            if git rebase origin/main; then
+              sleep "${WAIT}"
+              continue
+            fi
+            git checkout --ours "${VALUES_FILE}"
+            git add "${VALUES_FILE}"
+            GIT_EDITOR=true git rebase --continue 2>/dev/null || true
+            sleep "${WAIT}"
+          done
+          echo "Failed to push after 10 attempts"
+          exit 1
+
+  create-argocd-app:
+    name: "06 - Create ArgoCD Application"
+    runs-on: ubuntu-latest
+    needs: [update-manifests]
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v5
+        with:
+          version: "v1.34.0"
+
+      - name: Setup Hub Kubeconfig
+        run: aws eks update-kubeconfig --name ${{ env.HUB_CLUSTER }} --region ${{ env.AWS_REGION }}
+
+      - name: Ensure ArgoCD ApplicationSet
+        run: |
+          kubectl apply -f argocd/projects/pcis-project.yaml
+          kubectl apply -f argocd/applicationsets/pcis-services.yaml
+          echo "ArgoCD ApplicationSet pcis-services applied"
+
+      - name: Wait for ArgoCD Application
+        run: |
+          APP="pcis-${{ inputs.service }}-dev"
+          for i in $(seq 1 30); do
+            if kubectl get application "${APP}" -n argocd &>/dev/null; then
+              echo "ArgoCD application ${APP} exists"
+              exit 0
+            fi
+            echo "Waiting for ApplicationSet to generate ${APP} (${i}/30)"
+            sleep 5
+          done
+          echo "Application ${APP} not found — ApplicationSet may need manual sync"
+          exit 1
+
+  refresh-ecr-secret:
+    name: "07 - Refresh ECR Secret"
+    runs-on: ubuntu-latest
+    needs: [create-argocd-app]
+    permissions:
+      contents: read
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v5
+        with:
+          version: "v1.34.0"
+
+      - name: Setup Spoke Kubeconfig
+        run: aws eks update-kubeconfig --name ${{ env.SPOKE_CLUSTER }} --region ${{ env.AWS_REGION }}
+
+      - name: Refresh ECR Image Pull Secret
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          ECR_REGISTRY="${ACCOUNT_ID}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
+          kubectl create secret docker-registry ecr-registry-secret \
+            --namespace=${{ env.NAMESPACE }} \
+            --docker-server="${ECR_REGISTRY}" \
+            --docker-username=AWS \
+            --docker-password="$(aws ecr get-login-password --region ${{ env.AWS_REGION }})" \
+            --dry-run=client -o yaml | kubectl apply -f -
+          echo "ECR pull secret refreshed"
+
+  argocd-sync:
+    name: "08 - ArgoCD Sync"
+    runs-on: ubuntu-latest
+    needs: [refresh-ecr-secret]
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v5
+        with:
+          version: "v1.34.0"
+
+      - name: Setup Hub Kubeconfig
+        run: aws eks update-kubeconfig --name ${{ env.HUB_CLUSTER }} --region ${{ env.AWS_REGION }}
+
+      - name: Refresh ArgoCD Repository Credentials
+        timeout-minutes: 3
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -z "${GH_PAT}" ]; then
+            echo "GH_PAT secret missing — ArgoCD cannot read private repo manifests"
+            exit 1
+          fi
+          REPO_SECRET_NAME="repo-$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')-pcis"
+          REPO_URL="https://github.com/${{ github.repository }}.git"
+          kubectl delete secret "${REPO_SECRET_NAME}" -n argocd --ignore-not-found \
+            --request-timeout=30s || true
+          cat > /tmp/argocd-repo-secret.yaml <<MANIFEST
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: ${REPO_SECRET_NAME}
+            namespace: argocd
+            labels:
+              argocd.argoproj.io/secret-type: repository
+          type: Opaque
+          stringData:
+            type: git
+            url: ${REPO_URL}
+            password: ${GH_PAT}
+            username: git
+          MANIFEST
+          kubectl apply -f /tmp/argocd-repo-secret.yaml --request-timeout=30s
+          rm -f /tmp/argocd-repo-secret.yaml
+          echo "Refreshed ArgoCD credentials for ${REPO_URL}"
+
+      - name: ArgoCD Hard Refresh
+        timeout-minutes: 2
+        run: |
+          APP="pcis-${{ inputs.service }}-dev"
+          kubectl patch app "${APP}" -n argocd --type merge \
+            --request-timeout=30s \
+            -p '{"metadata":{"annotations":{"argocd.argoproj.io/refresh":"hard"}}}'
+          sleep 5
+
+      - name: Trigger Sync
+        timeout-minutes: 2
+        run: |
+          APP="pcis-${{ inputs.service }}-dev"
+          kubectl patch app "${APP}" -n argocd --type merge \
+            --request-timeout=30s \
+            -p '{"operation":{"initiatedBy":{"username":"github-actions"},"sync":{"revision":"main","prune":true}}}'
+
+      - name: Wait for Sync to Complete
+        timeout-minutes: 10
+        run: |
+          APP="pcis-${{ inputs.service }}-dev"
+          for i in $(seq 1 60); do
+            PHASE=$(kubectl get app "${APP}" -n argocd --request-timeout=15s \
+              -o jsonpath='{.status.operationState.phase}' 2>/dev/null || echo "Unknown")
+            HEALTH=$(kubectl get app "${APP}" -n argocd --request-timeout=15s \
+              -o jsonpath='{.status.health.status}' 2>/dev/null || echo "Unknown")
+            echo "[$i/60] Health: ${HEALTH} | Phase: ${PHASE}"
+            if [ "${PHASE}" = "Succeeded" ]; then
+              echo "ArgoCD sync operation Succeeded (Health: ${HEALTH})"
+              exit 0
+            fi
+            if [ "${PHASE}" = "Failed" ] || [ "${PHASE}" = "Error" ]; then
+              MSG=$(kubectl get app "${APP}" -n argocd --request-timeout=15s \
+                -o jsonpath='{.status.operationState.message}' 2>/dev/null || echo "")
+              echo "ArgoCD sync failed: ${PHASE} — ${MSG}"
+              kubectl get app "${APP}" -n argocd -o yaml --request-timeout=15s
+              exit 1
+            fi
+            sleep 10
+          done
+          echo "Sync poll timed out after 10 minutes"
+          kubectl get app "${APP}" -n argocd -o yaml --request-timeout=15s
+          exit 1
+
+  verify-deployment:
+    name: "09 - Verify Deployment"
+    runs-on: ubuntu-latest
+    needs: [refresh-ecr-secret, argocd-sync]
+    permissions:
+      contents: read
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v5
+        with:
+          version: "v1.34.0"
+
+      - name: Setup Spoke Kubeconfig
+        run: aws eks update-kubeconfig --name ${{ env.SPOKE_CLUSTER }} --region ${{ env.AWS_REGION }}
+
+      - name: Wait for Deployment
+        run: |
+          for i in $(seq 1 60); do
+            kubectl get deployment ${{ inputs.service }} -n ${{ env.NAMESPACE }} &>/dev/null && break
+            echo "Waiting... (${i}/60)"
+            sleep 5
+          done
+
+      - name: Verify Ready
+        run: |
+          kubectl wait --for=condition=available --timeout=600s \
+            deployment/${{ inputs.service }} -n ${{ env.NAMESPACE }}
+          RUNNING=$(kubectl get pods -n ${{ env.NAMESPACE }} \
+            -l "app.kubernetes.io/name=${{ inputs.service }}" \
+            --field-selector=status.phase=Running -o name | wc -l)
+          echo "${RUNNING} pod(s) running for ${{ inputs.service }}"
+
+  deployment-landscape:
+    name: "10 - Deployment Landscape"
+    runs-on: ubuntu-latest
+    needs: [build-image, verify-deployment]
+    if: success()
+    permissions:
+      contents: read
+    steps:
+      - name: Summary
+        run: |
+          echo "==========================================="
+          echo " DEPLOYED: pcis / ${{ inputs.service }} / dev"
+          echo " Tag: ${{ needs.build-image.outputs.image_tag }}"
+          echo " Namespace: ${{ env.NAMESPACE }}"
+          echo " Port: ${{ inputs.port }}"
+          if [ -n "${{ inputs.ingress_host }}" ]; then
+            echo " URL: https://${{ inputs.ingress_host }}"
+          fi
+          echo "==========================================="
+
+  notify:
+    name: "11 - Deployment Notification"
+    runs-on: ubuntu-latest
+    needs:
+      - build-image
+      - security-scan
+      - grype-scan
+      - push-to-ecr
+      - argocd-sync
+      - verify-deployment
+      - deployment-landscape
+    if: always()
+    permissions:
+      contents: read
+    steps:
+      - name: Determine overall status
+        id: status
+        run: |
+          PUSH_RESULT="${{ needs.push-to-ecr.result }}"
+          SYNC_RESULT="${{ needs.argocd-sync.result }}"
+          VERIFY_RESULT="${{ needs.verify-deployment.result }}"
+
+          if [[ "$PUSH_RESULT" == "success" && "$SYNC_RESULT" == "success" && "$VERIFY_RESULT" == "success" ]]; then
+            echo "overall=success" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+          else
+            echo "overall=failure" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Slack notification
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "Slack webhook not configured, skipping notification"
+            exit 0
+          fi
+          PIPELINE_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          curl -sf -X POST "$SLACK_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "{\"text\":\"${{ steps.status.outputs.emoji }} PCIS ${{ inputs.service }} dev deploy: ${{ steps.status.outputs.overall }} — ${PIPELINE_URL}\"}" \
+            || echo "Slack notification failed (non-blocking)"

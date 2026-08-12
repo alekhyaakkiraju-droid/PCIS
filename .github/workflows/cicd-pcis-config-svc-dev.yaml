@@ -1,0 +1,36 @@
+name: "CI/CD - pcis config-svc (dev)"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - services/config-svc/**
+      - helm/charts/config-svc/**
+      - .github/workflows/cicd-pcis-config-svc-dev.yaml
+      - shared-libs/**
+      - config/**
+      - pom.xml
+      - docker/**
+      - helm/values-dev-shared.yaml
+      - .github/workflows/shared-deploy.yaml
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Reason for manual trigger"
+        required: false
+        default: "manual deploy"
+
+permissions:
+  contents: write
+  security-events: write
+  id-token: write
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/shared-deploy.yaml
+    secrets: inherit
+    with:
+      service: "config-svc"
+      port: "8087"
+      ecr_repo: "opsera/pcis-config-svc"
+      dockerfile: "services/config-svc/Dockerfile"

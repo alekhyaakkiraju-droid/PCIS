@@ -1,6 +1,9 @@
-# Shared EKS dev overrides — merge with each service chart via deploy-all-dev.sh:
-#   helm upgrade ... -f values.yaml -f ../../values-dev-shared.yaml -f values-dev.yaml
+# Shared EKS dev overrides — merged by deploy-all-dev.sh and Argo CD (dev).
 replicaCount: 1
+image:
+  pullPolicy: Always
+imagePullSecrets:
+  - name: ecr-registry-secret
 autoscaling:
   enabled: false
   enableHpa: false
