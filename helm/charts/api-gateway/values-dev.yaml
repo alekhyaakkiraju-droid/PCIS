@@ -24,7 +24,7 @@ env:
   KEYCLOAK_ISSUER_URI: http://keycloak.pcis-dev.svc.cluster.local/realms/pcis
   KEYCLOAK_JWK_SET_URI: http://keycloak.pcis-dev.svc.cluster.local/realms/pcis/protocol/openid-connect/certs
   PCIS_REDIS_HOST: redis.pcis-dev.svc.cluster.local
-  PCIS_REDIS_PORT: "6379"
+  PCIS_REDIS_PORT: '6379'
 istio:
   inject: false
 probes:
@@ -36,5 +36,5 @@ probes:
     periodSeconds: 10
 image:
   repository: 792373136340.dkr.ecr.us-west-2.amazonaws.com/opsera/pcis-api-gateway
-  tag: dev-759ed6a-20260812163940-amd64
+  tag: dev-0d175ae-20260812173912-amd64
   pullPolicy: Always
