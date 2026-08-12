@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import adminFixture from '../../../fixtures/admin/compliance.json'
-import { BlueprintCard, Button, DataTable, Input, Tabs, type TabItem } from '@/components/ui'
+import { BlueprintCard, Button, DataTable, Input, Tabs, Alert, type TabItem } from '@/components/ui'
 
 export function AdminCompliancePage() {
   const [editKey, setEditKey] = useState<string | null>(null)
@@ -143,10 +143,26 @@ export function AdminCompliancePage() {
 
   return (
     <section aria-labelledby="admin-heading">
-      <h1 id="admin-heading" className="visually-hidden">
-        Admin &amp; Compliance
-      </h1>
+      <h1 id="admin-heading">Configuration &amp; compliance</h1>
+      <p className="wf-page-lede">
+        Regulatory tunables, data classification, masking rules and retention — all changeable without a code deployment, every change versioned.
+      </p>
+
       <Tabs items={tabs} defaultTabId="tunables" aria-label="Admin sections" />
+
+      <Alert variant="info" title="Effective timing">
+        Changes take effect within one scheduled run. Batch identity is a workload principal (svc-*-job) — no BATCHCLM-style literals remain.
+      </Alert>
+
+      <div className="wf-sticky-footer">
+        <span style={{ fontSize: 'var(--pcis-font-size-sm)', color: 'var(--pcis-color-text-muted)' }}>
+          Changes create a new version with full who/what/when history — no recompile, no library promotion.
+        </span>
+        <div style={{ display: 'flex', gap: 'var(--pcis-space-2)' }}>
+          <Button variant="ghost">Discard</Button>
+          <Button variant="primary">Save &amp; version</Button>
+        </div>
+      </div>
     </section>
   )
 }

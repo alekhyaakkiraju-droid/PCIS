@@ -1,23 +1,34 @@
 import { useState } from 'react'
-import { BlueprintCard, Button, Badge, DataTable, MoneyDisplay, Tabs, type TabItem } from '@/components/ui'
+import { BlueprintCard, Button, Badge, Alert, DataTable, MoneyDisplay, Tabs, type TabItem } from '@/components/ui'
 
 function InstallmentsView() {
   const rows = [
-    { id: '1', policyId: 'POL-0088217', number: 7, dueDate: '2026-08-15', cobol: 178.33, java: 178.33 },
-    { id: '2', policyId: 'POL-0091355', number: 4, dueDate: '2026-08-15', cobol: 275, java: 275 },
-    { id: '3', policyId: 'POL-0079542', number: 2, dueDate: '2026-08-18', cobol: 1040.83, java: 1040.83 },
+    { id: '1', policyId: 'POL-000011204', freq: 'M', annual: 2140, cobolInst: 7, cobolDue: '2026-08-15', cobolAmt: 178.33, javaInst: 7, javaDue: '2026-08-15', javaAmt: 178.33, result: 'Match' },
+    { id: '2', policyId: 'POL-000011876', freq: 'Q', annual: 3300, cobolInst: 4, cobolDue: '2026-08-15', cobolAmt: 825, javaInst: 4, javaDue: '2026-08-15', javaAmt: 825, result: 'Break - freq fallback' },
+    { id: '3', policyId: 'POL-000011204', freq: 'M', annual: 2140, cobolInst: 8, cobolDue: '2026-09-15', cobolAmt: 178.33, javaInst: 8, javaDue: '2026-09-15', javaAmt: 178.33, result: 'Match' },
   ]
   return (
     <DataTable
-      aria-label="Billing reconciliation installments"
+      aria-label="Installment comparison"
       rows={rows}
       columns={[
-        { id: 'policyId', label: 'Policy', accessor: (r) => r.policyId },
-        { id: 'number', label: '#', accessor: (r) => r.number },
-        { id: 'dueDate', label: 'Due date', accessor: (r) => r.dueDate },
-        { id: 'cobol', label: 'COBOL amount', accessor: (r) => r.cobol, render: (r) => <MoneyDisplay value={r.cobol} /> },
-        { id: 'java', label: 'Java amount', accessor: (r) => r.java, render: (r) => <MoneyDisplay value={r.java} /> },
-        { id: 'match', label: 'Match', accessor: () => 'Match', render: () => <Badge status="Active">Match</Badge> },
+        { id: 'policyId', label: 'Policy', accessor: (r) => r.policyId, render: (r) => <span className="mono">{r.policyId}</span> },
+        { id: 'freq', label: 'Freq', accessor: (r) => r.freq },
+        { id: 'annual', label: 'Annual', accessor: (r) => r.annual, render: (r) => <MoneyDisplay value={r.annual} className="mono" /> },
+        { id: 'cobolInst', label: 'COBOL inst.', accessor: (r) => r.cobolInst, render: (r) => <span className="mono">{r.cobolInst}</span> },
+        { id: 'cobolDue', label: 'COBOL due', accessor: (r) => r.cobolDue },
+        { id: 'cobolAmt', label: 'COBOL amt', accessor: (r) => r.cobolAmt, render: (r) => <MoneyDisplay value={r.cobolAmt} className="mono" /> },
+        { id: 'javaInst', label: 'Java inst.', accessor: (r) => r.javaInst, render: (r) => <span className="mono">{r.javaInst}</span> },
+        { id: 'javaDue', label: 'Java due', accessor: (r) => r.javaDue },
+        { id: 'javaAmt', label: 'Java amt', accessor: (r) => r.javaAmt, render: (r) => <MoneyDisplay value={r.javaAmt} className="mono" /> },
+        {
+          id: 'match',
+          label: 'Result',
+          accessor: (r) => r.result,
+          render: (r) => (
+            <Badge status={r.result.startsWith('Break') ? 'Denied' : 'Approved'}>{r.result}</Badge>
+          ),
+        },
       ]}
       getRowId={(r) => r.id}
       emptyMessage="No installments."
@@ -35,9 +46,9 @@ function InvoicesView() {
       aria-label="Invoices"
       rows={rows}
       columns={[
-        { id: 'id', label: 'Invoice', accessor: (r) => r.id },
+        { id: 'id', label: 'Invoice', accessor: (r) => r.id, render: (r) => <span className="mono">{r.id}</span> },
         { id: 'policyId', label: 'Policy', accessor: (r) => r.policyId },
-        { id: 'amount', label: 'Amount', accessor: (r) => r.amount, render: (r) => <MoneyDisplay value={r.amount} /> },
+        { id: 'amount', label: 'Amount', accessor: (r) => r.amount, render: (r) => <MoneyDisplay value={r.amount} className="mono" /> },
         { id: 'status', label: 'Status', accessor: (r) => r.status },
       ]}
       getRowId={(r) => r.id}
@@ -57,7 +68,7 @@ function SkippedView() {
       columns={[
         { id: 'policyId', label: 'Policy', accessor: (r) => r.policyId },
         { id: 'nextDue', label: 'Next due', accessor: (r) => r.nextDue },
-        { id: 'daysOut', label: 'Days out', accessor: (r) => r.daysOut },
+        { id: 'daysOut', label: 'Days out', accessor: (r) => r.daysOut, render: (r) => <span className="mono">{r.daysOut}</span> },
         { id: 'reason', label: 'Reason', accessor: (r) => r.reason },
       ]}
       getRowId={(r) => r.policyId}
@@ -68,44 +79,77 @@ function SkippedView() {
 
 export function BillingDashboard() {
   const [signedOff, setSignedOff] = useState(false)
+  const breaks = 2
 
   const tabs: TabItem[] = [
-    { id: 'installments', label: 'Installments', content: <InstallmentsView /> },
+    { id: 'installments', label: 'Installment comparison', content: <InstallmentsView /> },
     { id: 'invoices', label: 'Invoices', content: <InvoicesView /> },
-    { id: 'skipped', label: 'Skipped candidates', content: <SkippedView /> },
+    { id: 'skipped', label: 'Skipped candidates (318)', content: <SkippedView /> },
+    { id: 'spec', label: 'Arithmetic specification', content: <p style={{ fontSize: 'var(--pcis-font-size-sm)' }}>COBOL BIL003B vs Spring Batch billing-generation-job — same seeded data, reference date 2026-08-10.</p> },
   ]
 
   return (
     <section aria-labelledby="billing-heading">
-      <h1 id="billing-heading" className="visually-hidden">
-        Billing Reconciliation
-      </h1>
+      <h1 id="billing-heading">Billing generation — parallel run reconciliation</h1>
+      <p className="wf-page-lede mono" style={{ fontSize: 'var(--pcis-font-size-xs)' }}>
+        COBOL BIL003B baseline vs Spring Batch billing-generation-job · same seeded data · reference date 2026-08-10
+      </p>
 
-      <div className="page-grid-kpi" style={{ marginBottom: 'var(--pcis-space-6)' }}>
+      <div className="wf-kpi-grid wf-kpi-grid--5">
         {[
-          { label: 'Rows compared', value: '4,812' },
-          { label: 'Matched', value: '4,812' },
-          { label: 'Breaks', value: '0' },
-          { label: 'Lead-window skips', value: '37' },
+          { label: 'Rows compared', value: '12,480' },
+          { label: 'Matched exactly', value: '12,478', tone: 'success' as const },
+          { label: 'Breaks', value: String(breaks), tone: 'error' as const },
+          { label: 'Lead-window skips', value: '318', tone: 'warning' as const },
+          { label: 'Coverage (monetary code)', value: '94%' },
         ].map((kpi) => (
-          <BlueprintCard key={kpi.label} kicker={kpi.label}>
-            <div style={{ fontSize: '1.625rem', fontWeight: 600 }}>{kpi.value}</div>
-          </BlueprintCard>
+          <div key={kpi.label} className="wf-kpi-card">
+            <div className="wf-stat-label">{kpi.label}</div>
+            <div
+              className="wf-kpi-value"
+              style={{
+                color:
+                  kpi.tone === 'success'
+                    ? 'var(--pcis-token-success)'
+                    : kpi.tone === 'error'
+                      ? 'var(--pcis-token-error)'
+                      : kpi.tone === 'warning'
+                        ? 'var(--pcis-token-warning)'
+                        : undefined,
+              }}
+            >
+              {kpi.value}
+            </div>
+          </div>
         ))}
       </div>
 
+      <Alert variant="warning">
+        {breaks} breaks on frequency values outside M/Q/S. Both resolved to the annual fallback in COBOL; Java reader must apply the same +1 YEAR default. Gate stays closed until breaks = 0.
+      </Alert>
+
       <Tabs items={tabs} defaultTabId="installments" aria-label="Billing views" />
 
-      <div style={{ marginTop: 'var(--pcis-space-6)', display: 'flex', justifyContent: 'flex-end' }}>
-        <BlueprintCard kicker="Finance sign-off" style={{ maxWidth: 420 }}>
-          <p style={{ fontSize: 'var(--pcis-font-size-sm)' }}>
-            30-day parallel run to the cent, 0 unexplained breaks — ready for the Phase 1 cutover gate.
+      <BlueprintCard kicker="Phase gate sign-off" style={{ marginTop: 'var(--pcis-space-6)' }}>
+        <div className="wf-header-row" style={{ marginBottom: 0 }}>
+          <p style={{ fontSize: 'var(--pcis-font-size-sm)', margin: 0, maxWidth: '52ch' }}>
+            Finance &amp; Actuarial sign-off requires 0 breaks across 3 consecutive cycles. Db2 for i remains system of record until then.
           </p>
-          <Button variant="primary" onClick={() => setSignedOff(true)} disabled={signedOff}>
-            {signedOff ? 'Signed off ✓' : 'Approve cutover gate'}
-          </Button>
-        </BlueprintCard>
-      </div>
+          <Badge status={breaks > 0 ? 'Denied' : 'Approved'}>{breaks > 0 ? 'Blocked — 2 breaks' : 'Ready'}</Badge>
+        </div>
+        <div className="wf-sticky-footer" style={{ position: 'static', borderTop: 'none', paddingTop: 'var(--pcis-space-4)' }}>
+          <span style={{ fontSize: 'var(--pcis-font-size-xs)', color: 'var(--pcis-color-text-muted)' }}>
+            Export evidence pack for audit retention
+          </span>
+          <div style={{ display: 'flex', gap: 'var(--pcis-space-2)' }}>
+            <Button variant="ghost">Export evidence pack</Button>
+            <Button variant="secondary">Re-run comparison</Button>
+            <Button variant="primary" onClick={() => setSignedOff(true)} disabled={signedOff || breaks > 0}>
+              {signedOff ? 'Signed off ✓' : 'Approve cutover gate'}
+            </Button>
+          </div>
+        </div>
+      </BlueprintCard>
     </section>
   )
 }

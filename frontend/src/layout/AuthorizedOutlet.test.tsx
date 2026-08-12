@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { AppLayout } from './AppLayout'
 import { authFixtures } from '../test-fixtures/authSessions'
 import { DemoRoleProvider } from '../demo/demo-role'
+import { ThemeProvider } from '../theme/ThemeProvider'
 import { MENUMD1_ERROR_91 } from '../auth/errors'
 
 const mockUseAuth = vi.fn()
@@ -27,6 +28,7 @@ describe('AuthorizedOutlet', () => {
     })
 
     render(
+      <ThemeProvider>
       <DemoRoleProvider>
         <MemoryRouter initialEntries={['/claims']}>
           <Routes>
@@ -35,7 +37,8 @@ describe('AuthorizedOutlet', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </DemoRoleProvider>,
+      </DemoRoleProvider>
+      </ThemeProvider>,
     )
 
     expect(screen.getByRole('navigation', { name: 'Primary' })).toBeInTheDocument()
@@ -56,6 +59,7 @@ describe('AuthorizedOutlet', () => {
     })
 
     render(
+      <ThemeProvider>
       <DemoRoleProvider>
         <MemoryRouter initialEntries={['/claims']}>
           <Routes>
@@ -64,7 +68,8 @@ describe('AuthorizedOutlet', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </DemoRoleProvider>,
+      </DemoRoleProvider>
+      </ThemeProvider>,
     )
 
     expect(screen.getByText('Claim inquiry content')).toBeInTheDocument()

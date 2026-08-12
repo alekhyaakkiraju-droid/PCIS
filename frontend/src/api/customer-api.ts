@@ -5,14 +5,10 @@ import type { components } from './generated/customer-svc'
 export type Customer = components['schemas']['Customer']
 export type CustomerAddress = components['schemas']['CustomerAddress']
 export type CustomerContact = components['schemas']['CustomerContact']
-export type CustomerPage = components['schemas']['CustomerPage']
 export type CreateCustomerRequest = components['schemas']['CreateCustomerRequest']
-
-export interface ListCustomersParams {
-  q?: string
-  page?: number
-  size?: number
-}
+export type UpdateCustomerRequest = components['schemas']['UpdateCustomerRequest']
+export type DuplicateOverrideRequest = components['schemas']['DuplicateOverrideRequest']
+export type DuplicateCheckResponse = components['schemas']['DuplicateCheckResponse']
 
 /**
  * Typed client module for the customer-svc domain.
@@ -20,13 +16,9 @@ export interface ListCustomersParams {
  * auth, correlation, retry, and error handling.
  */
 export const customerApi = {
-  async list(params?: ListCustomersParams): Promise<CustomerPage> {
-    const search = new URLSearchParams()
-    if (params?.q) search.set('q', params.q)
-    if (params?.page !== undefined) search.set('page', String(params.page))
-    if (params?.size !== undefined) search.set('size', String(params.size))
-    const qs = search.toString()
-    return apiClient.get<CustomerPage>(`/v1/customers${qs ? `?${qs}` : ''}`)
+  async search(query: string): Promise<Customer[]> {
+    const params = new URLSearchParams({ q: query })
+    return apiClient.get<Customer[]>(`/v1/customers/search?${params.toString()}`)
   },
 
   async getById(id: number): Promise<Customer> {
@@ -35,6 +27,18 @@ export const customerApi = {
 
   async create(data: CreateCustomerRequest): Promise<Customer> {
     return apiClient.post<Customer>('/v1/customers', data)
+  },
+
+  async update(id: number, data: UpdateCustomerRequest): Promise<Customer> {
+    return apiClient.put<Customer>(`/v1/customers/${id}`, data)
+  },
+
+  async duplicateCheck(id: number): Promise<DuplicateCheckResponse> {
+    return apiClient.get<DuplicateCheckResponse>(`/v1/customers/${id}/duplicate-check`)
+  },
+
+  async createWithDuplicateOverride(data: DuplicateOverrideRequest): Promise<Customer> {
+    return apiClient.post<Customer>('/v1/customers/duplicate-overrides', data)
   },
 
   async get360(id: number): Promise<Customer360Response> {

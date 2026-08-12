@@ -8,4 +8,5 @@ import java.math.BigDecimal;
 
 public record CreateReserveRequest(
     @NotBlank @Size(max = 3) String reserveType,
-    @NotNull @Positive BigDecimal approvedAmt) {}
+    @NotNull @Positive BigDecimal approvedAmt,
+    @Size(max = 200) String reason) {}

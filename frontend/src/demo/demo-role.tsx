@@ -22,6 +22,8 @@ export const DEMO_PERSONAS: DemoPersona[] = [
   { role: 'CSR', label: 'CSR', displayName: 'J. Reyes', initials: 'JR' },
   { role: 'UNDERWRITER', label: 'Underwriter', displayName: 'D. Alvarado', initials: 'DA' },
   { role: 'COMPLIANCE', label: 'Compliance', displayName: 'S. Mehta', initials: 'SM' },
+  { role: 'FINANCE', label: 'Finance', displayName: 'F. Nguyen', initials: 'FN' },
+  { role: 'BATCH_SVC', label: 'Batch Operator', displayName: 'B. Frank', initials: 'BF' },
 ]
 
 const STORAGE_KEY = 'pcis.demoRole'

@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { breakpoints, colors, elevation, radii, spacing, tokens, typography } from './tokens'
+import { breakpoints, designTokens, elevation, radii, spacing, tokens, typography } from './tokens'
 
 describe('design tokens', () => {
-  it('exposes complete token groups', () => {
-    expect(tokens.colors.primary[600]).toBe('#0b6e6a')
-    expect(colors.neutral[800]).toBe('#1a2332')
-    expect(typography.fontSize.md).toBe('1rem')
-    expect(spacing[4]).toBe('1rem')
-    expect(radii.md).toBeTruthy()
-    expect(elevation.md).toContain('rgb')
+  it('exposes wireframe token groups', () => {
+    expect(tokens.colors.primary.light).toBe('#0f62fe')
+    expect(designTokens.colors.nav_bg.light).toBe('#161616')
+    expect(typography.fontSize.sm).toBe('12px')
+    expect(spacing['4']).toBe('16px')
+    expect(radii.md).toBe('4px')
+    expect(elevation.md).toContain('rgba')
     expect(breakpoints.md).toBe(768)
   })
 })

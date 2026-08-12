@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react'
 
 /** Local dev BFF stubs until api-gateway auth routes are wired (WO-224). */
 function devAuthMockPlugin(): Plugin {
-  const sessionPath = path.resolve(__dirname, 'fixtures/auth/session-csr.json')
+  const sessionPath = path.resolve(__dirname, 'fixtures/auth/session-adjuster.json')
   return {
     name: 'pcis-dev-auth-mock',
     configureServer(server) {

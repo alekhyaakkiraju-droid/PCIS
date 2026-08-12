@@ -1,20 +1,15 @@
 import { Link, useLocation } from 'react-router'
-import { useAuth } from '@/auth/AuthContext'
+import { useCapabilities } from '@/auth/useCapabilities'
 import { MENUMD1_ERROR_91 } from '@/auth/errors'
-import { requiredRolesForPath } from '@/layout/nav-config'
-import { useDemoRole, formatRoleList } from '@/demo/demo-role'
+import { formatRoleList } from '@/demo/demo-role'
 import { BlueprintCard, Button } from '@/components/ui'
 
 export function ForbiddenPage() {
-  const { user } = useAuth()
   const { pathname } = useLocation()
-  const { effectiveRoles, activePersona } = useDemoRole()
+  const { roles, requiredRolesForPath } = useCapabilities()
 
-  const roles = effectiveRoles(user?.roles ?? [])
   const roleLabel =
-    activePersona(user?.roles ?? [])?.label ??
-    roles[0]?.replace(/_/g, ' ') ??
-    'Guest'
+    roles[0]?.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) ?? 'Guest'
   const required = requiredRolesForPath(pathname)
   const deniedPermLabel = required ? formatRoleList(required) : 'any authenticated role'
 

@@ -64,13 +64,12 @@ public class PaymentAuthorityService {
       throw new InsufficientReserveException(outstanding);
     }
 
-    BigDecimal maxPayable = outstanding.min(adjuster.getAuthorityLimit());
-    if (requestedAmount.compareTo(maxPayable) > 0) {
-      if (requestedAmount.compareTo(adjuster.getAuthorityLimit()) > 0) {
-        throw new AuthorityLimitExceededException(
-            adjuster.getAuthorityLimit(), requestedAmount);
-      }
+    if (requestedAmount.compareTo(outstanding) > 0) {
       throw new InsufficientReserveException(outstanding);
+    }
+
+    if (requestedAmount.compareTo(adjuster.getAuthorityLimit()) > 0) {
+      throw new AuthorityLimitExceededException(adjuster.getAuthorityLimit(), requestedAmount);
     }
 
     return new PaymentAuthorizationResult(approval, reserve, adjuster);

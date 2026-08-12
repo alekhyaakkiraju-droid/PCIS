@@ -1,7 +1,14 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
+import { useQuery } from '@tanstack/react-query'
 import inquiryFixture from '../../../fixtures/claims/inquiry.json'
-import { Badge, DataTable, Input } from '@/components/ui'
+import { claimsApi, type ClaimListItem } from '@/api/claims-api'
+import {
+  custNameForId,
+  formatClaimNbr,
+  shouldUseClaimsFixtureFallback,
+} from '@/api/claims-fixture-fallback'
+import { Badge, DataTable, Input, formatMoney } from '@/components/ui'
 
 type InquiryTab = 'open' | 'pending' | 'closed' | 'escalated'
 
@@ -21,21 +28,78 @@ function tagStatus(tagClass: string): 'Active' | 'Pending' | 'Inactive' {
   return 'Active'
 }
 
+function claimToRow(claim: ClaimListItem, tab: InquiryTab): InquiryRow {
+  const reserve =
+    claim.reserveRemaining != null ? formatMoney(claim.reserveRemaining) : '—'
+  const statusLabel =
+    claim.claimStatus === 'C'
+      ? 'Closed — paid'
+      : claim.pendingApproval || tab === 'pending'
+        ? 'Pending approval'
+        : 'Open'
+  return {
+    id: formatClaimNbr(claim.claimNbr),
+    name: custNameForId(claim.custId),
+    lossDate: claim.lossDate,
+    adjuster: claim.adjusterName ?? 'K. Alvarez',
+    reserve,
+    status: statusLabel,
+    tagClass:
+      claim.claimStatus === 'C'
+        ? 'accent'
+        : claim.pendingApproval || tab === 'pending'
+          ? 'neutral'
+          : 'outline',
+  }
+}
+
+function fixtureRows(tab: InquiryTab, filter: string): InquiryRow[] {
+  const source = (inquiryFixture as Record<InquiryTab, InquiryRow[]>)[tab] ?? []
+  if (!filter.trim()) return source
+  const q = filter.toLowerCase()
+  return source.filter(
+    (row) =>
+      row.id.toLowerCase().includes(q) ||
+      row.name.toLowerCase().includes(q) ||
+      row.adjuster.toLowerCase().includes(q),
+  )
+}
+
 export function ClaimInquiryPage() {
+  const [searchParams] = useSearchParams()
+  const highlightClaim = searchParams.get('claimNbr')
   const [tab, setTab] = useState<InquiryTab>('open')
   const [filter, setFilter] = useState('')
 
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['claims-inquiry', tab],
+    queryFn: async () => {
+      try {
+        if (tab === 'escalated') return [] as ClaimListItem[]
+        return await claimsApi.list({ view: tab })
+      } catch (err) {
+        if (shouldUseClaimsFixtureFallback(err)) {
+          return null
+        }
+        throw err
+      }
+    },
+  })
+
   const rows = useMemo(() => {
-    const source = (inquiryFixture as Record<InquiryTab, InquiryRow[]>)[tab] ?? []
-    if (!filter.trim()) return source
+    if (data === null) {
+      return fixtureRows(tab, filter)
+    }
+    const mapped = (data ?? []).map((claim) => claimToRow(claim, tab))
+    if (!filter.trim()) return mapped
     const q = filter.toLowerCase()
-    return source.filter(
+    return mapped.filter(
       (row) =>
         row.id.toLowerCase().includes(q) ||
         row.name.toLowerCase().includes(q) ||
         row.adjuster.toLowerCase().includes(q),
     )
-  }, [filter, tab])
+  }, [data, filter, tab])
 
   const tabs: { id: InquiryTab; label: string }[] = [
     { id: 'open', label: 'Open' },
@@ -61,6 +125,18 @@ export function ClaimInquiryPage() {
         />
       </div>
 
+      {highlightClaim ? (
+        <p style={{ fontSize: 'var(--pcis-font-size-sm)', marginBottom: 'var(--pcis-space-3)' }}>
+          Highlighting claim <strong>{highlightClaim}</strong> — open Payment workspace from the table.
+        </p>
+      ) : null}
+
+      {error ? (
+        <p role="alert" style={{ color: 'var(--c-error, #da1e28)', marginBottom: 'var(--pcis-space-3)' }}>
+          {(error as Error).message}
+        </p>
+      ) : null}
+
       <div role="tablist" aria-label="Claim inquiry views" style={{ display: 'flex', gap: 'var(--pcis-space-2)', borderBottom: '1px solid var(--pcis-color-border)', marginBottom: 'var(--pcis-space-4)' }}>
         {tabs.map((t) => (
           <button
@@ -77,11 +153,15 @@ export function ClaimInquiryPage() {
         ))}
       </div>
 
-      {rows.length === 0 ? (
+      {isLoading ? <p style={{ fontSize: 'var(--pcis-font-size-sm)' }}>Loading claims…</p> : null}
+
+      {!isLoading && rows.length === 0 ? (
         <p className="empty-state">
           No qualifying records for this filter — 0 selected, 0 processed. This is a well-formed empty state, not an error.
         </p>
-      ) : (
+      ) : null}
+
+      {!isLoading && rows.length > 0 ? (
         <DataTable
           aria-label="Claim inquiry results"
           rows={rows}
@@ -106,7 +186,7 @@ export function ClaimInquiryPage() {
           getRowId={(r) => r.id}
           emptyMessage="No claims match this filter."
         />
-      )}
+      ) : null}
     </section>
   )
 }

@@ -17,6 +17,10 @@ export {
   type NavLink,
 }
 
+export { useCapabilities } from './useCapabilities'
+export type { Capabilities } from './useCapabilities'
+export { hasPermission, permissionsForRoles, type PcisPermission } from './capabilities'
+
 export function filterNavItemsForRoles(roles: PcisRole[]): NavLink[] {
   return filterNavSectionsForRoles(roles).flatMap((section) => section.items)
 }

@@ -3,6 +3,7 @@ package com.pcis.claims.controller;
 import com.pcis.claims.application.ClaimsApplicationService;
 import com.pcis.claims.dto.ApprovalResponse;
 import com.pcis.claims.dto.ClaimDetailResponse;
+import com.pcis.claims.dto.ClaimListItemResponse;
 import com.pcis.claims.dto.ClaimResponse;
 import com.pcis.claims.dto.ClaimResponseMapper;
 import com.pcis.claims.dto.CreateApprovalRequest;
@@ -43,10 +44,12 @@ public class ClaimsController {
 
   @GetMapping
   @PreAuthorize("hasAuthority('claims:read')")
-  public List<ClaimResponse> listClaims() {
-    return claimsApplicationService.listClaims().stream()
-        .map(claimResponseMapper::toClaimResponse)
-        .toList();
+  public List<ClaimListItemResponse> listClaims(
+      @org.springframework.web.bind.annotation.RequestParam(value = "status", required = false)
+          String status,
+      @org.springframework.web.bind.annotation.RequestParam(value = "view", required = false)
+          String view) {
+    return claimsApplicationService.listClaimSummaries(status, view);
   }
 
   @GetMapping("/customer/{custId}")

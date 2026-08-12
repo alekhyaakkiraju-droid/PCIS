@@ -9,7 +9,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -100,32 +99,52 @@ public class SecurityConfig {
     objectMapper.writeValue(response.getOutputStream(), problem);
   }
 
-  /** Extracts both scope (space-delimited string or collection) and roles claim as authorities. */
+  /** Extracts scope, roles claim, and maps wireframe roles to customer domain permissions. */
   static final class RoleAndScopeConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
+
+    private static final java.util.Map<String, List<String>> ROLE_PERMISSIONS =
+        java.util.Map.of(
+            "CSR", List.of("customer:read", "customer:write", "customer:duplicate-override"),
+            "CLAIMS_SUPERVISOR",
+                List.of("customer:read", "customer:duplicate-override"),
+            "COMPLIANCE", List.of("customer:read"),
+            "UNDERWRITER", List.of("customer:read"),
+            "CLAIMS_ADJUSTER", List.of("customer:read"));
 
     @Override
     public Collection<GrantedAuthority> convert(Jwt jwt) {
-      Stream<String> scopes = Stream.empty();
+      java.util.LinkedHashSet<String> authorityNames = new java.util.LinkedHashSet<>();
+
       Object scopeClaim = jwt.getClaim("scope");
       if (scopeClaim instanceof String s) {
-        scopes = Stream.of(s.split("\\s+"));
+        java.util.Arrays.stream(s.split("\\s+"))
+            .filter(v -> v != null && !v.isBlank())
+            .forEach(authorityNames::add);
       } else if (scopeClaim instanceof Collection<?> c) {
-        scopes = c.stream().map(Object::toString);
+        c.stream().map(Object::toString).filter(v -> !v.isBlank()).forEach(authorityNames::add);
       }
 
-      Stream<String> roles = Stream.empty();
       Object rolesClaim = jwt.getClaim("roles");
       if (rolesClaim instanceof Collection<?> c) {
-        roles = c.stream().map(Object::toString);
+        c.stream()
+            .map(Object::toString)
+            .filter(v -> v != null && !v.isBlank())
+            .forEach(
+                role -> {
+                  authorityNames.add(role);
+                  String normalized = role.startsWith("ROLE_") ? role.substring(5) : role;
+                  List<String> mapped = ROLE_PERMISSIONS.get(normalized);
+                  if (mapped != null) {
+                    authorityNames.addAll(mapped);
+                  }
+                });
       }
 
-      List<GrantedAuthority> authorities =
-          Stream.concat(scopes, roles)
-              .filter(s -> s != null && !s.isBlank())
-              .map(SimpleGrantedAuthority::new)
-              .collect(Collectors.toList());
+      if (authorityNames.isEmpty()) {
+        return Collections.emptyList();
+      }
 
-      return authorities.isEmpty() ? Collections.emptyList() : authorities;
+      return authorityNames.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
     }
   }
 }

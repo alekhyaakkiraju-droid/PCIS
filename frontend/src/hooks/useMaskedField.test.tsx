@@ -1,6 +1,7 @@
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { AuthProvider } from '@/auth/AuthContext'
+import { DemoRoleProvider } from '@/demo/demo-role'
 import { maskPiiValue, useMaskedField } from './useMaskedField'
 
 vi.mock('oidc-client-ts', () => ({
@@ -43,7 +44,11 @@ function wrapper(session: { authenticated: boolean; user: { sub: string; name: s
         }),
       ),
     )
-    return <AuthProvider>{children}</AuthProvider>
+    return (
+      <AuthProvider>
+        <DemoRoleProvider>{children}</DemoRoleProvider>
+      </AuthProvider>
+    )
   }
 }
 

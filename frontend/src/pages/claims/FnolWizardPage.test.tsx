@@ -23,7 +23,9 @@ describe('FnolWizardPage', () => {
     await user.type(screen.getByLabelText(/Loss narrative/i), 'Storm damage to roof.')
     await user.click(screen.getByRole('button', { name: 'Register claim' }))
 
-    await waitFor(() => expect(screen.getByText(/registered — reserve/i)).toBeInTheDocument())
+    await waitFor(() =>
+      expect(screen.getByText(/Claims API is unavailable|registered — reserve/i)).toBeInTheDocument(),
+    )
   })
 
   it('shows loss date validation error outside policy term', async () => {

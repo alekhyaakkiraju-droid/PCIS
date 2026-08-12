@@ -5,6 +5,7 @@ import com.pcis.claims.domain.ClaimEntity;
 import com.pcis.claims.domain.ClaimNoteEntity;
 import com.pcis.claims.domain.ClaimPaymentEntity;
 import com.pcis.claims.domain.ClaimReserveEntity;
+import com.pcis.claims.domain.ClaimReserveLedgerEntity;
 import java.math.BigDecimal;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -22,12 +23,39 @@ public class ClaimResponseMapper {
         entity.getClaimStatus());
   }
 
+  public ClaimListItemResponse toClaimListItemResponse(
+      ClaimEntity entity,
+      BigDecimal reserveRemaining,
+      BigDecimal totalApprovedAmt,
+      BigDecimal totalPaidToDate,
+      String adjusterId,
+      String adjusterName,
+      boolean pendingApproval) {
+    return new ClaimListItemResponse(
+        entity.getClaimNbr(),
+        entity.getPolNbr(),
+        entity.getCustId(),
+        entity.getLossDate(),
+        entity.getClaimType(),
+        entity.getClaimStatus(),
+        reserveRemaining,
+        totalApprovedAmt,
+        totalPaidToDate,
+        adjusterId,
+        adjusterName,
+        pendingApproval);
+  }
+
   public ClaimDetailResponse toClaimDetailResponse(
       ClaimEntity entity,
       BigDecimal authorityLimit,
+      String adjusterId,
+      String adjusterName,
+      BigDecimal reserveRemaining,
       List<ClaimReserveEntity> reserves,
       List<ClaimPaymentEntity> payments,
-      List<ClaimNoteEntity> notes) {
+      List<ClaimNoteEntity> notes,
+      List<ClaimReserveLedgerEntity> reserveLedger) {
     return new ClaimDetailResponse(
         entity.getClaimNbr(),
         entity.getPolNbr(),
@@ -37,9 +65,13 @@ public class ClaimResponseMapper {
         entity.getClaimStatus(),
         entity.getVersion(),
         authorityLimit,
+        adjusterId,
+        adjusterName,
+        reserveRemaining,
         reserves.stream().map(this::toReserveResponse).toList(),
         payments.stream().map(this::toPaymentResponse).toList(),
-        notes.stream().map(this::toNoteResponse).toList());
+        notes.stream().map(this::toNoteResponse).toList(),
+        reserveLedger.stream().map(this::toReserveLedgerResponse).toList());
   }
 
   public ReserveResponse toReserveResponse(ClaimReserveEntity entity) {
@@ -50,6 +82,19 @@ public class ClaimResponseMapper {
         entity.getApprovedAmt(),
         entity.getPaidToDate(),
         entity.getReserveStatus());
+  }
+
+  public ReserveLedgerResponse toReserveLedgerResponse(ClaimReserveLedgerEntity entity) {
+    return new ReserveLedgerResponse(
+        entity.getLedgerId(),
+        entity.getClaim().getClaimNbr(),
+        entity.getReserve() != null ? entity.getReserve().getReserveId() : null,
+        entity.getEventDate(),
+        entity.getReason(),
+        entity.getAmount(),
+        entity.getBalanceAfter(),
+        entity.getActorId(),
+        entity.getEventType());
   }
 
   public ApprovalResponse toApprovalResponse(ApprovalEntity entity) {

@@ -8,4 +8,6 @@ public interface ClaimRepository extends JpaRepository<ClaimEntity, String> {
   List<ClaimEntity> findByPolNbr(String polNbr);
 
   List<ClaimEntity> findByCustId(Integer custId);
+
+  List<ClaimEntity> findByClaimStatus(String claimStatus);
 }

@@ -1,99 +1,202 @@
 /**
- * PCIS design tokens — mono steel-blue scheme (Hackathon wireframe / industry DS).
- * Typography: IBM Plex Sans / IBM Plex Mono per wireframe spec.
+ * PCIS design tokens — Carbon-inspired wireframe palette (light + dark).
+ * Typography: IBM Plex Sans / IBM Plex Mono.
  */
-:root {
-  /* Brand / primary (steel-blue accent ramp) */
-  --pcis-color-primary-50: #eef6ff;
-  --pcis-color-primary-100: #eef6ff;
-  --pcis-color-primary-200: #d6ebff;
-  --pcis-color-primary-300: #b5d9fd;
-  --pcis-color-primary-400: #94bce3;
-  --pcis-color-primary-500: #749dc4;
-  --pcis-color-primary-600: #5980a6;
-  --pcis-color-primary-700: #416180;
-  --pcis-color-primary-800: #2c455d;
-  --pcis-color-primary-900: #1d2d3d;
+:root,
+[data-theme='light'] {
+  color-scheme: light;
 
-  /* Neutral (mono scale) */
+  /* Semantic palette */
+  --pcis-token-primary: #0f62fe;
+  --pcis-token-primary-hover: #0353e9;
+  --pcis-token-secondary: #393939;
+  --pcis-token-accent: #8a3ffc;
+  --pcis-token-background: #f4f4f4;
+  --pcis-token-surface: #ffffff;
+  --pcis-token-surface-alt: #f7f7f8;
+  --pcis-token-border: #dcdcdc;
+  --pcis-token-text-primary: #161616;
+  --pcis-token-text-secondary: #4c4c4c;
+  --pcis-token-text-muted: #6f6f6f;
+  --pcis-token-nav-bg: #161616;
+  --pcis-token-nav-active: #333333;
+  --pcis-token-nav-text: #f4f4f4;
+  --pcis-token-nav-text-muted: #c6c6c6;
+  --pcis-token-success: #0e6027;
+  --pcis-token-success-bg: #defbe6;
+  --pcis-token-warning: #8e6a00;
+  --pcis-token-warning-bg: #fcf4d6;
+  --pcis-token-error: #da1e28;
+  --pcis-token-error-bg: #fff1f1;
+  --pcis-token-info: #0043ce;
+  --pcis-token-info-bg: #edf5ff;
+
+  /* Legacy aliases (used across app) */
+  --pcis-color-primary-50: #edf5ff;
+  --pcis-color-primary-100: #d0e2ff;
+  --pcis-color-primary-200: #a6c8ff;
+  --pcis-color-primary-300: #78a9ff;
+  --pcis-color-primary-400: #4589ff;
+  --pcis-color-primary-500: #0f62fe;
+  --pcis-color-primary-600: #0f62fe;
+  --pcis-color-primary-700: #0353e9;
+  --pcis-color-primary-800: #002d9c;
+  --pcis-color-primary-900: #001d6c;
+
   --pcis-color-neutral-0: #ffffff;
-  --pcis-color-neutral-50: #f5f5f8;
-  --pcis-color-neutral-100: #f5f5f8;
-  --pcis-color-neutral-200: #e7e7ea;
-  --pcis-color-neutral-300: #d4d4d7;
-  --pcis-color-neutral-400: #b7b7ba;
-  --pcis-color-neutral-500: #98989b;
-  --pcis-color-neutral-600: #7a7a7d;
-  --pcis-color-neutral-700: #5d5d60;
-  --pcis-color-neutral-800: #424244;
-  --pcis-color-neutral-900: #2b2b2d;
+  --pcis-color-neutral-50: #f4f4f4;
+  --pcis-color-neutral-100: #f4f4f4;
+  --pcis-color-neutral-200: #e0e0e0;
+  --pcis-color-neutral-300: #dcdcdc;
+  --pcis-color-neutral-400: #a8a8a8;
+  --pcis-color-neutral-500: #8d8d8d;
+  --pcis-color-neutral-600: #6f6f6f;
+  --pcis-color-neutral-700: #525252;
+  --pcis-color-neutral-800: #393939;
+  --pcis-color-neutral-900: #161616;
 
-  /* Semantic */
-  --pcis-color-success-50: #e8f7ef;
-  --pcis-color-success-500: #1f8a4c;
-  --pcis-color-success-700: #146338;
-  --pcis-color-warning-50: #fff6e5;
-  --pcis-color-warning-500: #c47a00;
-  --pcis-color-warning-700: #8a5600;
-  --pcis-color-error-50: #fdecea;
-  --pcis-color-error-500: #c0392b;
-  --pcis-color-error-700: #8e2a1f;
-  --pcis-color-info-50: #eef6ff;
-  --pcis-color-info-500: #5980a6;
-  --pcis-color-info-700: #416180;
+  --pcis-color-success-50: var(--pcis-token-success-bg);
+  --pcis-color-success-500: var(--pcis-token-success);
+  --pcis-color-success-700: #044317;
+  --pcis-color-warning-50: var(--pcis-token-warning-bg);
+  --pcis-color-warning-500: var(--pcis-token-warning);
+  --pcis-color-warning-700: #684e00;
+  --pcis-color-error-50: var(--pcis-token-error-bg);
+  --pcis-color-error-500: var(--pcis-token-error);
+  --pcis-color-error-700: #a2191f;
+  --pcis-color-info-50: var(--pcis-token-info-bg);
+  --pcis-color-info-500: var(--pcis-token-info);
+  --pcis-color-info-700: #002d9c;
 
-  /* Surfaces */
-  --pcis-color-bg: #f2f2f3;
-  --pcis-color-surface: var(--pcis-color-neutral-0);
-  --pcis-color-text: #1d1f20;
-  --pcis-color-text-muted: var(--pcis-color-neutral-600);
-  --pcis-color-border: color-mix(in srgb, #1d1f20 16%, transparent);
-  --pcis-color-focus: var(--pcis-color-primary-600);
+  --pcis-color-bg: var(--pcis-token-background);
+  --pcis-color-surface: var(--pcis-token-surface);
+  --pcis-color-text: var(--pcis-token-text-primary);
+  --pcis-color-text-muted: var(--pcis-token-text-muted);
+  --pcis-color-border: var(--pcis-token-border);
+  --pcis-color-focus: var(--pcis-token-primary);
+  --pcis-color-nav-bg: var(--pcis-token-nav-bg);
+  --pcis-color-nav-active: var(--pcis-token-nav-active);
+  --pcis-color-nav-text: var(--pcis-token-nav-text);
+  --pcis-color-nav-text-muted: var(--pcis-token-nav-text-muted);
 
-  /* Typography */
-  --pcis-font-sans: 'IBM Plex Sans', 'Segoe UI', sans-serif;
-  --pcis-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
-  --pcis-font-size-xs: 0.6875rem;
-  --pcis-font-size-sm: 0.875rem;
-  --pcis-font-size-md: 1rem;
-  --pcis-font-size-lg: 1.125rem;
-  --pcis-font-size-xl: 1.25rem;
-  --pcis-font-size-2xl: 1.5rem;
+  --pcis-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --pcis-shadow-md: 0 2px 6px rgba(0, 0, 0, 0.1);
+  --pcis-shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.14);
+  --pcis-shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.18);
+  --pcis-elevation-sm: var(--pcis-shadow-sm);
+  --pcis-elevation-md: var(--pcis-shadow-md);
+  --pcis-elevation-lg: var(--pcis-shadow-lg);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --pcis-token-primary: #78a9ff;
+  --pcis-token-primary-hover: #a6c8ff;
+  --pcis-token-secondary: #c6c6c6;
+  --pcis-token-accent: #be95ff;
+  --pcis-token-background: #0d1117;
+  --pcis-token-surface: #161b22;
+  --pcis-token-surface-alt: #1c2128;
+  --pcis-token-border: #30363d;
+  --pcis-token-text-primary: #f4f4f4;
+  --pcis-token-text-secondary: #c6c6c6;
+  --pcis-token-text-muted: #8d8d8d;
+  --pcis-token-nav-bg: #0a0d12;
+  --pcis-token-nav-active: #21262d;
+  --pcis-token-nav-text: #f4f4f4;
+  --pcis-token-nav-text-muted: #8d8d8d;
+  --pcis-token-success: #42be65;
+  --pcis-token-success-bg: #0c2b16;
+  --pcis-token-warning: #f1c21b;
+  --pcis-token-warning-bg: #2e2510;
+  --pcis-token-error: #ff8389;
+  --pcis-token-error-bg: #341316;
+  --pcis-token-info: #78a9ff;
+  --pcis-token-info-bg: #0f2440;
+
+  --pcis-color-primary-50: #0f2440;
+  --pcis-color-primary-500: #78a9ff;
+  --pcis-color-primary-600: #78a9ff;
+  --pcis-color-primary-700: #a6c8ff;
+  --pcis-color-primary-800: #d0e2ff;
+
+  --pcis-color-neutral-0: #161b22;
+  --pcis-color-neutral-50: #0d1117;
+  --pcis-color-neutral-100: #161b22;
+  --pcis-color-neutral-200: #21262d;
+  --pcis-color-neutral-300: #30363d;
+  --pcis-color-neutral-600: #8d8d8d;
+  --pcis-color-neutral-900: #f4f4f4;
+
+  --pcis-color-success-50: var(--pcis-token-success-bg);
+  --pcis-color-success-500: var(--pcis-token-success);
+  --pcis-color-warning-50: var(--pcis-token-warning-bg);
+  --pcis-color-warning-500: var(--pcis-token-warning);
+  --pcis-color-error-50: var(--pcis-token-error-bg);
+  --pcis-color-error-500: var(--pcis-token-error);
+  --pcis-color-info-50: var(--pcis-token-info-bg);
+  --pcis-color-info-500: var(--pcis-token-info);
+
+  --pcis-color-bg: var(--pcis-token-background);
+  --pcis-color-surface: var(--pcis-token-surface);
+  --pcis-color-text: var(--pcis-token-text-primary);
+  --pcis-color-text-muted: var(--pcis-token-text-muted);
+  --pcis-color-border: var(--pcis-token-border);
+  --pcis-color-focus: var(--pcis-token-primary);
+  --pcis-color-nav-bg: var(--pcis-token-nav-bg);
+  --pcis-color-nav-active: var(--pcis-token-nav-active);
+  --pcis-color-nav-text: var(--pcis-token-nav-text);
+  --pcis-color-nav-text-muted: var(--pcis-token-nav-text-muted);
+
+  --pcis-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --pcis-shadow-md: 0 2px 6px rgba(0, 0, 0, 0.55);
+  --pcis-shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.6);
+  --pcis-shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.7);
+}
+
+:root {
+  /* Typography — wireframe scale */
+  --pcis-font-sans: 'IBM Plex Sans', -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --pcis-font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+  --pcis-font-size-xs: 0.6875rem; /* 11px */
+  --pcis-font-size-sm: 0.75rem; /* 12px — dense grid default */
+  --pcis-font-size-md: 0.875rem; /* 14px */
+  --pcis-font-size-lg: 1rem; /* 16px */
+  --pcis-font-size-xl: 1.25rem; /* 20px */
+  --pcis-font-size-2xl: 1.5rem; /* 24px */
+  --pcis-font-size-3xl: 2rem; /* 32px */
   --pcis-font-weight-regular: 400;
   --pcis-font-weight-medium: 500;
   --pcis-font-weight-semibold: 600;
   --pcis-font-weight-bold: 700;
-  --pcis-line-height-tight: 1.25;
-  --pcis-line-height-normal: 1.5;
-  --pcis-line-height-relaxed: 1.625;
+  --pcis-line-height-tight: 1.2;
+  --pcis-line-height-snug: 1.3;
+  --pcis-line-height-normal: 1.45;
+  --pcis-line-height-relaxed: 1.6;
 
   /* Spacing (4px base) */
   --pcis-space-0: 0;
-  --pcis-space-1: 0.25rem;
-  --pcis-space-2: 0.5rem;
-  --pcis-space-3: 0.75rem;
-  --pcis-space-4: 1rem;
+  --pcis-space-1: 0.25rem; /* 4px */
+  --pcis-space-2: 0.5rem; /* 8px */
+  --pcis-space-3: 0.75rem; /* 12px */
+  --pcis-space-4: 1rem; /* 16px */
   --pcis-space-5: 1.25rem;
-  --pcis-space-6: 1.5rem;
-  --pcis-space-8: 2rem;
+  --pcis-space-6: 1.5rem; /* 24px */
+  --pcis-space-8: 2rem; /* 32px */
   --pcis-space-10: 2.5rem;
-  --pcis-space-12: 3rem;
-  --pcis-space-16: 4rem;
+  --pcis-space-12: 3rem; /* 48px */
+  --pcis-space-16: 4rem; /* 64px */
+  --pcis-space-24: 6rem; /* 96px */
 
   /* Radii */
   --pcis-radius-sm: 2px;
   --pcis-radius-md: 4px;
-  --pcis-radius-lg: 7px;
+  --pcis-radius-lg: 8px;
   --pcis-radius-xl: 0.75rem;
-  --pcis-radius-full: 9999px;
+  --pcis-radius-full: 999px;
 
-  /* Elevation */
-  --pcis-shadow-sm: 0 1px 2px color-mix(in srgb, #2b2b2d 14%, transparent);
-  --pcis-shadow-md: 0 3px 10px color-mix(in srgb, #2b2b2d 16%, transparent);
-  --pcis-shadow-lg: 0 12px 32px color-mix(in srgb, #2b2b2d 22%, transparent);
-  --pcis-shadow-xl: 0 20px 40px rgb(15 20 28 / 0.2);
-
-  /* Breakpoints (reference; use in JS via tokens.ts) */
+  /* Breakpoints */
   --pcis-bp-sm: 640px;
   --pcis-bp-md: 768px;
   --pcis-bp-lg: 1024px;

@@ -26,6 +26,9 @@ public class Invoice extends AuditableEntity {
   @Column(name = "POL_NBR", length = 12)
   private String polNbr;
 
+  @Column(name = "CUST_ID")
+  private Integer custId;
+
   @Column(name = "INVOICE_DATE")
   private LocalDate invoiceDate;
 
@@ -61,6 +64,14 @@ public class Invoice extends AuditableEntity {
 
   public void setPolNbr(String polNbr) {
     this.polNbr = polNbr;
+  }
+
+  public Integer getCustId() {
+    return custId;
+  }
+
+  public void setCustId(Integer custId) {
+    this.custId = custId;
   }
 
   public LocalDate getInvoiceDate() {

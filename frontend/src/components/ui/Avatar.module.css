@@ -1,0 +1,23 @@
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--pcis-radius-full);
+  background: color-mix(in srgb, var(--pcis-token-accent) 20%, var(--pcis-color-surface));
+  color: var(--pcis-token-accent);
+  font-weight: var(--pcis-font-weight-semibold);
+  font-family: var(--pcis-font-sans);
+  border: 1px solid color-mix(in srgb, var(--pcis-token-accent) 35%, transparent);
+}
+
+.sm {
+  width: 24px;
+  height: 24px;
+  font-size: var(--pcis-font-size-xs);
+}
+
+.md {
+  width: 32px;
+  height: 32px;
+  font-size: var(--pcis-font-size-sm);
+}

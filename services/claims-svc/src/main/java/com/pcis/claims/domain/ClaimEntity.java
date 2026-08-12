@@ -33,6 +33,9 @@ public class ClaimEntity extends AuditableEntity {
   @JdbcTypeCode(SqlTypes.CHAR)
   private String claimStatus;
 
+  @Column(name = "assigned_adjuster_id", length = 10)
+  private String assignedAdjusterId;
+
   @Version
   @Column(name = "version", nullable = false)
   private Long version;
@@ -54,6 +57,9 @@ public class ClaimEntity extends AuditableEntity {
 
   public String getClaimStatus() { return claimStatus; }
   public void setClaimStatus(String claimStatus) { this.claimStatus = claimStatus; }
+
+  public String getAssignedAdjusterId() { return assignedAdjusterId; }
+  public void setAssignedAdjusterId(String assignedAdjusterId) { this.assignedAdjusterId = assignedAdjusterId; }
 
   public Long getVersion() { return version; }
 }

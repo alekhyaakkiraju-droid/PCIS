@@ -9,4 +9,6 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
   List<Invoice> findByPolNbr(String polNbr);
 
   List<Invoice> findByBillSchedId(Long billSchedId);
+
+  List<Invoice> findByCustId(Integer custId);
 }

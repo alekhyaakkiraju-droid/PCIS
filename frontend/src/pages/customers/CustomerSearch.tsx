@@ -1,30 +1,85 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { Button } from '@/components/ui'
+import { useQuery } from '@tanstack/react-query'
+import { customerApi, type Customer } from '@/api/customer-api'
+import { shouldUseCustomerFixtureFallback } from '@/api/customer-fixture-fallback'
+import { Input } from '@/components/ui'
 
-const DEMO_CUSTOMERS = [
-  { custId: 19284, custName: 'Marta Field', custStatus: 'A' },
-  { custId: 100001, custName: 'Alice Johnson', custStatus: 'A' },
+const DEMO_CUSTOMERS: Customer[] = [
+  { custId: 19284, custName: 'Marta Field', custType: 'B', custStatus: 'A' },
+  { custId: 100001, custName: 'Alice Johnson', custType: 'I', custStatus: 'A' },
 ]
 
 export function CustomerSearch() {
   const navigate = useNavigate()
+  const [query, setQuery] = useState('')
+
+  const { data, isLoading, error, isFetching } = useQuery({
+    queryKey: ['customer-search', query.trim()],
+    enabled: query.trim().length >= 2,
+    queryFn: async () => {
+      try {
+        return await customerApi.search(query.trim())
+      } catch (err) {
+        if (shouldUseCustomerFixtureFallback(err)) {
+          const term = query.trim().toLowerCase()
+          return DEMO_CUSTOMERS.filter(
+            (customer) =>
+              customer.custName.toLowerCase().includes(term) ||
+              String(customer.custId).includes(term),
+          )
+        }
+        throw err
+      }
+    },
+  })
+
+  const results = query.trim().length >= 2 ? (data ?? []) : DEMO_CUSTOMERS
 
   return (
     <div>
-      <p style={{ fontSize: 'var(--pcis-font-size-sm)', marginBottom: 'var(--pcis-space-4)' }}>
-        Select a demo customer from the wireframe:
+      <Input
+        label="Customer search"
+        name="customerSearch"
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        placeholder="e.g. Marta Field or 19284"
+      />
+      {(isLoading || isFetching) && query.trim().length >= 2 ? (
+        <p style={{ fontSize: 'var(--pcis-font-size-sm)', marginTop: 'var(--pcis-space-3)' }}>
+          Searching…
+        </p>
+      ) : null}
+      {error ? (
+        <p role="alert" style={{ color: 'var(--c-error, #da1e28)', marginTop: 'var(--pcis-space-3)' }}>
+          {(error as Error).message}
+        </p>
+      ) : null}
+      <p
+        style={{
+          fontSize: 'var(--pcis-font-size-sm)',
+          marginTop: 'var(--pcis-space-4)',
+          marginBottom: 'var(--pcis-space-2)',
+        }}
+      >
+        {query.trim().length >= 2 ? 'Search results' : 'Quick access demo customers'}
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--pcis-space-2)' }}>
-        {DEMO_CUSTOMERS.map((customer) => (
-          <Button
+        {results.map((customer) => (
+          <button
             key={customer.custId}
-            variant="secondary"
+            type="button"
+            className="wf-demo-btn"
             onClick={() => navigate(`/customers/${customer.custId}`)}
-            style={{ justifyContent: 'flex-start' }}
           >
             {customer.custName} · CUS-{String(customer.custId).padStart(7, '0')}
-          </Button>
+          </button>
         ))}
+        {query.trim().length >= 2 && !isLoading && results.length === 0 ? (
+          <p style={{ fontSize: 'var(--pcis-font-size-sm)', color: 'var(--pcis-color-text-muted)' }}>
+            No customers matched your search.
+          </p>
+        ) : null}
       </div>
     </div>
   )

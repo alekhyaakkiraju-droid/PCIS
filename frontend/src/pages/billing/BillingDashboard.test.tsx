@@ -12,8 +12,9 @@ describe('BillingDashboard', () => {
     )
 
     expect(screen.getByRole('tablist', { name: 'Billing views' })).toBeInTheDocument()
-    expect(screen.getByRole('table', { name: 'Billing reconciliation installments' })).toBeInTheDocument()
-    expect(screen.getByText('POL-0088217')).toBeInTheDocument()
+    expect(screen.getByRole('table', { name: 'Installment comparison' })).toBeInTheDocument()
+    expect(screen.getAllByText('POL-000011204').length).toBeGreaterThan(0)
+    expect(screen.getByText('Break - freq fallback')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Approve cutover gate' })).toBeInTheDocument()
   })
 })

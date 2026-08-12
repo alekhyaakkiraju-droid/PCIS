@@ -9,7 +9,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -56,6 +55,8 @@ public class SecurityConfig {
                         "/actuator/prometheus")
                     .permitAll()
                     .requestMatchers("/api/v1/claims/**")
+                    .authenticated()
+                    .requestMatchers("/api/v1/customers/*/claims/**")
                     .authenticated()
                     .anyRequest()
                     .denyAll())
@@ -105,31 +106,58 @@ public class SecurityConfig {
     objectMapper.writeValue(response.getOutputStream(), problem);
   }
 
+  /** Extracts scope, roles, realm_access.roles, and maps wireframe roles to claims permissions. */
   static final class RoleAndScopeConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
+
+    private static final java.util.Map<String, List<String>> ROLE_PERMISSIONS =
+        java.util.Map.of(
+            "CLAIMS_ADJUSTER", List.of("claims:read", "claims:write"),
+            "CLAIMS_SUPERVISOR", List.of("claims:read", "claims:write"),
+            "CSR", List.of("claims:read"),
+            "COMPLIANCE", List.of("claims:read"));
 
     @Override
     public Collection<GrantedAuthority> convert(Jwt jwt) {
-      Stream<String> scopes = Stream.empty();
+      java.util.LinkedHashSet<String> authorityNames = new java.util.LinkedHashSet<>();
+      addScopeAuthorities(jwt, authorityNames);
+      addRoleAuthorities(jwt.getClaim("roles"), authorityNames);
+      Object realmAccess = jwt.getClaim("realm_access");
+      if (realmAccess instanceof java.util.Map<?, ?> realmMap) {
+        addRoleAuthorities(realmMap.get("roles"), authorityNames);
+      }
+      if (authorityNames.isEmpty()) {
+        return Collections.emptyList();
+      }
+      return authorityNames.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+    }
+
+    private static void addScopeAuthorities(Jwt jwt, java.util.Set<String> authorityNames) {
       Object scopeClaim = jwt.getClaim("scope");
       if (scopeClaim instanceof String s) {
-        scopes = Stream.of(s.split("\\s+"));
+        java.util.Arrays.stream(s.split("\\s+"))
+            .filter(v -> v != null && !v.isBlank())
+            .forEach(authorityNames::add);
       } else if (scopeClaim instanceof Collection<?> c) {
-        scopes = c.stream().map(Object::toString);
+        c.stream().map(Object::toString).filter(v -> !v.isBlank()).forEach(authorityNames::add);
       }
+    }
 
-      Stream<String> roles = Stream.empty();
-      Object rolesClaim = jwt.getClaim("roles");
-      if (rolesClaim instanceof Collection<?> c) {
-        roles = c.stream().map(Object::toString);
+    private static void addRoleAuthorities(Object rolesClaim, java.util.Set<String> authorityNames) {
+      if (!(rolesClaim instanceof Collection<?> c)) {
+        return;
       }
-
-      List<GrantedAuthority> authorities =
-          Stream.concat(scopes, roles)
-              .filter(s -> s != null && !s.isBlank())
-              .map(SimpleGrantedAuthority::new)
-              .collect(Collectors.toList());
-
-      return authorities.isEmpty() ? Collections.emptyList() : authorities;
+      c.stream()
+          .map(Object::toString)
+          .filter(v -> v != null && !v.isBlank())
+          .forEach(
+              role -> {
+                authorityNames.add(role);
+                String normalized = role.startsWith("ROLE_") ? role.substring(5) : role;
+                List<String> mapped = ROLE_PERMISSIONS.get(normalized);
+                if (mapped != null) {
+                  authorityNames.addAll(mapped);
+                }
+              });
     }
   }
 }

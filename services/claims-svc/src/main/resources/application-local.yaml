@@ -20,6 +20,10 @@ spring:
           issuer-uri: http://localhost:8180/realms/pcis
 
 pcis:
+  policy-svc:
+    url: http://127.0.0.1:8084
+  policy-validation:
+    enabled: true
   classification:
     registry-location: file:config/pcis-data-classification.yaml
     drift-detection-enabled: false

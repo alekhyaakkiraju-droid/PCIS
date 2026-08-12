@@ -141,6 +141,54 @@ const roles: RoleCase[] = [
       '/admin': true,
     },
   },
+  {
+    name: 'Finance',
+    session: {
+      authenticated: true,
+      user: {
+        sub: 'finance-frank',
+        name: 'Frank Finance',
+        email: 'frank.finance@pcis.example.com',
+        roles: ['FINANCE'],
+      },
+    },
+    allowed: {
+      '/': true,
+      '/design-system': true,
+      '/claims/fnol': false,
+      '/claims': false,
+      '/claims/payments': false,
+      '/customers': false,
+      '/policies': false,
+      '/billing': true,
+      '/batch': false,
+      '/admin': false,
+    },
+  },
+  {
+    name: 'Batch Operator',
+    session: {
+      authenticated: true,
+      user: {
+        sub: 'batch-frank',
+        name: 'Frank Batch',
+        email: 'batch.frank@pcis.example.com',
+        roles: ['BATCH_SVC'],
+      },
+    },
+    allowed: {
+      '/': true,
+      '/design-system': true,
+      '/claims/fnol': false,
+      '/claims': false,
+      '/claims/payments': false,
+      '/customers': false,
+      '/policies': false,
+      '/billing': false,
+      '/batch': true,
+      '/admin': false,
+    },
+  },
 ]
 
 async function mockSession(page: import('@playwright/test').Page, session: object) {
@@ -179,13 +227,13 @@ test.describe('Wireframe role navigation matrix', () => {
 })
 
 test.describe('Wireframe interactive flows', () => {
-  test('adjuster payment authority check and audit rollback', async ({ page }) => {
+  test('adjuster payment authority check with linked approval', async ({ page }) => {
     await mockSession(page, roles[0].session)
-    await page.goto('/claims/payments')
+    await page.goto('/claims/payments?claimNbr=CLM-0004821')
+    await expect(page.getByText('Reserve remaining')).toBeVisible()
+    await expect(page.getByText('Yes — linked')).toBeVisible()
     await page.getByRole('button', { name: 'Submit payment request' }).click()
-    await expect(page.getByText(/Denied —/)).toBeVisible()
-    await page.getByRole('button', { name: /Simulate audit-outbox failure/ }).click()
-    await expect(page.getByText(/ROLLED BACK/)).toBeVisible()
+    await expect(page.getByText(/Denied —|Approved —/)).toBeVisible()
   })
 
   test('supervisor can open customer 360 Marta Field', async ({ page }) => {

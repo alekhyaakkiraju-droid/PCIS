@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router'
 import { AuthProvider } from './auth/AuthContext'
 import { DemoRoleProvider } from './demo/demo-role'
+import { ThemeProvider } from './theme/ThemeProvider'
 import { ProtectedRoute } from './auth/ProtectedRoute'
 import { AppLayout } from './layout/AppLayout'
 import { QueryProvider } from './providers/QueryProvider'
@@ -45,6 +46,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <QueryProvider>
+        <ThemeProvider>
         <AuthProvider>
           <DemoRoleProvider>
           <Suspense fallback={<p>Loading…</p>}>
@@ -74,6 +76,7 @@ export default function App() {
           </Suspense>
           </DemoRoleProvider>
         </AuthProvider>
+        </ThemeProvider>
       </QueryProvider>
     </BrowserRouter>
   )

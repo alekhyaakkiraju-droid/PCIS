@@ -1,0 +1,23 @@
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--pcis-color-border);
+  border-radius: var(--pcis-radius-md);
+  background: var(--pcis-color-surface);
+  color: var(--pcis-color-text);
+  cursor: pointer;
+  font-size: var(--pcis-font-size-md);
+  line-height: 1;
+}
+
+.toggle:hover {
+  background: var(--pcis-token-surface-alt, var(--pcis-color-neutral-50));
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--pcis-color-focus);
+  outline-offset: 2px;
+}

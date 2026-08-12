@@ -56,7 +56,7 @@ test.describe('Wireframe user flows', () => {
     await mockAdjuster(page)
     await page.goto('/claims/fnol')
     await expect(page.getByRole('button', { name: 'Register claim' })).toBeVisible()
-    await expect(page.getByLabel('Policy number')).toHaveValue('POL-0088217')
+    await expect(page.getByLabel('Policy number')).toHaveValue('POL000003001')
     await page.getByLabel('Loss narrative (first case note)').fill('Pipe burst in kitchen.')
     await expect(page.getByText('In force — Homeowners HO-3')).toBeVisible()
   })

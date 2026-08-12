@@ -1,7 +1,6 @@
 import { Outlet, useLocation } from 'react-router'
 import { useAuth } from '@/auth/AuthContext'
-import { useDemoRole } from '@/demo/demo-role'
-import { isRouteAllowedForRoles } from './nav-config'
+import { useCapabilities } from '@/auth/useCapabilities'
 import { ForbiddenPage } from '@/pages/ForbiddenPage'
 
 /**
@@ -11,13 +10,13 @@ import { ForbiddenPage } from '@/pages/ForbiddenPage'
 export function AuthorizedOutlet() {
   const { pathname } = useLocation()
   const { user, status } = useAuth()
-  const { effectiveRoles } = useDemoRole()
+  const { canAccessRoute } = useCapabilities()
 
   if (status !== 'authenticated' || !user) {
     return <Outlet />
   }
 
-  const allowed = isRouteAllowedForRoles(pathname, effectiveRoles(user.roles))
+  const allowed = canAccessRoute(pathname)
   if (!allowed) {
     return <ForbiddenPage />
   }

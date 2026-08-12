@@ -61,7 +61,7 @@ class ClaimsControllerIntegrationTest {
     String claimNbr = uniqueClaimNbr();
     CreateClaimRequest request =
         new CreateClaimRequest(
-            claimNbr, "POL000000001", 1001, LocalDate.of(2026, 4, 1), "PRP", null);
+            claimNbr, "POL000000001", 1001, LocalDate.of(2026, 4, 1), "PRP", null, null, null);
 
     mockMvc
         .perform(
@@ -86,7 +86,7 @@ class ClaimsControllerIntegrationTest {
     String claimNbr = uniqueClaimNbr();
     CreateClaimRequest claimRequest =
         new CreateClaimRequest(
-            claimNbr, "POL000000001", 1001, LocalDate.of(2026, 4, 2), "PRP", null);
+            claimNbr, "POL000000001", 1001, LocalDate.of(2026, 4, 2), "PRP", null, null, null);
     mockMvc
         .perform(
             post("/api/v1/claims")
@@ -96,7 +96,7 @@ class ClaimsControllerIntegrationTest {
         .andExpect(status().isCreated());
 
     CreateReserveRequest reserveRequest =
-        new CreateReserveRequest("PRO", new BigDecimal("5000.00"));
+        new CreateReserveRequest("PRO", new BigDecimal("5000.00"), null);
     mockMvc
         .perform(
             post("/api/v1/claims/" + claimNbr + "/reserves")
@@ -122,7 +122,7 @@ class ClaimsControllerIntegrationTest {
     String claimNbr = uniqueClaimNbr();
     CreateClaimRequest request =
         new CreateClaimRequest(
-            claimNbr, "POL000000001", 4242, LocalDate.of(2026, 4, 3), "PRP", null);
+            claimNbr, "POL000000001", 4242, LocalDate.of(2026, 4, 3), "PRP", null, null, null);
     mockMvc
         .perform(
             post("/api/v1/claims")
@@ -152,7 +152,7 @@ class ClaimsControllerIntegrationTest {
   void writeEndpointReturnsForbiddenWithoutWriteScope() throws Exception {
     CreateClaimRequest request =
         new CreateClaimRequest(
-            uniqueClaimNbr(), "POL000000001", 1001, LocalDate.of(2026, 4, 4), "PRP", null);
+            uniqueClaimNbr(), "POL000000001", 1001, LocalDate.of(2026, 4, 4), "PRP", null, null, null);
     mockMvc
         .perform(
             post("/api/v1/claims")

@@ -9,37 +9,58 @@ servers:
     description: API Gateway proxy (dev default)
 
 paths:
-  /customers:
+  /customers/search:
     get:
-      operationId: listCustomers
-      summary: List customers with optional filtering
+      operationId: searchCustomers
+      summary: Search customers by name, tax ID, or status
       parameters:
         - name: q
           in: query
+          required: true
           schema:
             type: string
-          description: Full-text search term
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 0
-        - name: size
-          in: query
-          schema:
-            type: integer
-            default: 20
+          description: Search term (name, tax ID, or status code)
       responses:
         "200":
-          description: Paginated customer list
+          description: Matching customers
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CustomerPage"
+                type: array
+                items:
+                  $ref: "#/components/schemas/Customer"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+
+  /customers/duplicate-overrides:
+    post:
+      operationId: createCustomerWithDuplicateOverride
+      summary: Create a customer when duplicate tax ID is intentionally overridden
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DuplicateOverrideRequest"
+      responses:
+        "201":
+          description: Customer created with override audit event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /customers:
     post:
       operationId: createCustomer
       summary: Create a new customer
@@ -83,6 +104,80 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Customer"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updateCustomer
+      summary: Update an existing customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCustomerRequest"
+      responses:
+        "200":
+          description: Customer updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /customers/{id}/duplicate-check:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+    get:
+      operationId: duplicateCheck
+      summary: Check whether another customer shares this customer's tax ID
+      responses:
+        "200":
+          description: Duplicate check result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DuplicateCheckResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /customers/{id}/360:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+    get:
+      operationId: getCustomer360
+      summary: Aggregated Customer 360 view with profile, policies, billing, and claims
+      responses:
+        "200":
+          description: Customer 360 aggregate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer360Response"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -211,6 +306,182 @@ components:
           type: string
           maxLength: 1
           enum: [I, B]
+        addresses:
+          type: array
+          items:
+            $ref: "#/components/schemas/CustomerAddress"
+        contacts:
+          type: array
+          items:
+            $ref: "#/components/schemas/CustomerContact"
+
+    UpdateCustomerRequest:
+      type: object
+      properties:
+        taxId:
+          type: string
+          maxLength: 11
+        custName:
+          type: string
+          maxLength: 60
+        custType:
+          type: string
+          maxLength: 1
+          enum: [I, B]
+        custStatus:
+          type: string
+          maxLength: 1
+          enum: [A, I, S]
+
+    DuplicateOverrideRequest:
+      type: object
+      required: [overrideReason, customer]
+      properties:
+        overrideReason:
+          type: string
+          minLength: 10
+          maxLength: 500
+        customer:
+          $ref: "#/components/schemas/CreateCustomerRequest"
+
+    DuplicateCheckResponse:
+      type: object
+      required: [custId, duplicateFound]
+      properties:
+        custId:
+          type: integer
+          format: int32
+        duplicateFound:
+          type: boolean
+        existingCustomer:
+          type: object
+          nullable: true
+          properties:
+            custId:
+              type: integer
+              format: int32
+            custName:
+              type: string
+            custStatus:
+              type: string
+
+    Customer360Response:
+      type: object
+      required: [custId, profile, policies, billing, claims]
+      properties:
+        custId:
+          type: integer
+          format: int32
+        profile:
+          $ref: "#/components/schemas/SectionWrapperCustomer"
+        policies:
+          $ref: "#/components/schemas/SectionWrapperPolicySection"
+        billing:
+          $ref: "#/components/schemas/SectionWrapperBillingSection"
+        claims:
+          $ref: "#/components/schemas/SectionWrapperClaimsSection"
+
+    SectionWrapperCustomer:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [AVAILABLE, UNAVAILABLE, ERROR]
+        data:
+          $ref: "#/components/schemas/Customer"
+        message:
+          type: string
+          nullable: true
+
+    SectionWrapperPolicySection:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [AVAILABLE, UNAVAILABLE, ERROR]
+        data:
+          $ref: "#/components/schemas/Customer360PolicySection"
+        message:
+          type: string
+          nullable: true
+
+    Customer360PolicySection:
+      type: object
+      properties:
+        activeCount:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Customer360PolicyItem"
+
+    Customer360PolicyItem:
+      type: object
+      properties:
+        policyId:
+          type: string
+        policyType:
+          type: string
+        status:
+          type: string
+        premium:
+          type: number
+
+    SectionWrapperBillingSection:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [AVAILABLE, UNAVAILABLE, ERROR]
+        data:
+          $ref: "#/components/schemas/Customer360BillingSection"
+        message:
+          type: string
+          nullable: true
+
+    Customer360BillingSection:
+      type: object
+      properties:
+        balanceDue:
+          type: number
+        openInvoiceCount:
+          type: integer
+
+    SectionWrapperClaimsSection:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [AVAILABLE, UNAVAILABLE, ERROR]
+        data:
+          $ref: "#/components/schemas/Customer360ClaimsSection"
+        message:
+          type: string
+          nullable: true
+
+    Customer360ClaimsSection:
+      type: object
+      properties:
+        openClaimCount:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Customer360ClaimItem"
+
+    Customer360ClaimItem:
+      type: object
+      properties:
+        claimId:
+          type: string
+        status:
+          type: string
+        reserveAmount:
+          type: number
 
     ProblemDetail:
       type: object

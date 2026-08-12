@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { policyApi, type Policy, type PolicyCancelRequest, type PolicyEndorseRequest } from '@/api/policy-api'
-import { BlueprintCard, Button, DataTable, Input, Modal, MoneyDisplay, Skeleton } from '@/components/ui'
+import { BlueprintCard, Button, DataTable, Input, Modal, MoneyDisplay, Skeleton, Alert } from '@/components/ui'
 
 type PolicyMode = 'create' | 'endorse' | 'inquiry'
 
@@ -25,9 +25,10 @@ export function PolicyAdminPage() {
 
   return (
     <section aria-labelledby="policies-heading">
-      <h1 id="policies-heading" className="visually-hidden">
-        Policy Issuance
-      </h1>
+      <h1 id="policies-heading">Issue policy — new business quote</h1>
+      <p className="wf-page-lede">
+        Rate coverages, review underwriting alerts, and issue atomically — snapshot persisted for audit.
+      </p>
 
       <div className="seg-control" role="radiogroup" aria-label="Policy mode">
         {(['create', 'endorse', 'inquiry'] as PolicyMode[]).map((m) => (
@@ -103,7 +104,13 @@ export function PolicyAdminPage() {
           <BlueprintCard kicker="Rating breakdown">
             {rated ? (
               <>
-                <p style={{ fontSize: 'var(--pcis-font-size-sm)' }}>Risk score / tier: <strong>612 · Tier B</strong></p>
+                <div className="wf-gauge">B</div>
+                <p style={{ fontSize: 'var(--pcis-font-size-sm)', textAlign: 'center' }}>
+                  Risk score / tier: <strong>612 · Tier B</strong>
+                </p>
+                <Alert variant="warning" title="Underwriting alert">
+                  Roof age 18 years — factor ×1.08 applied. Wind/hail surcharge in coastal territory.
+                </Alert>
                 <table style={{ width: '100%', fontSize: 'var(--pcis-font-size-sm)', marginTop: 'var(--pcis-space-2)' }}>
                   <tbody>
                     <tr><td>Base rate</td><td style={{ textAlign: 'right' }}>$1,840.00</td></tr>
@@ -123,13 +130,21 @@ export function PolicyAdminPage() {
             ) : (
               <p style={{ color: 'var(--pcis-color-text-muted)' }}>Click Rate to generate premium breakdown.</p>
             )}
-            <div style={{ display: 'flex', gap: 'var(--pcis-space-2)', marginTop: 'var(--pcis-space-4)' }}>
-              <Button variant="secondary">Save quote</Button>
-              <Button variant="primary" disabled={!rated}>Issue policy</Button>
-            </div>
           </BlueprintCard>
         </div>
       )}
+
+      {mode !== 'inquiry' ? (
+        <div className="wf-sticky-footer">
+          <span style={{ fontSize: 'var(--pcis-font-size-sm)', color: 'var(--pcis-color-text-muted)' }}>
+            {rated ? 'Rated and eligible for issue — snapshot RTG-8817342 persisted' : 'Rate coverages before issuing'}
+          </span>
+          <div style={{ display: 'flex', gap: 'var(--pcis-space-2)' }}>
+            <Button variant="secondary">Save quote</Button>
+            <Button variant="primary" disabled={!rated}>Issue policy</Button>
+          </div>
+        </div>
+      ) : null}
 
       {endorseTarget ? (
         <EndorseModal

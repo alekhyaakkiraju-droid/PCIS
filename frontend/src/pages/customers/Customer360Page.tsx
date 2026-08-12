@@ -9,6 +9,7 @@ import policiesFixture from '../../../fixtures/customer-360/policies.json'
 import profileFixture from '../../../fixtures/customer-360/profile.json'
 import profile19284Fixture from '../../../fixtures/customer-360/profile-19284.json'
 import { customerApi } from '@/api/customer-api'
+import { shouldUseCustomerFixtureFallback } from '@/api/customer-fixture-fallback'
 import type {
   AuditEvent,
   Customer360BillingSection,
@@ -17,7 +18,7 @@ import type {
 } from '@/api/customer360-types'
 import type { Customer } from '@/api/customer-api'
 import { maskPiiValue } from '@/hooks/useMaskedField'
-import { Badge, BlueprintCard, DataTable, MoneyDisplay, Skeleton, Tabs, UnmaskModal } from '@/components/ui'
+import { Badge, BlueprintCard, DataTable, MoneyDisplay, Skeleton, Tabs, UnmaskModal, Avatar, Alert, Button } from '@/components/ui'
 import type { TabItem } from '@/components/ui'
 
 type TabPanelProps = {
@@ -73,10 +74,13 @@ function OverviewTab({ custId, compact = false }: { custId: number; compact?: bo
           openClaims: response.claims.data?.openClaimCount ?? 0,
           balanceDue: response.billing.data?.balanceDue ?? 0,
         }
-      } catch {
-        return customerId === 19284
-          ? { ...(overview19284Fixture as typeof overviewFixture), custId: customerId }
-          : { ...(overviewFixture as typeof overviewFixture), custId }
+      } catch (err) {
+        if (shouldUseCustomerFixtureFallback(err)) {
+          return custId === 19284
+            ? { ...(overview19284Fixture as typeof overviewFixture), custId }
+            : { ...(overviewFixture as typeof overviewFixture), custId }
+        }
+        throw err
       }
     },
   })
@@ -85,12 +89,12 @@ function OverviewTab({ custId, compact = false }: { custId: number; compact?: bo
     if (isLoading) return <Skeleton variant="text" lines={1} />
     if (error || !data) return null
     return (
-      <div style={{ display: 'flex', gap: 'var(--pcis-space-6)', textAlign: 'right' }}>
-        <div><div className="mono" style={{ fontSize: 'var(--pcis-font-size-xs)' }}>Policies</div><div style={{ fontSize: 'var(--pcis-font-size-xl)', fontWeight: 600 }}>{data.activePolicies}</div></div>
-        <div><div className="mono" style={{ fontSize: 'var(--pcis-font-size-xs)' }}>Premium</div><div style={{ fontSize: 'var(--pcis-font-size-xl)', fontWeight: 600 }}><MoneyDisplay value={data.premiumInForce} /></div></div>
-        <div><div className="mono" style={{ fontSize: 'var(--pcis-font-size-xs)' }}>Open claims</div><div style={{ fontSize: 'var(--pcis-font-size-xl)', fontWeight: 600 }}>{data.openClaims}</div></div>
-        <div><div className="mono" style={{ fontSize: 'var(--pcis-font-size-xs)' }}>Balance due</div><div style={{ fontSize: 'var(--pcis-font-size-xl)', fontWeight: 600 }}><MoneyDisplay value={data.balanceDue} /></div></div>
-      </div>
+      <>
+        <div><div className="wf-stat-label">Policies in force</div><div className="wf-stat-value">{data.activePolicies}</div></div>
+        <div><div className="wf-stat-label">Annual premium</div><div className="wf-stat-value mono"><MoneyDisplay value={data.premiumInForce} /></div></div>
+        <div><div className="wf-stat-label">Open claims</div><div className="wf-stat-value">{data.openClaims}</div></div>
+        <div><div className="wf-stat-label">Balance due</div><div className="wf-stat-value mono"><MoneyDisplay value={data.balanceDue} /></div></div>
+      </>
     )
   }
 
@@ -150,8 +154,11 @@ function ProfileTab({
     queryFn: async (): Promise<Customer> => {
       try {
         return await customerApi.getById(custId)
-      } catch {
-        return custId === 19284 ? (profile19284Fixture as Customer) : (profileFixture as Customer)
+      } catch (err) {
+        if (shouldUseCustomerFixtureFallback(err)) {
+          return custId === 19284 ? (profile19284Fixture as Customer) : (profileFixture as Customer)
+        }
+        throw err
       }
     },
   })
@@ -289,8 +296,11 @@ function PoliciesTab({ custId }: { custId: number }) {
           return response.policies.data
         }
         throw new Error(response.policies.message ?? 'Policies unavailable')
-      } catch {
-        return policiesFixture as Customer360PolicySection
+      } catch (err) {
+        if (shouldUseCustomerFixtureFallback(err)) {
+          return policiesFixture as Customer360PolicySection
+        }
+        throw err
       }
     },
   })
@@ -331,8 +341,11 @@ function BillingTab({ custId }: { custId: number }) {
           return response.billing.data
         }
         throw new Error(response.billing.message ?? 'Billing unavailable')
-      } catch {
-        return billingFixture as Customer360BillingSection
+      } catch (err) {
+        if (shouldUseCustomerFixtureFallback(err)) {
+          return billingFixture as Customer360BillingSection
+        }
+        throw err
       }
     },
   })
@@ -367,8 +380,11 @@ function ClaimsTab({ custId }: { custId: number }) {
           return response.claims.data
         }
         throw new Error(response.claims.message ?? 'Claims unavailable')
-      } catch {
-        return claimsFixture as Customer360ClaimsSection
+      } catch (err) {
+        if (shouldUseCustomerFixtureFallback(err)) {
+          return claimsFixture as Customer360ClaimsSection
+        }
+        throw err
       }
     },
   })
@@ -432,9 +448,10 @@ export type Customer360PageProps = {
 }
 
 export function Customer360Page({ customerId }: Customer360PageProps) {
-  const [maskTax, setMaskTax] = useState(true)
-  const [maskEmail, setMaskEmail] = useState(true)
-  const [maskPhone, setMaskPhone] = useState(true)
+  const [maskAll, setMaskAll] = useState(true)
+  const maskTax = maskAll
+  const maskEmail = maskAll
+  const maskPhone = maskAll
   const [unmaskOpen, setUnmaskOpen] = useState(false)
 
   const { data: profile, isLoading: profileLoading } = useQuery({
@@ -442,14 +459,25 @@ export function Customer360Page({ customerId }: Customer360PageProps) {
     queryFn: async (): Promise<Customer> => {
       try {
         return await customerApi.getById(customerId)
-      } catch {
-        return customerId === 19284 ? (profile19284Fixture as Customer) : (profileFixture as Customer)
+      } catch (err) {
+        if (shouldUseCustomerFixtureFallback(err)) {
+          return customerId === 19284
+            ? (profile19284Fixture as Customer)
+            : (profileFixture as Customer)
+        }
+        throw err
       }
     },
   })
 
-  const policyCount = customerId === 19284 ? 2 : undefined
-  const claimCount = customerId === 19284 ? 1 : undefined
+  const { data: aggregate } = useQuery({
+    queryKey: ['customer360', customerId, 'aggregate'],
+    queryFn: () => customerApi.get360(customerId),
+    retry: false,
+  })
+
+  const policyCount = aggregate?.policies.data?.activeCount
+  const claimCount = aggregate?.claims.data?.openClaimCount
 
   const tabs: TabItem[] = [
     {
@@ -463,7 +491,12 @@ export function Customer360Page({ customerId }: Customer360PageProps) {
     { id: 'audit', label: 'Audit trail', content: <AuditTab custId={customerId} /> },
   ]
 
-  const maskedTaxId = maskTax ? maskPiiValue(profile?.taxId, 'taxId') : (profile?.taxId ?? '—')
+  const initials = (profile?.custName ?? 'CU')
+    .split(/\s+/)
+    .map((p) => p[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
 
   return (
     <section aria-labelledby="customer-360-heading">
@@ -471,55 +504,59 @@ export function Customer360Page({ customerId }: Customer360PageProps) {
         open={unmaskOpen}
         onClose={() => setUnmaskOpen(false)}
         onConfirm={() => {
-          setMaskTax(false)
+          setMaskAll(false)
           setUnmaskOpen(false)
         }}
       />
 
-      <BlueprintCard
-        style={{
-          marginBottom: 'var(--pcis-space-4)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-        }}
-      >
-        <div>
-          <div
-            className="mono"
-            style={{ fontSize: 'var(--pcis-font-size-xs)', color: 'var(--pcis-color-primary-600)', textTransform: 'uppercase', letterSpacing: '0.08em' }}
-          >
-            Customer CUS-{String(customerId).padStart(7, '0')}
-          </div>
-          <h1 id="customer-360-heading" style={{ fontSize: 'var(--pcis-font-size-xl)', fontWeight: 600, margin: '4px 0 0' }}>
-            {profileLoading ? '…' : (profile?.custName ?? 'Customer 360')}
-          </h1>
-          <div style={{ fontSize: 13, marginTop: 4, color: 'var(--pcis-color-text-muted)' }}>
-            Tax ID {maskedTaxId}{' '}
-            ·{' '}
-            <button
-              type="button"
-              onClick={() => {
-                if (maskTax) setUnmaskOpen(true)
-                else setMaskTax(true)
-              }}
-              style={{
-                fontSize: 12,
-                background: 'none',
-                border: 'none',
-                padding: 0,
-                color: 'var(--pcis-color-primary-600)',
-                cursor: 'pointer',
-                textDecoration: 'underline',
-              }}
-            >
-              {maskTax ? 'Request unmask →' : 'Re-mask'}
-            </button>
+      <div className="wf-header-row">
+        <div style={{ display: 'flex', gap: 'var(--pcis-space-4)', alignItems: 'flex-start' }}>
+          <Avatar initials={initials} label={profile?.custName ?? 'Customer'} size="md" />
+          <div>
+            <div className="wf-entity-kicker">Customer CUS-{String(customerId).padStart(7, '0')}</div>
+            <h1 id="customer-360-heading" className="wf-entity-title">
+              {profileLoading ? '…' : (profile?.custName ?? 'Customer 360')}
+            </h1>
+            <div style={{ display: 'flex', gap: 'var(--pcis-space-2)', alignItems: 'center', marginTop: 'var(--pcis-space-2)' }}>
+              <Badge status="Active">Active</Badge>
+              <Badge status="Denied">Restricted</Badge>
+            </div>
           </div>
         </div>
+        <div style={{ display: 'flex', gap: 'var(--pcis-space-2)' }}>
+          <Button variant="ghost">New quote</Button>
+          <Button variant="primary">Edit customer</Button>
+        </div>
+      </div>
+
+      {customerId === 19284 ? (
+        <Alert variant="warning" title="Possible duplicate tax ID" role="alert">
+          Blocking step for new record creation — review candidate CUS-0019284 (Marta Field).
+        </Alert>
+      ) : null}
+
+      <div className="wf-stats-bar">
         <OverviewTab custId={customerId} compact />
-      </BlueprintCard>
+      </div>
+
+      <label style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--pcis-space-2)', fontSize: 'var(--pcis-font-size-sm)', marginBottom: 'var(--pcis-space-4)' }}>
+        <input
+          type="checkbox"
+          role="switch"
+          checked={!maskAll}
+          onChange={(e) => {
+            if (e.target.checked) setUnmaskOpen(true)
+            else setMaskAll(true)
+          }}
+        />
+        Unmask restricted fields
+      </label>
+
       <Tabs items={tabs} aria-label="Customer 360 sections" defaultTabId="profile" />
+
+      <Alert variant="info" title="Classification notice">
+        Restricted-tier values are masked in profile views. Unmasking is itself an audited read event.
+      </Alert>
     </section>
   )
 }

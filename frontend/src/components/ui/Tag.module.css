@@ -1,0 +1,21 @@
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--pcis-space-2);
+  border-radius: var(--pcis-radius-full);
+  font-size: var(--pcis-font-size-xs);
+  font-weight: var(--pcis-font-weight-medium);
+  line-height: 1.2;
+}
+
+.neutral {
+  background: var(--pcis-token-surface-alt, var(--pcis-color-neutral-100));
+  color: var(--pcis-color-text-secondary);
+  border: 1px solid var(--pcis-color-border);
+}
+
+.accent {
+  background: color-mix(in srgb, var(--pcis-token-accent) 12%, transparent);
+  color: var(--pcis-token-accent);
+  border: 1px solid color-mix(in srgb, var(--pcis-token-accent) 30%, transparent);
+}

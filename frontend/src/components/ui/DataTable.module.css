@@ -8,7 +8,7 @@
   border-collapse: collapse;
   background: var(--pcis-color-surface);
   border: 1px solid var(--pcis-color-border);
-  border-radius: var(--pcis-radius-lg);
+  border-radius: 0;
   overflow: hidden;
 }
 

@@ -6,13 +6,16 @@ import com.pcis.claims.domain.ClaimEntity;
 import com.pcis.claims.domain.ClaimNoteEntity;
 import com.pcis.claims.domain.ClaimPaymentEntity;
 import com.pcis.claims.domain.ClaimReserveEntity;
+import com.pcis.claims.domain.ClaimReserveLedgerEntity;
 import com.pcis.claims.domain.repository.ApprovalRepository;
 import com.pcis.claims.domain.repository.ClaimAdjusterRepository;
 import com.pcis.claims.domain.repository.ClaimNoteRepository;
 import com.pcis.claims.domain.repository.ClaimPaymentRepository;
 import com.pcis.claims.domain.repository.ClaimRepository;
+import com.pcis.claims.domain.repository.ClaimReserveLedgerRepository;
 import com.pcis.claims.domain.repository.ClaimReserveRepository;
 import com.pcis.claims.dto.ClaimDetailResponse;
+import com.pcis.claims.dto.ClaimListItemResponse;
 import com.pcis.claims.dto.ClaimResponseMapper;
 import com.pcis.claims.dto.CreateApprovalRequest;
 import com.pcis.claims.dto.CreateClaimRequest;
@@ -21,11 +24,13 @@ import com.pcis.claims.dto.CreatePaymentRequest;
 import com.pcis.claims.dto.CreateReserveRequest;
 import com.pcis.claims.dto.UpdateClaimRequest;
 import com.pcis.claims.exception.DuplicateApprovalException;
+import com.pcis.claims.integration.PolicyInForceValidator;
 import com.pcis.claims.outbox.ClaimsOutboxWriter;
 import com.pcis.claims.security.SecurityPrincipalAccessor;
 import com.pcis.error.ResourceNotFoundException;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,10 +43,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ClaimsApplicationService {
 
+  private static final String DEFAULT_ADJUSTER_ID = "ADJ90001";
   private static final AtomicLong CLAIM_SEQUENCE = new AtomicLong(System.nanoTime() % 1_000_000_000L);
 
   private final ClaimRepository claimRepository;
   private final ClaimReserveRepository claimReserveRepository;
+  private final ClaimReserveLedgerRepository claimReserveLedgerRepository;
   private final ApprovalRepository approvalRepository;
   private final ClaimPaymentRepository claimPaymentRepository;
   private final ClaimNoteRepository claimNoteRepository;
@@ -50,10 +57,12 @@ public class ClaimsApplicationService {
   private final ClaimsOutboxWriter claimsOutboxWriter;
   private final SecurityPrincipalAccessor securityPrincipalAccessor;
   private final ClaimResponseMapper claimResponseMapper;
+  private final PolicyInForceValidator policyInForceValidator;
 
   public ClaimsApplicationService(
       ClaimRepository claimRepository,
       ClaimReserveRepository claimReserveRepository,
+      ClaimReserveLedgerRepository claimReserveLedgerRepository,
       ApprovalRepository approvalRepository,
       ClaimPaymentRepository claimPaymentRepository,
       ClaimNoteRepository claimNoteRepository,
@@ -61,9 +70,11 @@ public class ClaimsApplicationService {
       PaymentAuthorityService paymentAuthorityService,
       ClaimsOutboxWriter claimsOutboxWriter,
       SecurityPrincipalAccessor securityPrincipalAccessor,
-      ClaimResponseMapper claimResponseMapper) {
+      ClaimResponseMapper claimResponseMapper,
+      PolicyInForceValidator policyInForceValidator) {
     this.claimRepository = claimRepository;
     this.claimReserveRepository = claimReserveRepository;
+    this.claimReserveLedgerRepository = claimReserveLedgerRepository;
     this.approvalRepository = approvalRepository;
     this.claimPaymentRepository = claimPaymentRepository;
     this.claimNoteRepository = claimNoteRepository;
@@ -72,11 +83,34 @@ public class ClaimsApplicationService {
     this.claimsOutboxWriter = claimsOutboxWriter;
     this.securityPrincipalAccessor = securityPrincipalAccessor;
     this.claimResponseMapper = claimResponseMapper;
+    this.policyInForceValidator = policyInForceValidator;
   }
 
   @Transactional(readOnly = true)
-  public List<ClaimEntity> listClaims() {
-    return claimRepository.findAll();
+  public List<ClaimEntity> listClaims(String status) {
+    if (status == null || status.isBlank()) {
+      return claimRepository.findAll();
+    }
+    return claimRepository.findByClaimStatus(status.trim());
+  }
+
+  @Transactional(readOnly = true)
+  public List<ClaimListItemResponse> listClaimSummaries(String status, String view) {
+    if (view == null || view.isBlank()) {
+      return listClaims(status).stream().map(this::toListItem).toList();
+    }
+    String normalizedView = view.trim().toLowerCase();
+    String statusFilter =
+        switch (normalizedView) {
+          case "closed" -> "C";
+          case "open", "pending", "escalated" -> "O";
+          default -> status;
+        };
+    List<ClaimEntity> claims = listClaims(statusFilter != null ? statusFilter : status);
+    return claims.stream()
+        .map(this::toListItem)
+        .filter(item -> matchesView(item, normalizedView))
+        .toList();
   }
 
   @Transactional(readOnly = true)
@@ -87,13 +121,19 @@ public class ClaimsApplicationService {
   @Transactional(readOnly = true)
   public ClaimDetailResponse getClaimDetail(String claimNbr) {
     ClaimEntity claim = requireClaim(claimNbr);
-    BigDecimal authorityLimit = resolveAuthorityLimit();
+    List<ClaimReserveEntity> reserves = claimReserveRepository.findByClaimClaimNbr(claimNbr);
+    BigDecimal reserveRemaining = computeReserveRemaining(reserves);
+    AdjusterInfo adjuster = resolveAdjusterInfo(claim);
     return claimResponseMapper.toClaimDetailResponse(
         claim,
-        authorityLimit,
-        claimReserveRepository.findByClaimClaimNbr(claimNbr),
+        resolveAuthorityLimit(),
+        adjuster.id(),
+        adjuster.name(),
+        reserveRemaining,
+        reserves,
         claimPaymentRepository.findByClaimClaimNbrOrderByPaymentIdAsc(claimNbr),
-        claimNoteRepository.findByClaimClaimNbrOrderByNoteIdAsc(claimNbr));
+        claimNoteRepository.findByClaimClaimNbrOrderByNoteIdAsc(claimNbr),
+        claimReserveLedgerRepository.findByClaimClaimNbrOrderByLedgerIdAsc(claimNbr));
   }
 
   @Transactional(readOnly = true)
@@ -103,10 +143,15 @@ public class ClaimsApplicationService {
 
   @Transactional
   public ClaimEntity createClaim(CreateClaimRequest request) {
+    policyInForceValidator.validate(request.polNbr(), request.custId(), request.lossDate());
+
     String claimNbr =
         request.claimNbr() == null || request.claimNbr().isBlank()
             ? generateClaimNbr()
             : request.claimNbr();
+
+    String adjusterId = securityPrincipalAccessor.currentSubject();
+    ensureAdjuster(adjusterId, new BigDecimal("25000.00"));
 
     ClaimEntity claim = new ClaimEntity();
     claim.setClaimNbr(claimNbr);
@@ -115,6 +160,7 @@ public class ClaimsApplicationService {
     claim.setLossDate(request.lossDate());
     claim.setClaimType(request.claimType());
     claim.setClaimStatus("O");
+    claim.setAssignedAdjusterId(adjusterId);
     ClaimEntity saved = claimRepository.save(claim);
 
     if (request.description() != null && !request.description().isBlank()) {
@@ -124,6 +170,38 @@ public class ClaimsApplicationService {
       claimNoteRepository.save(note);
     }
 
+    if (request.initialReserveAmt() != null
+        && request.initialReserveAmt().compareTo(BigDecimal.ZERO) > 0) {
+      String reserveType =
+          request.initialReserveType() == null || request.initialReserveType().isBlank()
+              ? "PRO"
+              : request.initialReserveType();
+      ClaimReserveEntity reserve = new ClaimReserveEntity();
+      reserve.setClaim(saved);
+      reserve.setReserveType(reserveType);
+      reserve.setApprovedAmt(request.initialReserveAmt());
+      reserve.setPaidToDate(BigDecimal.ZERO);
+      reserve.setReserveStatus("O");
+      ClaimReserveEntity savedReserve = claimReserveRepository.save(reserve);
+      writeLedgerEntry(
+          saved,
+          savedReserve,
+          saved.getLossDate(),
+          "Initial FNOL reserve",
+          request.initialReserveAmt(),
+          request.initialReserveAmt(),
+          adjusterId,
+          "SET");
+      writeOutbox(
+          claimNbr,
+          "ReserveCreated",
+          Map.of(
+              "claimNbr", claimNbr,
+              "reserveId", savedReserve.getReserveId(),
+              "approvedAmt", savedReserve.getApprovedAmt(),
+              "reason", "Initial FNOL reserve"));
+    }
+
     writeOutbox(
         claimNbr,
         "ClaimCreated",
@@ -131,7 +209,8 @@ public class ClaimsApplicationService {
             "claimNbr", claimNbr,
             "polNbr", request.polNbr(),
             "claimType", request.claimType(),
-            "claimStatus", "O"));
+            "claimStatus", "O",
+            "adjusterId", adjusterId));
     return saved;
   }
 
@@ -168,6 +247,39 @@ public class ClaimsApplicationService {
   @Transactional
   public ClaimReserveEntity createReserve(String claimNbr, CreateReserveRequest request) {
     ClaimEntity claim = requireClaim(claimNbr);
+    String actor = securityPrincipalAccessor.currentSubject();
+    String reason =
+        request.reason() == null || request.reason().isBlank()
+            ? "Reserve update"
+            : request.reason();
+
+    ClaimReserveEntity existingIncreaseTarget =
+        claimReserveRepository.findByClaimClaimNbr(claimNbr).stream()
+            .filter(
+                reserve ->
+                    "O".equals(reserve.getReserveStatus())
+                        && reserve.getReserveType().equals(request.reserveType())
+                        && request.approvedAmt().compareTo(reserve.getApprovedAmt()) > 0)
+            .findFirst()
+            .orElse(null);
+
+    if (existingIncreaseTarget != null) {
+      BigDecimal delta = request.approvedAmt().subtract(existingIncreaseTarget.getApprovedAmt());
+      existingIncreaseTarget.setApprovedAmt(request.approvedAmt());
+      ClaimReserveEntity saved = claimReserveRepository.save(existingIncreaseTarget);
+      BigDecimal balanceAfter = saved.getApprovedAmt().subtract(saved.getPaidToDate());
+      writeLedgerEntry(claim, saved, LocalDate.now(), reason, delta, balanceAfter, actor, "INCR");
+      writeOutbox(
+          claimNbr,
+          "ReserveIncreased",
+          Map.of(
+              "claimNbr", claimNbr,
+              "reserveId", saved.getReserveId(),
+              "approvedAmt", saved.getApprovedAmt(),
+              "reason", reason));
+      return saved;
+    }
+
     ClaimReserveEntity reserve = new ClaimReserveEntity();
     reserve.setClaim(claim);
     reserve.setReserveType(request.reserveType());
@@ -175,13 +287,16 @@ public class ClaimsApplicationService {
     reserve.setPaidToDate(BigDecimal.ZERO);
     reserve.setReserveStatus("O");
     ClaimReserveEntity saved = claimReserveRepository.save(reserve);
+    writeLedgerEntry(
+        claim, saved, LocalDate.now(), reason, request.approvedAmt(), request.approvedAmt(), actor, "SET");
     writeOutbox(
         claimNbr,
         "ReserveCreated",
         Map.of(
             "claimNbr", claimNbr,
             "reserveId", saved.getReserveId(),
-            "approvedAmt", saved.getApprovedAmt()));
+            "approvedAmt", saved.getApprovedAmt(),
+            "reason", reason));
     return saved;
   }
 
@@ -231,7 +346,7 @@ public class ClaimsApplicationService {
 
   @Transactional
   public ClaimPaymentEntity createPayment(String claimNbr, CreatePaymentRequest request) {
-    requireClaim(claimNbr);
+    ClaimEntity claim = requireClaim(claimNbr);
     String disburser = securityPrincipalAccessor.currentSubject();
     PaymentAuthorityService.PaymentAuthorizationResult auth =
         paymentAuthorityService.validatePayment(
@@ -248,7 +363,23 @@ public class ClaimsApplicationService {
 
     ClaimReserveEntity reserve = auth.reserve();
     reserve.setPaidToDate(reserve.getPaidToDate().add(request.amount()));
+    BigDecimal balanceAfter = reserve.getApprovedAmt().subtract(reserve.getPaidToDate());
+    if (balanceAfter.compareTo(BigDecimal.ZERO) <= 0) {
+      reserve.setReserveStatus("C");
+    }
     claimReserveRepository.save(reserve);
+
+    writeLedgerEntry(
+        claim,
+        reserve,
+        LocalDate.now(),
+        "Drawdown on payment CLM-PMT-" + String.format("%04d", saved.getPaymentId()),
+        request.amount().negate(),
+        balanceAfter.max(BigDecimal.ZERO),
+        disburser,
+        "DRAW");
+
+    maybeCloseClaim(claim, claimNbr);
 
     writeOutbox(
         claimNbr,
@@ -295,6 +426,108 @@ public class ClaimsApplicationService {
             });
   }
 
+  private void maybeCloseClaim(ClaimEntity claim, String claimNbr) {
+    List<ClaimReserveEntity> reserves = claimReserveRepository.findByClaimClaimNbr(claimNbr);
+    boolean allClosed =
+        !reserves.isEmpty()
+            && reserves.stream()
+                .allMatch(
+                    reserve ->
+                        "C".equals(reserve.getReserveStatus())
+                            || reserve
+                                    .getApprovedAmt()
+                                    .subtract(reserve.getPaidToDate())
+                                    .compareTo(BigDecimal.ZERO)
+                                <= 0);
+    if (allClosed && "O".equals(claim.getClaimStatus())) {
+      claim.setClaimStatus("C");
+      claimRepository.save(claim);
+      writeOutbox(claimNbr, "ClaimClosed", Map.of("claimNbr", claimNbr, "claimStatus", "C"));
+    }
+  }
+
+  private ClaimListItemResponse toListItem(ClaimEntity claim) {
+    List<ClaimReserveEntity> reserves = claimReserveRepository.findByClaimClaimNbr(claim.getClaimNbr());
+    BigDecimal totalApproved =
+        reserves.stream()
+            .map(ClaimReserveEntity::getApprovedAmt)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    BigDecimal totalPaid =
+        reserves.stream().map(ClaimReserveEntity::getPaidToDate).reduce(BigDecimal.ZERO, BigDecimal::add);
+    BigDecimal reserveRemaining = computeReserveRemaining(reserves);
+    AdjusterInfo adjuster = resolveAdjusterInfo(claim);
+    return claimResponseMapper.toClaimListItemResponse(
+        claim,
+        reserveRemaining,
+        totalApproved,
+        totalPaid,
+        adjuster.id(),
+        adjuster.name(),
+        computePendingApproval(reserves));
+  }
+
+  private boolean matchesView(ClaimListItemResponse item, String view) {
+    return switch (view) {
+      case "closed" -> "C".equals(item.claimStatus());
+      case "pending" -> "O".equals(item.claimStatus()) && item.pendingApproval();
+      case "escalated" -> false;
+      default -> "O".equals(item.claimStatus()) && !item.pendingApproval();
+    };
+  }
+
+  private boolean computePendingApproval(List<ClaimReserveEntity> reserves) {
+    return reserves.stream()
+        .anyMatch(
+            reserve -> {
+              if (!"O".equals(reserve.getReserveStatus())) {
+                return false;
+              }
+              BigDecimal outstanding = reserve.getApprovedAmt().subtract(reserve.getPaidToDate());
+              return reserve.getPaidToDate().compareTo(BigDecimal.ZERO) > 0
+                  && outstanding.compareTo(BigDecimal.ZERO) > 0;
+            });
+  }
+
+  private BigDecimal computeReserveRemaining(List<ClaimReserveEntity> reserves) {
+    return reserves.stream()
+        .filter(reserve -> "O".equals(reserve.getReserveStatus()))
+        .map(reserve -> reserve.getApprovedAmt().subtract(reserve.getPaidToDate()))
+        .filter(balance -> balance.compareTo(BigDecimal.ZERO) > 0)
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
+  }
+
+  private AdjusterInfo resolveAdjusterInfo(ClaimEntity claim) {
+    String adjusterId =
+        claim.getAssignedAdjusterId() != null ? claim.getAssignedAdjusterId() : DEFAULT_ADJUSTER_ID;
+    String adjusterName =
+        claimAdjusterRepository
+            .findById(adjusterId)
+            .map(ClaimAdjusterEntity::getAdjusterName)
+            .orElse("K. Alvarez");
+    return new AdjusterInfo(adjusterId, adjusterName);
+  }
+
+  private void writeLedgerEntry(
+      ClaimEntity claim,
+      ClaimReserveEntity reserve,
+      LocalDate eventDate,
+      String reason,
+      BigDecimal amount,
+      BigDecimal balanceAfter,
+      String actorId,
+      String eventType) {
+    ClaimReserveLedgerEntity ledger = new ClaimReserveLedgerEntity();
+    ledger.setClaim(claim);
+    ledger.setReserve(reserve);
+    ledger.setEventDate(eventDate);
+    ledger.setReason(reason);
+    ledger.setAmount(amount);
+    ledger.setBalanceAfter(balanceAfter);
+    ledger.setActorId(actorId);
+    ledger.setEventType(eventType);
+    claimReserveLedgerRepository.save(ledger);
+  }
+
   private BigDecimal resolveAuthorityLimit() {
     if (!securityPrincipalAccessor.hasAuthority("CLAIMS_ADJUSTER")
         && !securityPrincipalAccessor.hasAuthority("claims:write")) {
@@ -324,4 +557,6 @@ public class ClaimsApplicationService {
     long seq = CLAIM_SEQUENCE.incrementAndGet() % 1_000_000_000L;
     return "CLM" + String.format("%09d", seq);
   }
+
+  private record AdjusterInfo(String id, String name) {}
 }

@@ -13,6 +13,10 @@ public record ClaimDetailResponse(
     String claimStatus,
     Long version,
     BigDecimal authorityLimit,
+    String adjusterId,
+    String adjusterName,
+    BigDecimal reserveRemaining,
     List<ReserveResponse> reserves,
     List<PaymentResponse> payments,
-    List<NoteResponse> notes) {}
+    List<NoteResponse> notes,
+    List<ReserveLedgerResponse> reserveLedger) {}

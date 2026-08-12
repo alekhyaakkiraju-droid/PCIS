@@ -4,6 +4,8 @@ export type NavLink = {
   to: string
   label: string
   menuOption: string
+  /** Optional count badge shown in wireframe nav */
+  badge?: string
   /** Empty array = all authenticated roles (wireframe dashboard / design system). */
   roles: PcisRole[]
 }
@@ -16,13 +18,14 @@ export type NavSection = {
 /** Wireframe screenPerms from PCIS Modernization UI.dc.html */
 export const NAV_SECTIONS: NavSection[] = [
   {
+    title: 'Platform',
     items: [
       { to: '/', label: 'Dashboard', menuOption: 'HOME', roles: [] },
       { to: '/design-system', label: 'Design System', menuOption: 'DS', roles: [] },
     ],
   },
   {
-    title: 'Claims',
+    title: 'Operations',
     items: [
       {
         to: '/claims/fnol',
@@ -34,6 +37,7 @@ export const NAV_SECTIONS: NavSection[] = [
         to: '/claims',
         label: 'Claim Inquiry',
         menuOption: 'CLMINQ',
+        badge: '34',
         roles: ['CLAIMS_ADJUSTER', 'CLAIMS_SUPERVISOR'],
       },
       {
@@ -42,11 +46,6 @@ export const NAV_SECTIONS: NavSection[] = [
         menuOption: 'CLMPAY',
         roles: ['CLAIMS_ADJUSTER', 'CLAIMS_SUPERVISOR'],
       },
-    ],
-  },
-  {
-    title: 'Customer & Policy',
-    items: [
       {
         to: '/customers',
         label: 'Customer 360',
@@ -57,24 +56,27 @@ export const NAV_SECTIONS: NavSection[] = [
         to: '/policies',
         label: 'Policy Issuance',
         menuOption: 'POL',
+        badge: '7',
         roles: ['UNDERWRITER', 'CLAIMS_SUPERVISOR'],
       },
-    ],
-  },
-  {
-    title: 'Operations',
-    items: [
       {
         to: '/billing',
         label: 'Billing Reconciliation',
         menuOption: 'BIL',
-        roles: ['COMPLIANCE', 'CLAIMS_SUPERVISOR'],
+        badge: '12',
+        roles: ['COMPLIANCE', 'CLAIMS_SUPERVISOR', 'FINANCE'],
       },
+    ],
+  },
+  {
+    title: 'Control',
+    items: [
       {
         to: '/batch',
         label: 'Batch Operations',
         menuOption: 'BAT',
-        roles: ['COMPLIANCE', 'CLAIMS_SUPERVISOR'],
+        badge: '1',
+        roles: ['COMPLIANCE', 'CLAIMS_SUPERVISOR', 'BATCH_SVC'],
       },
       {
         to: '/admin',
@@ -141,7 +143,7 @@ export function requiredRolesForPath(pathname: string): PcisRole[] | undefined {
   return item.roles
 }
 
-/** @deprecated Use allNavSections — wireframe shows all links regardless of role. */
+/** @deprecated Prefer useCapabilities().canAccessNavItem — wireframe shows all links with disabled state. */
 export function filterNavSectionsForRoles(roles: PcisRole[]): NavSection[] {
   const roleSet = new Set(roles)
   return NAV_SECTIONS.map((section) => ({

@@ -1,14 +1,33 @@
 import { Link } from 'react-router'
 import dashboardFixture from '../../../fixtures/dashboard.json'
 import { useAuth } from '@/auth/AuthContext'
-import { Badge, BlueprintCard, Button, DataTable, Tabs, type TabItem } from '@/components/ui'
+import {
+  Alert,
+  Badge,
+  BlueprintCard,
+  Button,
+  DataTable,
+  Tabs,
+  type TabItem,
+} from '@/components/ui'
+import type { BadgeStatus } from '@/components/ui/Badge'
 
 type WorkRow = {
   id: string
-  name: string
-  status: string
+  adjuster: string
+  type: string
+  requested: string
+  cumulative: string
+  authority: string
+  aged: string
   tagClass: string
-  amount: string
+}
+
+function authorityBadge(tagClass: string, label: string): BadgeStatus {
+  if (tagClass === 'denied') return 'Denied'
+  if (tagClass === 'renewal') return 'Renewal'
+  if (tagClass === 'approved') return 'Approved'
+  return 'Neutral'
 }
 
 export function DashboardPage() {
@@ -17,52 +36,75 @@ export function DashboardPage() {
 
   const dashTabs: TabItem[] = [
     {
-      id: 'claims',
-      label: 'My claims',
-      content: <WorkQueueTable rows={dashboardFixture.workQueue.claims as WorkRow[]} />,
-    },
-    {
       id: 'approvals',
-      label: 'Approvals awaiting me',
+      label: `Approvals awaiting me (${dashboardFixture.workQueue.approvals.length})`,
       content: <WorkQueueTable rows={dashboardFixture.workQueue.approvals as WorkRow[]} />,
     },
     {
       id: 'renewal',
-      label: 'Renewal exceptions',
+      label: `Renewal exceptions (${dashboardFixture.workQueue.renewal.length})`,
       content: <WorkQueueTable rows={dashboardFixture.workQueue.renewal as WorkRow[]} />,
+    },
+    {
+      id: 'claims',
+      label: 'My claims',
+      content: <WorkQueueTable rows={dashboardFixture.workQueue.claims as WorkRow[]} />,
     },
   ]
 
   return (
     <section aria-labelledby="dashboard-heading">
       <h1 id="dashboard-heading">Good morning, {greetingName}</h1>
-      <p style={{ fontSize: 'var(--pcis-font-size-sm)', color: 'var(--pcis-color-text-muted)', marginBottom: 'var(--pcis-space-6)' }}>
+      <p className="wf-page-lede">
         Monday 10 August 2026 · Claims domain live on the modernized platform (Phase 2) · Billing in parallel run
       </p>
 
-      <div className="page-grid-kpi" style={{ marginBottom: 'var(--pcis-space-6)' }}>
+      <div className="wf-kpi-grid">
         {dashboardFixture.kpis.map((kpi) => (
-          <BlueprintCard key={kpi.label} kicker={kpi.label}>
-            <div style={{ fontSize: '1.875rem', fontWeight: 600, marginTop: 2 }}>{kpi.value}</div>
-            <div className="mono" style={{ fontSize: 'var(--pcis-font-size-xs)', color: 'var(--pcis-color-text-muted)' }}>
-              {kpi.sub}
-            </div>
-          </BlueprintCard>
+          <div key={kpi.label} className="wf-kpi-card">
+            <div className="wf-stat-label">{kpi.label}</div>
+            <div className="wf-kpi-value">{kpi.value}</div>
+            <div className={`wf-kpi-sub${kpi.warn ? ' wf-kpi-sub--warn' : ''}`}>{kpi.sub}</div>
+          </div>
         ))}
       </div>
 
       <div className="page-grid-2">
-        <BlueprintCard>
-          <Tabs items={dashTabs} defaultTabId="claims" aria-label="Dashboard work queue" />
+        <BlueprintCard kicker="My work queue">
+          <div style={{ display: 'flex', gap: 'var(--pcis-space-2)', marginBottom: 'var(--pcis-space-4)' }}>
+            <Link to="/claims/fnol">
+              <Button variant="primary">New FNOL</Button>
+            </Link>
+            <Button variant="ghost">Export</Button>
+          </div>
+          <Tabs items={dashTabs} defaultTabId="approvals" aria-label="Dashboard work queue" />
         </BlueprintCard>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--pcis-space-4)' }}>
-          <BlueprintCard kicker="Batch window">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--pcis-space-2)', marginTop: 'var(--pcis-space-2)' }}>
+          <BlueprintCard kicker="Last night's batch window">
+            <p style={{ fontSize: 'var(--pcis-font-size-sm)', margin: '0 0 var(--pcis-space-2)' }}>
+              {dashboardFixture.batchWindow.used} used · {dashboardFixture.batchWindow.headroomPct}% headroom
+            </p>
+            <div className="progress-bar">
+              <div
+                className="progress-bar__fill"
+                style={{ width: `${100 - dashboardFixture.batchWindow.headroomPct}%` }}
+              />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--pcis-space-2)', marginTop: 'var(--pcis-space-3)' }}>
               {dashboardFixture.jobs.map((job) => (
-                <div key={job.name} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--pcis-font-size-sm)', padding: '4px 0', borderBottom: '1px solid var(--pcis-color-border)' }}>
-                  <span>{job.name}</span>
-                  <Badge status="Active">{job.window}</Badge>
+                <div
+                  key={job.name}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    fontSize: 'var(--pcis-font-size-sm)',
+                    padding: '4px 0',
+                    borderBottom: '1px solid var(--pcis-color-border)',
+                  }}
+                >
+                  <span className="mono">{job.name}</span>
+                  <Badge status={authorityBadge(job.tagClass, job.status)}>{job.status}</Badge>
                 </div>
               ))}
             </div>
@@ -74,13 +116,18 @@ export function DashboardPage() {
           </BlueprintCard>
 
           <BlueprintCard kicker="Control alerts">
-            <ul style={{ margin: 'var(--pcis-space-2) 0 0', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 'var(--pcis-space-3)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--pcis-space-3)' }}>
               {dashboardFixture.alerts.map((alert) => (
-                <li key={alert.text} style={{ fontSize: 'var(--pcis-font-size-sm)' }}>
+                <Alert
+                  key={alert.text}
+                  variant={alert.variant as 'info' | 'success' | 'warning' | 'error'}
+                  title={'title' in alert ? alert.title : undefined}
+                  role={alert.variant === 'error' ? 'alert' : 'status'}
+                >
                   {alert.text}
-                </li>
+                </Alert>
               ))}
-            </ul>
+            </div>
           </BlueprintCard>
         </div>
       </div>
@@ -95,15 +142,33 @@ function WorkQueueTable({ rows }: { rows: WorkRow[] }) {
       rows={rows}
       columns={[
         { id: 'id', label: 'Claim', accessor: (r) => r.id, render: (r) => <span className="mono">{r.id}</span> },
-        { id: 'name', label: 'Detail', accessor: (r) => r.name },
-        { id: 'status', label: 'Status', accessor: (r) => r.status, render: (r) => <Badge status="Active">{r.status}</Badge> },
-        { id: 'amount', label: 'Requested', accessor: (r) => r.amount, render: (r) => <span className="mono">{r.amount}</span> },
+        { id: 'adjuster', label: 'Adjuster', accessor: (r) => r.adjuster },
+        { id: 'type', label: 'Type', accessor: (r) => r.type },
+        {
+          id: 'requested',
+          label: 'Requested',
+          accessor: (r) => r.requested,
+          render: (r) => <span className="mono">{r.requested}</span>,
+        },
+        {
+          id: 'cumulative',
+          label: 'Cumulative',
+          accessor: (r) => r.cumulative,
+          render: (r) => <span className="mono">{r.cumulative}</span>,
+        },
+        {
+          id: 'authority',
+          label: 'Authority',
+          accessor: (r) => r.authority,
+          render: (r) => <Badge status={authorityBadge(r.tagClass, r.authority)}>{r.authority}</Badge>,
+        },
+        { id: 'aged', label: 'Aged', accessor: (r) => r.aged },
         {
           id: 'action',
           label: '',
           accessor: () => '',
-          render: () => (
-            <Link to="/claims/payments" style={{ fontSize: 'var(--pcis-font-size-sm)' }}>
+          render: (r) => (
+            <Link to={`/claims/payments?claimNbr=${encodeURIComponent(r.id)}`} style={{ fontSize: 'var(--pcis-font-size-sm)' }}>
               Open →
             </Link>
           ),

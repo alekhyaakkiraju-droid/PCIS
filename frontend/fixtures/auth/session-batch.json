@@ -1,0 +1,9 @@
+{
+  "authenticated": true,
+  "user": {
+    "sub": "batch-frank",
+    "name": "Frank Batch",
+    "email": "batch.frank@pcis.example.com",
+    "roles": ["BATCH_SVC"]
+  }
+}

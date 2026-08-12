@@ -3,6 +3,8 @@ import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
 import { Sidebar } from './Sidebar'
 import { authFixtures } from '../test-fixtures/authSessions'
+import { DemoRoleProvider } from '../demo/demo-role'
+import { ThemeProvider } from '../theme/ThemeProvider'
 
 const mockUseAuth = vi.fn()
 
@@ -10,8 +12,20 @@ vi.mock('../auth/AuthContext', () => ({
   useAuth: () => mockUseAuth(),
 }))
 
+function renderSidebar() {
+  return render(
+    <ThemeProvider>
+    <DemoRoleProvider>
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>
+    </DemoRoleProvider>
+    </ThemeProvider>,
+  )
+}
+
 describe('Sidebar', () => {
-  it('renders all wireframe nav links for authenticated users', () => {
+  it('renders enabled claim links for adjuster', () => {
     mockUseAuth.mockReturnValue({
       status: 'authenticated',
       user: authFixtures.adjuster.user,
@@ -19,19 +33,13 @@ describe('Sidebar', () => {
       logout: vi.fn(),
     })
 
-    render(
-      <MemoryRouter>
-        <Sidebar />
-      </MemoryRouter>,
-    )
+    renderSidebar()
 
-    expect(screen.getByRole('link', { name: 'Dashboard' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Claim Inquiry' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Billing Reconciliation' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Admin & Compliance' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Billing Reconciliation' })).toHaveAttribute('aria-disabled', 'true')
   })
 
-  it('shows customer link for CSR session', () => {
+  it('shows disabled claim link for CSR session', () => {
     mockUseAuth.mockReturnValue({
       status: 'authenticated',
       user: authFixtures.csr.user,
@@ -39,13 +47,24 @@ describe('Sidebar', () => {
       logout: vi.fn(),
     })
 
-    render(
-      <MemoryRouter>
-        <Sidebar />
-      </MemoryRouter>,
-    )
+    renderSidebar()
 
     expect(screen.getByRole('link', { name: 'Customer 360' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Claim Inquiry' })).toBeInTheDocument()
+    const claimLink = screen.getByRole('link', { name: 'Claim Inquiry' })
+    expect(claimLink).toHaveAttribute('aria-disabled', 'true')
+  })
+
+  it('enables billing for finance role', () => {
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      user: authFixtures.finance.user,
+      login: vi.fn(),
+      logout: vi.fn(),
+    })
+
+    renderSidebar()
+
+    expect(screen.getByRole('link', { name: 'Billing Reconciliation' })).not.toHaveAttribute('aria-disabled', 'true')
+    expect(screen.getByRole('link', { name: 'Batch Operations' })).toHaveAttribute('aria-disabled', 'true')
   })
 })

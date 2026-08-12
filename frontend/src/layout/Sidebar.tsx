@@ -1,6 +1,8 @@
 import { NavLink } from 'react-router'
 import { useAuth } from '../auth/AuthContext'
+import { useCapabilities } from '../auth/useCapabilities'
 import { allNavSections } from './nav-config'
+import { formatRoleList } from '../demo/demo-role'
 
 function NavIcon({ name }: { name: string }) {
   const props = { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5 }
@@ -100,35 +102,81 @@ const ICON_BY_PATH: Record<string, string> = {
   '/admin': 'admin',
 }
 
+function NavItemLabel({ label, badge }: { label: string; badge?: string }) {
+  return (
+    <>
+      <span>{label}</span>
+      {badge ? <span className="app-sidebar__link-badge">{badge}</span> : null}
+    </>
+  )
+}
+
 export function Sidebar() {
   const { user, status, login, logout } = useAuth()
+  const { canAccessNavItem } = useCapabilities()
   const sections = user && status === 'authenticated' ? allNavSections() : []
 
   return (
     <aside className="app-sidebar" aria-label="Module navigation">
       <div className="app-sidebar__brand">
-        <strong>PCIS</strong>
+        <strong>
+          PCIS <span className="app-sidebar__brand-version">v2</span>
+        </strong>
         <span className="app-sidebar__tagline">Modernization Platform</span>
       </div>
+      {status === 'authenticated' ? (
+        <input
+          className="app-sidebar__search"
+          type="search"
+          placeholder="Search customer, policy, claim…"
+          aria-label="Search customer, policy, claim"
+        />
+      ) : null}
       <nav aria-label="Primary">
         {sections.map((section) => (
           <div key={section.title ?? 'root'} className="app-sidebar__section">
             {section.title ? <div className="app-sidebar__section-title">{section.title}</div> : null}
-            {section.items.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                end={link.to === '/'}
-                className="app-sidebar__link"
-              >
-                <NavIcon name={ICON_BY_PATH[link.to] ?? 'dashboard'} />
-                {link.label}
-              </NavLink>
-            ))}
+            {section.items.map((link) => {
+              const allowed = canAccessNavItem(link)
+              const deniedTitle =
+                link.roles.length > 0
+                  ? `Requires ${formatRoleList(link.roles)} role`
+                  : undefined
+
+              if (!allowed) {
+                return (
+                  <span
+                    key={link.to}
+                    className="app-sidebar__link app-sidebar__link--disabled"
+                    aria-disabled="true"
+                    aria-label={link.label}
+                    title={deniedTitle}
+                    role="link"
+                  >
+                    <NavIcon name={ICON_BY_PATH[link.to] ?? 'dashboard'} />
+                    <NavItemLabel label={link.label} badge={link.badge} />
+                  </span>
+                )
+              }
+
+              return (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  end={link.to === '/'}
+                  className="app-sidebar__link"
+                  aria-label={link.label}
+                  title={deniedTitle}
+                >
+                  <NavIcon name={ICON_BY_PATH[link.to] ?? 'dashboard'} />
+                  <NavItemLabel label={link.label} badge={link.badge} />
+                </NavLink>
+              )
+            })}
           </div>
         ))}
       </nav>
-      <div className="app-sidebar__footer">Phase 0 · Foundation Hardening</div>
+      <div className="app-sidebar__footer">Phase 2 · Claims live · Billing parallel run</div>
       <div className="app-sidebar__actions">
         {status === 'authenticated' && user ? (
           <button type="button" className="app-sidebar__signout" onClick={() => void logout()}>

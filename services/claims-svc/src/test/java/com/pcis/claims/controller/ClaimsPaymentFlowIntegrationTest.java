@@ -68,7 +68,7 @@ class ClaimsPaymentFlowIntegrationTest {
 
     CreateClaimRequest claimRequest =
         new CreateClaimRequest(
-            claimNbr, "POL000000001", 1001, LocalDate.of(2026, 4, 10), "PRP", null);
+            claimNbr, "POL000000001", 1001, LocalDate.of(2026, 4, 10), "PRP", null, null, null);
     mockMvc
         .perform(
             post("/api/v1/claims")
@@ -78,7 +78,7 @@ class ClaimsPaymentFlowIntegrationTest {
         .andExpect(status().isCreated());
 
     CreateReserveRequest reserveRequest =
-        new CreateReserveRequest("PRO", new BigDecimal("8000.00"));
+        new CreateReserveRequest("PRO", new BigDecimal("8000.00"), null);
     MvcResult reserveResult =
         mockMvc
             .perform(
@@ -127,7 +127,7 @@ class ClaimsPaymentFlowIntegrationTest {
                 .content(
                     objectMapper.writeValueAsString(
                         new CreateClaimRequest(
-                            claimNbr, "POL000000001", 1001, LocalDate.of(2026, 4, 11), "PRP", null))))
+                            claimNbr, "POL000000001", 1001, LocalDate.of(2026, 4, 11), "PRP", null, null, null))))
         .andExpect(status().isCreated());
 
     MvcResult reserveResult =
@@ -138,7 +138,7 @@ class ClaimsPaymentFlowIntegrationTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         objectMapper.writeValueAsString(
-                            new CreateReserveRequest("PRO", new BigDecimal("5000.00")))))
+                            new CreateReserveRequest("PRO", new BigDecimal("5000.00"), null))))
             .andExpect(status().isCreated())
             .andReturn();
     Long reserveId =
@@ -178,7 +178,7 @@ class ClaimsPaymentFlowIntegrationTest {
                 .content(
                     objectMapper.writeValueAsString(
                         new CreateClaimRequest(
-                            claimNbr, "POL000000001", 1001, LocalDate.of(2026, 4, 12), "PRP", null))))
+                            claimNbr, "POL000000001", 1001, LocalDate.of(2026, 4, 12), "PRP", null, null, null))))
         .andExpect(status().isCreated());
 
     MvcResult reserveResult =
@@ -189,7 +189,7 @@ class ClaimsPaymentFlowIntegrationTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         objectMapper.writeValueAsString(
-                            new CreateReserveRequest("PRO", new BigDecimal("5000.00")))))
+                            new CreateReserveRequest("PRO", new BigDecimal("5000.00"), null))))
             .andExpect(status().isCreated())
             .andReturn();
     Long reserveId =
@@ -227,7 +227,7 @@ class ClaimsPaymentFlowIntegrationTest {
                 .content(
                     objectMapper.writeValueAsString(
                         new CreateClaimRequest(
-                            claimNbr, "POL000000001", 1001, LocalDate.of(2026, 4, 13), "PRP", null))))
+                            claimNbr, "POL000000001", 1001, LocalDate.of(2026, 4, 13), "PRP", null, null, null))))
         .andExpect(status().isCreated());
 
     MvcResult getResult =

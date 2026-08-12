@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
-import { useAuth } from '@/auth/AuthContext'
+import { useCapabilities } from '@/auth/useCapabilities'
 
 export type MaskFieldType = 'taxId' | 'phone' | 'email' | 'generic'
 
@@ -44,7 +44,7 @@ export function useMaskedField(
   value: string | undefined | null,
   type: MaskFieldType = 'generic',
 ) {
-  const { hasRole } = useAuth()
+  const { hasRole } = useCapabilities()
   const canViewUnmasked = hasRole('COMPLIANCE')
   const [revealed, setRevealed] = useState(false)
 
