@@ -7,7 +7,7 @@ Helm **library** chart providing shared Kubernetes templates for PCIS microservi
 | Concern | Behavior |
 |--------|----------|
 | Security context | `runAsNonRoot`, `readOnlyRootFilesystem`, `allowPrivilegeEscalation=false`, drop `ALL` capabilities |
-| Probes | Spring Actuator: `/actuator/health/liveness`, `/readiness`, `/startup` (`failureThreshold: 30`) |
+| Probes | Spring Actuator: `/actuator/health/liveness`, `/readiness` (startup probe uses readiness; Spring Boot does not expose `/startup`) |
 | PDB | `minAvailable` from values (`prd` typically `2`, `dev` typically `1`) |
 | HPA | CPU (optional memory) autoscaling when enabled |
 | NetworkPolicy | Default-deny ingress; allow from `api-gateway` and configured peers |

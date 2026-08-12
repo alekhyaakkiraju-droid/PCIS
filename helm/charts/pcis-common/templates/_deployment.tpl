@@ -62,7 +62,7 @@ spec:
             periodSeconds: {{ .Values.probes.readiness.periodSeconds | default 5 }}
           startupProbe:
             httpGet:
-              path: /actuator/health/startup
+              path: {{ .Values.probes.startup.path | default "/actuator/health/readiness" }}
               port: http
             failureThreshold: {{ .Values.probes.startup.failureThreshold | default 30 }}
             periodSeconds: {{ .Values.probes.startup.periodSeconds | default 10 }}
