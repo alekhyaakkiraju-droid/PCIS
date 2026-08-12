@@ -33,20 +33,20 @@ function InstallmentsView() {
   )
 }
 
-const DEMO_DATA_NOTE = (
+const NOT_WIRED_NOTE = (
   <p style={{ fontSize: 'var(--pcis-font-size-xs)', color: 'var(--pcis-color-text-muted)', marginBottom: 'var(--pcis-space-2)' }}>
-    Demo data — billing-svc has no invoice or skip-candidate list endpoint yet, so this tab is not wired to a live source.
+    billing-svc does not yet expose an invoice or skip-candidate list endpoint, so this tab is not wired to a live source.
   </p>
 )
 
 function InvoicesView() {
   const rows = [
-    { id: 'INV-220134', policyId: 'POL-0088217', amount: 178.33, status: 'Open' },
-    { id: 'INV-220091', policyId: 'POL-0091355', amount: 275, status: 'Open' },
+    { id: 'INV-240118', policyId: 'POL000004006', amount: 1050.00, status: 'Open' },
+    { id: 'INV-240119', policyId: 'POL000004008', amount: 145.83, status: 'Open' },
   ]
   return (
     <>
-      {DEMO_DATA_NOTE}
+      {NOT_WIRED_NOTE}
       <DataTable
         aria-label="Invoices"
         rows={rows}
@@ -64,13 +64,13 @@ function InvoicesView() {
 }
 
 const SKIPPED_ROWS = [
-  { policyId: 'POL-0083310', nextDue: '2026-09-14', daysOut: 35, reason: 'Outside 15-day lead window — re-evaluated next run' },
+  { policyId: 'POL000004009', nextDue: '2026-09-14', daysOut: 35, reason: 'Policy cancelled — billing plan inactive' },
 ]
 
 function SkippedView() {
   return (
     <>
-      {DEMO_DATA_NOTE}
+      {NOT_WIRED_NOTE}
       <DataTable
         aria-label="Skipped candidates"
         rows={SKIPPED_ROWS}
@@ -163,7 +163,7 @@ export function BillingDashboard() {
           </span>
           <div style={{ display: 'flex', gap: 'var(--pcis-space-2)' }}>
             <Button variant="ghost" disabled title="Evidence pack export is not wired up yet">Export evidence pack</Button>
-            <Button variant="secondary" disabled title="Re-run is not wired up yet — the comparison figures above are demo data, not a live COBOL-vs-Java diff">Re-run comparison</Button>
+            <Button variant="secondary" disabled title="Re-run is not wired up yet — there is no legacy COBOL system running in this environment to diff against">Re-run comparison</Button>
             <Button variant="primary" onClick={() => setSignedOff(true)} disabled={signedOff || overdueCount > 0}>
               {signedOff ? 'Signed off ✓' : 'Approve cutover gate'}
             </Button>

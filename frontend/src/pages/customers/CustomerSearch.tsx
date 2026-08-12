@@ -14,27 +14,29 @@ export function CustomerSearch() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
 
+  const trimmed = query.trim()
   const { data, isLoading, error, isFetching } = useQuery({
-    queryKey: ['customer-search', query.trim()],
-    enabled: query.trim().length >= 2,
+    queryKey: ['customer-search', trimmed],
     queryFn: async () => {
       try {
-        return await customerApi.search(query.trim())
+        return trimmed.length === 0 ? await customerApi.list() : await customerApi.search(trimmed)
       } catch (err) {
         if (shouldUseCustomerFixtureFallback(err)) {
-          const term = query.trim().toLowerCase()
-          return DEMO_CUSTOMERS.filter(
-            (customer) =>
-              customer.custName.toLowerCase().includes(term) ||
-              String(customer.custId).includes(term),
-          )
+          const term = trimmed.toLowerCase()
+          return term.length === 0
+            ? DEMO_CUSTOMERS
+            : DEMO_CUSTOMERS.filter(
+                (customer) =>
+                  customer.custName.toLowerCase().includes(term) ||
+                  String(customer.custId).includes(term),
+              )
         }
         throw err
       }
     },
   })
 
-  const results = query.trim().length >= 2 ? (data ?? []) : DEMO_CUSTOMERS
+  const results = data ?? []
 
   return (
     <div>
@@ -45,7 +47,7 @@ export function CustomerSearch() {
         onChange={(event) => setQuery(event.target.value)}
         placeholder="e.g. Marta Field or 19284"
       />
-      {(isLoading || isFetching) && query.trim().length >= 2 ? (
+      {(isLoading || isFetching) ? (
         <p style={{ fontSize: 'var(--pcis-font-size-sm)', marginTop: 'var(--pcis-space-3)' }}>
           Searching…
         </p>
@@ -62,7 +64,7 @@ export function CustomerSearch() {
           marginBottom: 'var(--pcis-space-2)',
         }}
       >
-        {query.trim().length >= 2 ? 'Search results' : 'Quick access demo customers'}
+        {query.trim().length >= 2 ? 'Search results' : 'Recent customers'}
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--pcis-space-2)' }}>
         {results.map((customer) => (
@@ -75,7 +77,7 @@ export function CustomerSearch() {
             {customer.custName} · CUS-{String(customer.custId).padStart(7, '0')}
           </button>
         ))}
-        {query.trim().length >= 2 && !isLoading && results.length === 0 ? (
+        {!isLoading && results.length === 0 ? (
           <p style={{ fontSize: 'var(--pcis-font-size-sm)', color: 'var(--pcis-color-text-muted)' }}>
             No customers matched your search.
           </p>

@@ -11,6 +11,15 @@ public interface CustomerRepository extends JpaRepository<CustomerEntity, Intege
   Optional<CustomerEntity> findByTaxId(String taxId);
   long countByTaxId(String taxId);
 
+  @Query(
+      """
+      SELECT DISTINCT c FROM CustomerEntity c
+      LEFT JOIN FETCH c.addresses
+      LEFT JOIN FETCH c.contacts
+      ORDER BY c.custName
+      """)
+  List<CustomerEntity> findAllWithDetails();
+
   @Query("SELECT DISTINCT c FROM CustomerEntity c LEFT JOIN FETCH c.addresses LEFT JOIN FETCH c.contacts WHERE c.custId = :custId")
   Optional<CustomerEntity> findWithDetailsById(@Param("custId") Integer custId);
 

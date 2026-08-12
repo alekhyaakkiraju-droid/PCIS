@@ -24,6 +24,9 @@ pcis:
     loader-enabled: false
   outbox:
     relay-enabled: false
+  billing:
+    delinquency:
+      reference-date: 2026-08-12
   batch:
     oauth2:
       token-uri: http://localhost:8180/realms/pcis/protocol/openid-connect/token

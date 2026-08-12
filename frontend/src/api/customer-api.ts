@@ -21,6 +21,10 @@ export const customerApi = {
     return apiClient.get<Customer[]>(`/v1/customers/search?${params.toString()}`)
   },
 
+  async list(): Promise<Customer[]> {
+    return apiClient.get<Customer[]>('/v1/customers')
+  },
+
   async getById(id: number): Promise<Customer> {
     return apiClient.get<Customer>(`/v1/customers/${id}`)
   },

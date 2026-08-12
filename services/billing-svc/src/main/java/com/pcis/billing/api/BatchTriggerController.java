@@ -1,11 +1,15 @@
 package com.pcis.billing.api;
 
 import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.AppenderBase;
 import ch.qos.logback.core.read.ListAppender;
+import java.io.IOException;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,13 +24,16 @@ import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 /**
  * On-demand execution of billing-svc's Spring Batch jobs. billing-svc keeps
@@ -46,6 +53,8 @@ public class BatchTriggerController {
   private static final Set<String> TRIGGERABLE_JOBS =
       Set.of("billingGenerationJob", "commissionCalculationJob", "delinquencyAgingJob");
   private static final int RECORD_PREVIEW_LIMIT = 20;
+  private static final DateTimeFormatter LOG_TIMESTAMP_FORMAT =
+      DateTimeFormatter.ofPattern("HH:mm:ss.SSS").withZone(ZoneId.systemDefault());
 
   private final JobLauncher jobLauncher;
   private final JdbcTemplate jdbcTemplate;
@@ -95,32 +104,131 @@ public class BatchTriggerController {
       body.put("createdRecords", createdRecords);
       return ResponseEntity.ok(body);
     } catch (JobExecutionException e) {
-      detachLogCapture(appender);
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body(Map.of("error", e.getMessage()));
+      List<String> logLines = detachLogCapture(appender);
+      Map<String, Object> body = new LinkedHashMap<>();
+      body.put("error", e.getMessage());
+      body.put("logLines", logLines);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
+  }
+
+  /**
+   * Streams the job's log lines to the client as they are actually emitted (Server-Sent
+   * Events), so the console shows real progress rather than a block of text that only appears
+   * once the run has already finished. The job itself runs on a background thread since
+   * jobLauncher.run(...) blocks until completion.
+   */
+  @GetMapping(value = "/{jobName}/run/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+  @PreAuthorize("hasAuthority('billing:write')")
+  public SseEmitter triggerRunStream(@PathVariable String jobName) {
+    SseEmitter emitter = new SseEmitter(60_000L);
+    if (!TRIGGERABLE_JOBS.contains(jobName)) {
+      sendQuietly(emitter, "failed", "Unknown or non-triggerable job: " + jobName);
+      emitter.complete();
+      return emitter;
+    }
+    Thread.ofVirtual().start(() -> runAndStream(jobName, emitter));
+    return emitter;
+  }
+
+  private void runAndStream(String jobName, SseEmitter emitter) {
+    Job job = resolveJob(jobName);
+    var params =
+        new JobParametersBuilder().addLong("triggeredAt", System.currentTimeMillis()).toJobParameters();
+    Instant startedAt = Instant.now();
+
+    LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+    StreamingLogAppender appender = new StreamingLogAppender(emitter);
+    appender.start();
+    attachAppender(context, appender);
+    try {
+      JobExecution execution = jobLauncher.run(job, params);
+      detachAppender(context, appender);
+      List<Map<String, Object>> createdRecords =
+          execution.getStatus() == BatchStatus.COMPLETED
+              ? fetchCreatedRecords(jobName, startedAt)
+              : List.of();
+      Map<String, Object> result = new LinkedHashMap<>();
+      result.put("jobName", jobName);
+      result.put("jobExecutionId", execution.getId());
+      result.put("status", execution.getStatus().toString());
+      result.put("exitCode", execution.getExitStatus().getExitCode());
+      result.put("createdRecords", createdRecords);
+      emitter.send(SseEmitter.event().name("result").data(result));
+      emitter.complete();
+    } catch (JobExecutionException e) {
+      detachAppender(context, appender);
+      sendQuietly(emitter, "failed", e.getMessage());
+      emitter.completeWithError(e);
+    } catch (IOException e) {
+      detachAppender(context, appender);
+      emitter.completeWithError(e);
+    }
+  }
+
+  private void sendQuietly(SseEmitter emitter, String eventName, String data) {
+    try {
+      emitter.send(SseEmitter.event().name(eventName).data(data));
+    } catch (IOException ignored) {
+      // Client disconnected — nothing left to notify.
+    }
+  }
+
+  /** Pushes each qualifying log event straight to the SSE stream as it is logged. */
+  private static final class StreamingLogAppender extends AppenderBase<ILoggingEvent> {
+    private final SseEmitter emitter;
+
+    StreamingLogAppender(SseEmitter emitter) {
+      this.emitter = emitter;
+    }
+
+    @Override
+    protected void append(ILoggingEvent event) {
+      if (!event.getLevel().isGreaterOrEqual(Level.INFO)) {
+        return;
+      }
+      try {
+        emitter.send(SseEmitter.event().name("log").data(formatLogLine(event)));
+      } catch (IOException e) {
+        // Client disconnected mid-run — let the job keep running to completion regardless.
+      }
+    }
+  }
+
+  private static String formatLogLine(ILoggingEvent event) {
+    return "%s [%s] %s"
+        .formatted(
+            LOG_TIMESTAMP_FORMAT.format(Instant.ofEpochMilli(event.getTimeStamp())),
+            event.getLevel(),
+            event.getFormattedMessage());
+  }
+
+  private static void attachAppender(LoggerContext context, Appender<ILoggingEvent> appender) {
+    context.getLogger("org.springframework.batch").addAppender(appender);
+    context.getLogger("com.pcis.billing.batch").addAppender(appender);
+    context.getLogger("com.pcis.batch").addAppender(appender);
+  }
+
+  private static void detachAppender(LoggerContext context, Appender<ILoggingEvent> appender) {
+    context.getLogger("org.springframework.batch").detachAppender(appender);
+    context.getLogger("com.pcis.billing.batch").detachAppender(appender);
+    context.getLogger("com.pcis.batch").detachAppender(appender);
+    appender.stop();
   }
 
   /** Scoped to the batch packages, not root — keeps the capture to this job's own log lines. */
   private ListAppender<ILoggingEvent> attachLogCapture() {
     ListAppender<ILoggingEvent> appender = new ListAppender<>();
     appender.start();
-    LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-    context.getLogger("org.springframework.batch").addAppender(appender);
-    context.getLogger("com.pcis.billing.batch").addAppender(appender);
-    context.getLogger("com.pcis.batch").addAppender(appender);
+    attachAppender((LoggerContext) LoggerFactory.getILoggerFactory(), appender);
     return appender;
   }
 
   private List<String> detachLogCapture(ListAppender<ILoggingEvent> appender) {
-    LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-    context.getLogger("org.springframework.batch").detachAppender(appender);
-    context.getLogger("com.pcis.billing.batch").detachAppender(appender);
-    context.getLogger("com.pcis.batch").detachAppender(appender);
-    appender.stop();
+    detachAppender((LoggerContext) LoggerFactory.getILoggerFactory(), appender);
     return appender.list.stream()
         .filter(event -> event.getLevel().isGreaterOrEqual(Level.INFO))
-        .map(event -> "[%s] %s".formatted(event.getLevel(), event.getFormattedMessage()))
+        .map(BatchTriggerController::formatLogLine)
         .collect(Collectors.toList());
   }
 

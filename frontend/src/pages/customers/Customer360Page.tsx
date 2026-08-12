@@ -446,7 +446,7 @@ function AuditTab({ custId }: { custId: number }) {
       {data ? (
         <>
           <p style={{ fontSize: 'var(--pcis-font-size-xs)', color: 'var(--pcis-color-text-muted)', marginBottom: 'var(--pcis-space-2)' }}>
-            Demo data — audit-svc has no per-customer read endpoint yet, so this tab is not wired to a live log.
+            audit-svc does not yet expose a per-customer read endpoint, so this tab is not wired to a live log.
           </p>
           <DataTable
           aria-label="Customer audit trail"

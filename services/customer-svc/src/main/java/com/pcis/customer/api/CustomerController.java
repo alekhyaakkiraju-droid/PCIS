@@ -84,6 +84,14 @@ public class CustomerController {
         .toList();
   }
 
+  @GetMapping
+  @PreAuthorize("hasAuthority('customer:read')")
+  public List<CustomerResponse> listCustomers() {
+    return customerApplicationService.list().stream()
+        .map(customerResponseMapper::toResponse)
+        .toList();
+  }
+
   @GetMapping("/{id}/duplicate-check")
   @PreAuthorize("hasAuthority('customer:read')")
   public DuplicateCheckResponse duplicateCheck(@PathVariable("id") Integer id) {

@@ -83,6 +83,11 @@ public class CustomerApplicationService {
   }
 
   @Transactional(readOnly = true)
+  public List<CustomerEntity> list() {
+    return customerRepository.findAllWithDetails();
+  }
+
+  @Transactional(readOnly = true)
   public Optional<DuplicateCandidate> duplicateCheck(Integer custId) {
     CustomerEntity customer = customerDomainService.findById(custId);
     if (!StringUtils.hasText(customer.getTaxId())) {
