@@ -242,17 +242,6 @@
   margin: 0 auto var(--pcis-space-3);
 }
 
-.wf-batch-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
-  gap: var(--pcis-space-6);
-  align-items: stretch;
-}
-
-.wf-batch-layout > * {
-  height: 100%;
-}
-
 /* Customer 360 search landing */
 .wf-customer-search-page {
   max-width: 720px;
@@ -305,9 +294,5 @@
 
   .wf-header-row {
     flex-direction: column;
-  }
-
-  .wf-batch-layout {
-    grid-template-columns: 1fr;
   }
 }

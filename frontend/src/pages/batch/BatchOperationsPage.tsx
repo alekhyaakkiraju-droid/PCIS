@@ -1,21 +1,24 @@
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useMemo, useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { batchStatusApi, type BatchJobRun } from '@/api/batch-status-api'
 import { Badge, BlueprintCard, Button, DataTable } from '@/components/ui'
 
 /**
- * Static per-job metadata — legacy COBOL program ID, configured cadence, and chunk size.
- * Sourced from each batch module's own JobConfig/application.yaml, not derived from run history
- * (Spring Batch execution tables don't carry this — it's config, not runtime state).
+ * Static per-job metadata — legacy COBOL program ID, configured cadence, and whether a real
+ * on-demand trigger endpoint exists. Sourced from each batch module's own JobConfig/application.yaml,
+ * not derived from run history (Spring Batch execution tables don't carry this — it's config, not
+ * runtime state). `triggerable` jobs live in billing-svc, a persistent server with its Job beans
+ * always registered — see BatchTriggerController. The rest are one-shot CLI jars with no running
+ * process to send a trigger request to, so they can't be triggered without a bigger infra change.
  */
-const JOB_META: Record<string, { legacyProgram: string; schedule: string }> = {
+const JOB_META: Record<string, { legacyProgram: string; schedule: string; triggerable?: boolean }> = {
   auditArchiveJob: { legacyProgram: 'AUD002B', schedule: 'Daily' },
   auditPurgeJob: { legacyProgram: '—', schedule: 'Daily' },
   claimPaymentJob: { legacyProgram: 'CLM006B', schedule: 'Daily' },
   policyRenewalJob: { legacyProgram: 'POL006B', schedule: 'Monthly' },
-  billingGenerationJob: { legacyProgram: 'BIL003B', schedule: 'Daily' },
-  commissionCalculationJob: { legacyProgram: 'CMM001B', schedule: 'Daily' },
-  delinquencyAgingJob: { legacyProgram: 'PRM005B', schedule: 'Daily' },
+  billingGenerationJob: { legacyProgram: 'BIL003B', schedule: 'Daily', triggerable: true },
+  commissionCalculationJob: { legacyProgram: 'CMM001B', schedule: 'Daily', triggerable: true },
+  delinquencyAgingJob: { legacyProgram: 'PRM005B', schedule: 'Daily', triggerable: true },
   reconciliationJob: { legacyProgram: '—', schedule: 'Daily' },
   domainRollbackJob: { legacyProgram: '—', schedule: 'Manual' },
 }
@@ -121,6 +124,7 @@ function JobDetailPanel({ job }: { job: BatchJobRun }) {
 }
 
 export function BatchOperationsPage() {
+  const queryClient = useQueryClient()
   const { data, isLoading, error } = useQuery({
     queryKey: ['batch-runs'],
     queryFn: () => batchStatusApi.listRuns(),
@@ -129,7 +133,27 @@ export function BatchOperationsPage() {
   const runs = data ?? []
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
   const rowKey = (r: BatchJobRun) => `${r.domain}-${r.jobExecutionId}`
-  const selectedJob = runs.find((r) => rowKey(r) === selectedKey) ?? runs[0]
+
+  // The table shows one row per job — its latest execution. Full history stays
+  // available per-job via Details (which already surfaces logs/steps for that run).
+  const latestRuns = useMemo(() => {
+    const seen = new Set<string>()
+    const latest: BatchJobRun[] = []
+    for (const run of runs) {
+      if (seen.has(run.jobName)) continue
+      seen.add(run.jobName)
+      latest.push(run)
+    }
+    return latest
+  }, [runs])
+
+  const selectedJob = latestRuns.find((r) => rowKey(r) === selectedKey) ?? latestRuns[0]
+
+  const triggerMutation = useMutation({
+    mutationFn: (jobName: string) => batchStatusApi.triggerRun(jobName),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['batch-runs'] }),
+  })
+  const isTriggerable = Boolean(selectedJob && jobMeta(selectedJob.jobName).triggerable)
 
   const jobsTracked = Object.keys(JOB_META).length
   const completedCount = runs.filter((r) => r.status === 'COMPLETED').length
@@ -150,7 +174,7 @@ export function BatchOperationsPage() {
           <div className="wf-kpi-card">
             <div className="wf-stat-label">Jobs tracked</div>
             <div className="wf-kpi-value">{jobsTracked}</div>
-            <div className="wf-kpi-sub">Across audit, claims, policy, billing</div>
+            <div className="wf-kpi-sub">Across audit, claims, policy, billing, reconciliation</div>
           </div>
           <div className="wf-kpi-card">
             <div className="wf-stat-label">Last run duration</div>
@@ -177,19 +201,67 @@ export function BatchOperationsPage() {
       ) : runs.length === 0 ? (
         <p style={{ fontSize: 'var(--pcis-font-size-sm)' }}>No batch runs recorded yet.</p>
       ) : (
-        <div className="wf-batch-layout">
+        <div>
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--pcis-space-3)' }}>
-              <h2 style={{ fontSize: 'var(--pcis-font-size-sm)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
+              <h2 style={{ fontSize: 'var(--pcis-font-size-xs)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--pcis-color-text-muted)', margin: 0 }}>
                 Job Status
               </h2>
-              <Button variant="primary" size="sm" disabled title="Manual job triggering is not wired up yet — jobs run on their own schedule">
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={!isTriggerable || triggerMutation.isPending}
+                loading={triggerMutation.isPending}
+                onClick={() => selectedJob && triggerMutation.mutate(selectedJob.jobName)}
+                title={
+                  isTriggerable
+                    ? `Run ${selectedJob?.jobName} now`
+                    : 'Select a billing job below — the other domains run as one-shot jobs with no live server to trigger'
+                }
+              >
                 Trigger Run
               </Button>
             </div>
+            {triggerMutation.data ? (
+              <BlueprintCard kicker={`Execution #${triggerMutation.data.jobExecutionId} — ${triggerMutation.data.status}`} elevation="sm" style={{ marginBottom: 'var(--pcis-space-4)' }}>
+                <div className="mono" style={{ fontSize: 'var(--pcis-font-size-xs)' }}>
+                  <div style={{ fontWeight: 600, marginBottom: 4 }}>Log</div>
+                  <pre style={{ margin: 0, whiteSpace: 'pre-wrap', maxHeight: 160, overflowY: 'auto' }}>
+                    {triggerMutation.data.logLines.join('\n')}
+                  </pre>
+                </div>
+                {triggerMutation.data.createdRecords.length > 0 ? (
+                  <div style={{ marginTop: 'var(--pcis-space-3)' }}>
+                    <div style={{ fontSize: 'var(--pcis-font-size-xs)', fontWeight: 600, marginBottom: 4 }}>
+                      Records created ({triggerMutation.data.createdRecords.length})
+                    </div>
+                    <DataTable
+                      aria-label="Records created by this run"
+                      rows={triggerMutation.data.createdRecords}
+                      columns={Object.keys(triggerMutation.data.createdRecords[0]).map((key) => ({
+                        id: key,
+                        label: key,
+                        accessor: (r: Record<string, unknown>) => String(r[key] ?? ''),
+                      }))}
+                      getRowId={(r) => JSON.stringify(r)}
+                      emptyMessage="No records."
+                    />
+                  </div>
+                ) : (
+                  <p style={{ fontSize: 'var(--pcis-font-size-xs)', color: 'var(--pcis-color-text-muted)', marginTop: 'var(--pcis-space-2)' }}>
+                    No new records — this run found nothing eligible to write (billing jobs are idempotent, so re-running against the same seed data typically produces zero new rows after the first successful pass).
+                  </p>
+                )}
+              </BlueprintCard>
+            ) : null}
+            {triggerMutation.isError ? (
+              <p role="alert" style={{ fontSize: 'var(--pcis-font-size-xs)', color: 'var(--pcis-token-error)', marginTop: -8, marginBottom: 'var(--pcis-space-3)' }}>
+                Unable to trigger run.
+              </p>
+            ) : null}
           <DataTable
             aria-label="Batch jobs"
-            rows={runs}
+            rows={latestRuns}
             columns={[
               { id: 'name', label: 'Job', accessor: (r) => r.jobName },
               {
@@ -221,30 +293,38 @@ export function BatchOperationsPage() {
                 id: 'details',
                 label: '',
                 accessor: () => '',
-                render: (r) => (
-                  <button
-                    type="button"
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: 'var(--pcis-color-primary-700)',
-                      cursor: 'pointer',
-                      fontSize: 'var(--pcis-font-size-sm)',
-                      fontWeight: selectedJob && rowKey(selectedJob) === rowKey(r) ? 600 : 400,
-                    }}
-                    onClick={() => setSelectedKey(rowKey(r))}
-                  >
-                    {selectedJob && rowKey(selectedJob) === rowKey(r) ? 'Selected' : 'Details →'}
-                  </button>
-                ),
+                render: (r) =>
+                  selectedJob && rowKey(selectedJob) === rowKey(r) ? (
+                    <Badge status="Active">Selected</Badge>
+                  ) : (
+                    <button
+                      type="button"
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--pcis-color-primary-700)',
+                        cursor: 'pointer',
+                        fontSize: 'var(--pcis-font-size-sm)',
+                        textDecoration: 'underline',
+                      }}
+                      onClick={() => setSelectedKey(rowKey(r))}
+                    >
+                      Details
+                    </button>
+                  ),
               },
             ]}
             getRowId={(r) => `${r.domain}-${r.jobExecutionId}`}
+            highlightRowId={selectedJob ? rowKey(selectedJob) : undefined}
             emptyMessage="No batch jobs."
           />
           </div>
 
-          {selectedJob ? <JobDetailPanel job={selectedJob} /> : null}
+          {selectedJob ? (
+            <div style={{ marginTop: 'var(--pcis-space-6)' }}>
+              <JobDetailPanel job={selectedJob} />
+            </div>
+          ) : null}
         </div>
       )}
     </section>

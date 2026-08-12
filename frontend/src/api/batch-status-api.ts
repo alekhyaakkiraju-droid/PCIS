@@ -24,8 +24,21 @@ export type BatchJobRun = {
   steps: BatchStepRun[]
 }
 
+export type TriggerRunResult = {
+  jobName: string
+  jobExecutionId: number
+  status: string
+  exitCode: string | null
+  logLines: string[]
+  createdRecords: Record<string, unknown>[]
+}
+
 export const batchStatusApi = {
   async listRuns(): Promise<BatchJobRun[]> {
     return apiClient.get<BatchJobRun[]>('/v1/admin/batch/runs')
+  },
+
+  async triggerRun(jobName: string): Promise<TriggerRunResult> {
+    return apiClient.post<TriggerRunResult>(`/v1/billing/batch/${encodeURIComponent(jobName)}/run`)
   },
 }

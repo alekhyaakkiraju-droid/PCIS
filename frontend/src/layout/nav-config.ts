@@ -96,7 +96,7 @@ export const ROUTE_TITLES: Record<string, string> = {
   '/claims/payments': 'Claim Payment & Authority Approval',
   '/customers': 'Customer 360',
   '/policies': 'Policies',
-  '/billing': 'Billing Generation & Parallel-Run Reconciliation',
+  '/billing': 'Billing Overview',
   '/batch': 'Batch Operations Console',
   '/admin': 'Admin — Tunables, Classification & Audit Retention',
 }

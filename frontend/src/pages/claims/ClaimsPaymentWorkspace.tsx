@@ -142,6 +142,7 @@ function primaryOpenReserve(detail: ClaimDetail) {
 export function ClaimsPaymentWorkspace() {
   const queryClient = useQueryClient()
   const [searchParams] = useSearchParams()
+  const hasClaimContext = Boolean(searchParams.get('claimNbr'))
   const displayClaimNbr = searchParams.get('claimNbr') ?? 'CLM-000004821'
   const apiClaimNbr = normalizeClaimNbr(displayClaimNbr)
   const { hasPermission } = useCapabilities()
@@ -157,6 +158,7 @@ export function ClaimsPaymentWorkspace() {
 
   const detailQuery = useQuery({
     queryKey: ['claim-detail', apiClaimNbr],
+    enabled: hasClaimContext,
     queryFn: async () => {
       try {
         return await claimsApi.getByClaimNbr(apiClaimNbr)
@@ -171,6 +173,7 @@ export function ClaimsPaymentWorkspace() {
 
   const approvalsQuery = useQuery({
     queryKey: ['claim-approvals', apiClaimNbr],
+    enabled: hasClaimContext,
     queryFn: async () => {
       try {
         return await claimsApi.listApprovals(apiClaimNbr)
@@ -182,6 +185,24 @@ export function ClaimsPaymentWorkspace() {
       }
     },
   })
+
+  if (!hasClaimContext) {
+    return (
+      <section aria-labelledby="payments-heading">
+        <h1 id="payments-heading">Claim Payment &amp; Authority Approval</h1>
+        <p className="wf-page-lede">Select a claim to review reserves, submit payments, and manage authority approvals.</p>
+        <BlueprintCard kicker="No claim selected">
+          <p style={{ fontSize: 'var(--pcis-font-size-sm)', marginBottom: 'var(--pcis-space-4)' }}>
+            Open a claim from Claim Inquiry, or start a new one via FNOL, to see its payment workspace.
+          </p>
+          <div style={{ display: 'flex', gap: 'var(--pcis-space-3)' }}>
+            <Link to="/claims"><Button variant="primary">Go to Claim Inquiry</Button></Link>
+            <Link to="/claims/fnol"><Button variant="secondary">Start FNOL</Button></Link>
+          </div>
+        </BlueprintCard>
+      </section>
+    )
+  }
 
   const detail = detailQuery.data
   const approvals = approvalsQuery.data ?? []
