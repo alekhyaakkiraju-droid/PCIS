@@ -28,5 +28,5 @@ env:
   OIDC_ISSUER_URI: https://pcis-dev.agent.opsera.dev/realms/pcis
 image:
   repository: 792373136340.dkr.ecr.us-west-2.amazonaws.com/opsera/pcis-config-svc
-  tag: dev-0d175ae-20260812173907-amd64
+  tag: dev-1e67a50-20260812191201-amd64
   pullPolicy: Always
