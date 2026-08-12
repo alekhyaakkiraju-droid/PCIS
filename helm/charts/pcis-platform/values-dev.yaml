@@ -1,5 +1,15 @@
 # EKS dev bootstrap — service DNS matches helm/charts/*/values-dev.yaml env vars.
 namespace: pcis-dev
 
+# Kafka optional for dev; enable after reporting-svc is deployed.
 kafka:
-  enabled: true
+  enabled: false
+
+keycloak:
+  resources:
+    requests:
+      cpu: 200m
+      memory: 768Mi
+    limits:
+      cpu: "1"
+      memory: 1536Mi

@@ -25,3 +25,12 @@ env:
   KEYCLOAK_JWK_SET_URI: http://keycloak.pcis-dev.svc.cluster.local/realms/pcis/protocol/openid-connect/certs
   REDIS_HOST: redis.pcis-dev.svc.cluster.local
   REDIS_PORT: "6379"
+istio:
+  inject: false
+probes:
+  startup:
+    failureThreshold: 60
+    periodSeconds: 10
+  readiness:
+    initialDelaySeconds: 20
+    periodSeconds: 10

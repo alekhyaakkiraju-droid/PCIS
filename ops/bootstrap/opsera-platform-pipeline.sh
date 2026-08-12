@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Opsera C2C workflow script — pcis-platform-dev-pipeline
-# Stages: clone → deploy (no image build). Import via Opsera portal after pushing to main.
+# Stages: clone → deploy (staged rollouts; no blocking helm --wait).
 set -euo pipefail
 
 trap 'echo "[OPSERA:complete:failed:${BASH_COMMAND} exit $?]"' ERR
@@ -20,7 +20,6 @@ rm -rf "${WORK_DIR}"
 mkdir -p "${WORK_DIR}"
 cd "${WORK_DIR}"
 
-# ═══ JOB: clone ═══
 echo "[OPSERA:clone:running:Cloning ${REPO_URL} @ ${BRANCH}]"
 REPO_SLUG="${REPO_URL#https://github.com/}"
 REPO_SLUG="${REPO_SLUG%.git}"
@@ -29,22 +28,12 @@ cd repo
 COMMIT_SHA="$(git rev-parse HEAD)"
 echo "[OPSERA:clone:success:Cloned ${COMMIT_SHA:0:12}]"
 
-# ═══ JOB: deploy ═══
 echo "[OPSERA:deploy:running:Platform bootstrap ${HELM_RELEASE} → ${EKS_CLUSTER}/${DEPLOY_NAMESPACE}]"
 aws eks update-kubeconfig --name "${EKS_CLUSTER}" --region "${AWS_REGION}"
 kubectl create namespace "${DEPLOY_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
 
-helm upgrade --install "${HELM_RELEASE}" "${CHART_PATH}" \
-  --namespace "${DEPLOY_NAMESPACE}" \
-  --create-namespace \
-  -f "${CHART_PATH}/values.yaml" \
-  -f "${CHART_PATH}/values-dev.yaml" \
-  --wait --timeout 20m
-
-kubectl rollout status statefulset/postgresql -n "${DEPLOY_NAMESPACE}" --timeout=600s || true
-kubectl rollout status deployment/redis -n "${DEPLOY_NAMESPACE}" --timeout=300s || true
-kubectl rollout status deployment/keycloak -n "${DEPLOY_NAMESPACE}" --timeout=600s || true
-kubectl rollout status deployment/kafka -n "${DEPLOY_NAMESPACE}" --timeout=300s || true
+bash helm/scripts/validate-platform-chart.sh
+bash helm/scripts/deploy-platform.sh "${CHART_PATH}" "${DEPLOY_NAMESPACE}" "${HELM_RELEASE}"
 
 echo "[OPSERA_REPORT:{\"namespace\":\"${DEPLOY_NAMESPACE}\",\"cluster\":\"${EKS_CLUSTER}\",\"release\":\"${HELM_RELEASE}\",\"commit\":\"${COMMIT_SHA:0:12}\",\"service\":\"pcis-platform\"}]"
 echo "[OPSERA:deploy:success:Platform bootstrap ready in ${DEPLOY_NAMESPACE}]"
