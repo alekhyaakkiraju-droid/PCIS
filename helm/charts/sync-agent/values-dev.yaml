@@ -23,5 +23,5 @@ env:
   PCIS_SYNC_ENABLED: 'false'
 image:
   repository: 792373136340.dkr.ecr.us-west-2.amazonaws.com/opsera/pcis-sync-agent
-  tag: dev-0d175ae-20260812173903-amd64
+  tag: dev-1e67a50-20260812191309-amd64
   pullPolicy: Always
