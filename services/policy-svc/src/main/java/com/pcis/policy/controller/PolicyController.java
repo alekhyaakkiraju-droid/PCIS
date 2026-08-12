@@ -8,7 +8,6 @@ import com.pcis.policy.dto.PolicyMapper;
 import com.pcis.policy.dto.PolicyResponse;
 import com.pcis.policy.service.PolicyService;
 import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -55,15 +54,7 @@ public class PolicyController {
       @RequestParam(value = "customerId", required = false) Integer customerId,
       @RequestParam(value = "status", required = false) String status,
       @PageableDefault(size = 20) Pageable pageable) {
-    Page<PolicyResponse> page =
-        policyService
-            .findPolicies(customerId, status, pageable)
-            .map(policyMapper::toResponse);
-    return policyMapper.toListResponse(
-        page.getContent(),
-        page.getNumber(),
-        page.getSize(),
-        page.getTotalElements());
+    return policyService.listPolicies(customerId, status, pageable);
   }
 
   @PutMapping("/{policyNumber}/endorse")

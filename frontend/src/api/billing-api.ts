@@ -18,7 +18,7 @@ export type AgingBucket = {
 
 async function loadInstallments(): Promise<Installment[]> {
   try {
-    return await apiClient.get<Installment[]>('/v1/billing/installments')
+    return await apiClient.get<Installment[]>('/api/v1/billing/installments')
   } catch {
     return installmentsFixture as Installment[]
   }
@@ -26,7 +26,7 @@ async function loadInstallments(): Promise<Installment[]> {
 
 async function loadAging(): Promise<AgingBucket[]> {
   try {
-    return await apiClient.get<AgingBucket[]>('/v1/billing/aging')
+    return await apiClient.get<AgingBucket[]>('/api/v1/billing/aging')
   } catch {
     return agingFixture as AgingBucket[]
   }

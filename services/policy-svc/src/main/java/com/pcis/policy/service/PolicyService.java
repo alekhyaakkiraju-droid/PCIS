@@ -15,12 +15,15 @@ import com.pcis.policy.domain.repository.PolicyRepository;
 import com.pcis.policy.dto.PolicyCancelRequest;
 import com.pcis.policy.dto.PolicyCreateRequest;
 import com.pcis.policy.dto.PolicyEndorseRequest;
+import com.pcis.policy.dto.PolicyListResponse;
 import com.pcis.policy.dto.PolicyMapper;
+import com.pcis.policy.dto.PolicyResponse;
 import com.pcis.policy.exception.InvalidStateTransitionException;
 import com.pcis.policy.exception.PolicyNotFoundException;
 import com.pcis.policy.outbox.PolicyOutboxWriter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -46,6 +49,7 @@ public class PolicyService {
   private final BillingPlanRepository billingPlanRepository;
   private final PolicyAuthorizationService policyAuthorizationService;
   private final PolicyOutboxWriter policyOutboxWriter;
+  private final PolicyMapper policyMapper;
 
   public PolicyService(
       PolicyRepository policyRepository,
@@ -55,7 +59,8 @@ public class PolicyService {
       EndorsementRepository endorsementRepository,
       BillingPlanRepository billingPlanRepository,
       PolicyAuthorizationService policyAuthorizationService,
-      PolicyOutboxWriter policyOutboxWriter) {
+      PolicyOutboxWriter policyOutboxWriter,
+      PolicyMapper policyMapper) {
     this.policyRepository = policyRepository;
     this.coverageRepository = coverageRepository;
     this.deductibleRepository = deductibleRepository;
@@ -64,6 +69,7 @@ public class PolicyService {
     this.billingPlanRepository = billingPlanRepository;
     this.policyAuthorizationService = policyAuthorizationService;
     this.policyOutboxWriter = policyOutboxWriter;
+    this.policyMapper = policyMapper;
   }
 
   @Transactional
@@ -126,6 +132,15 @@ public class PolicyService {
   public Page<PolicyEntity> findPolicies(Integer customerId, String status, Pageable pageable) {
     String dbStatus = status != null ? PolicyMapper.toDbStatus(status) : null;
     return policyRepository.findByFilters(customerId, dbStatus, pageable);
+  }
+
+  @Transactional(readOnly = true)
+  public PolicyListResponse listPolicies(Integer customerId, String status, Pageable pageable) {
+    Page<PolicyEntity> page = findPolicies(customerId, status, pageable);
+    List<PolicyResponse> content =
+        page.getContent().stream().map(policyMapper::toSummaryResponse).toList();
+    return policyMapper.toListResponse(
+        content, page.getNumber(), page.getSize(), page.getTotalElements());
   }
 
   @Transactional

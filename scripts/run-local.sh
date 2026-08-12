@@ -46,9 +46,8 @@ start_jar() {
     exit 1
   fi
   log "Starting $name"
-  local pid
-  pid="$(cd "$ROOT" && nohup java -jar "$jar" --spring.profiles.active=local >>"${LOG_DIR}/${name}.log" 2>&1 & echo $!)"
-  echo "$pid" >>"$PID_FILE"
+  nohup java -jar "$jar" --spring.profiles.active=local >>"${LOG_DIR}/${name}.log" 2>&1 &
+  echo $! >>"$PID_FILE"
 }
 
 require_cmd docker

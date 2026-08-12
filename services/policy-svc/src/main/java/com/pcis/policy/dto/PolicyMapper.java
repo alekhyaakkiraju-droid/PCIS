@@ -32,6 +32,24 @@ public class PolicyMapper {
         policy.getUpdTimestamp());
   }
 
+  /** List view — avoids lazy-loading collections outside a persistence context. */
+  public PolicyResponse toSummaryResponse(PolicyEntity policy) {
+    return new PolicyResponse(
+        policy.getPolNbr(),
+        policy.getCustId(),
+        policy.getAgtId(),
+        trimCode(policy.getPolicyType()),
+        toApiStatus(policy.getPolStatus()),
+        policy.getEffDate(),
+        policy.getExpDate(),
+        policy.getPremAnnual(),
+        List.of(),
+        null,
+        List.of(),
+        policy.getCrtTimestamp(),
+        policy.getUpdTimestamp());
+  }
+
   public PolicyListResponse toListResponse(List<PolicyResponse> content, int page, int size, long total) {
     int totalPages = size == 0 ? 0 : (int) Math.ceil((double) total / size);
     return new PolicyListResponse(content, new PolicyListResponse.PageMetadata(page, size, total, totalPages));

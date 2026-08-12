@@ -40,7 +40,7 @@ public class PolicyInForceValidator {
       if (custId != null && policy.customerId() != null && !custId.equals(policy.customerId())) {
         throw new PolicyNotInForceException(polNbr, "customer does not match policy");
       }
-      if (policy.status() != null && !"ACTV".equalsIgnoreCase(policy.status())) {
+      if (policy.status() != null && !isInForceStatus(policy.status())) {
         throw new PolicyNotInForceException(polNbr, "policy status is " + policy.status());
       }
       if (policy.effectiveDate() != null && lossDate.isBefore(policy.effectiveDate())) {
@@ -63,4 +63,9 @@ public class PolicyInForceValidator {
       String status,
       LocalDate effectiveDate,
       LocalDate expirationDate) {}
+
+  private static boolean isInForceStatus(String status) {
+    String normalized = status.trim().toUpperCase();
+    return "ACTV".equals(normalized) || "ACTIVE".equals(normalized);
+  }
 }
