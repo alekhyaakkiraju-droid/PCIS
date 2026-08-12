@@ -132,7 +132,7 @@ export function ClaimInquiryPage() {
       ) : null}
 
       {error ? (
-        <p role="alert" style={{ color: 'var(--c-error, #da1e28)', marginBottom: 'var(--pcis-space-3)' }}>
+        <p role="alert" style={{ color: 'var(--pcis-token-error)', marginBottom: 'var(--pcis-space-3)' }}>
           {(error as Error).message}
         </p>
       ) : null}
