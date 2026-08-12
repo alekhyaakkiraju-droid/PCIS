@@ -32,5 +32,5 @@ env:
   KEYCLOAK_JWK_SET_URI: http://keycloak.pcis-dev.svc.cluster.local/realms/pcis/protocol/openid-connect/certs
 image:
   repository: 792373136340.dkr.ecr.us-west-2.amazonaws.com/opsera/pcis-billing-svc
-  tag: dev-0d175ae-20260812173904-amd64
+  tag: dev-1e67a50-20260812191207-amd64
   pullPolicy: Always
