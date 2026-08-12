@@ -9,10 +9,19 @@ podDisruptionBudget:
   enabled: true
   enablePdb: true
   minAvailable: 1
+ingress:
+  enabled: true
+  host: pcis-api-gateway-dev.agent.opsera.dev
 resources:
   requests:
-    cpu: 50m
-    memory: 128Mi
+    cpu: 100m
+    memory: 512Mi
   limits:
-    cpu: 250m
-    memory: 256Mi
+    cpu: 500m
+    memory: 1Gi
+env:
+  SPRING_PROFILES_ACTIVE: dev
+  KEYCLOAK_ISSUER_URI: http://keycloak.pcis-dev.svc.cluster.local/realms/pcis
+  KEYCLOAK_JWK_SET_URI: http://keycloak.pcis-dev.svc.cluster.local/realms/pcis/protocol/openid-connect/certs
+  REDIS_HOST: redis.pcis-dev.svc.cluster.local
+  REDIS_PORT: "6379"

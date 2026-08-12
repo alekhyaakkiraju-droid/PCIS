@@ -43,6 +43,7 @@ jobs:
     command: ["java", "-jar", "/app/batch.jar", "--spring.batch.job.name=auditArchiveJob"]
     env:
       SPRING_PROFILES_ACTIVE: batch
+      DATABASE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_audit
     resources:
       requests:
         cpu: 500m
@@ -55,15 +56,16 @@ jobs:
       name: audit-archive-job
       irsaRoleArn: ""
 
-  - name: billing-installment-job
+  - name: billing-generation-job
     program: BIL003B
     schedule: "0 1 * * *"
     image:
-      repository: ghcr.io/pcis/billing-batch
+      repository: ghcr.io/pcis/billing-svc
       tag: "1.0.0"
-    command: ["java", "-jar", "/app/batch.jar", "--spring.batch.job.name=billingInstallmentJob"]
+    command: ["java", "-jar", "/app/app.jar", "--spring.batch.job.name=billingGenerationJob"]
     env:
       SPRING_PROFILES_ACTIVE: batch
+      DATASOURCE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_billing
     resources:
       requests:
         cpu: 500m
@@ -85,6 +87,7 @@ jobs:
     command: ["java", "-jar", "/app/batch.jar", "--spring.batch.job.name=claimPaymentJob"]
     env:
       SPRING_PROFILES_ACTIVE: batch
+      DATABASE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_claims
     resources:
       requests:
         cpu: 500m
@@ -101,11 +104,12 @@ jobs:
     program: CMM001B
     schedule: "0 4 * * *"
     image:
-      repository: ghcr.io/pcis/billing-batch
+      repository: ghcr.io/pcis/billing-svc
       tag: "1.0.0"
-    command: ["java", "-jar", "/app/batch.jar", "--spring.batch.job.name=commissionCalcJob"]
+    command: ["java", "-jar", "/app/app.jar", "--spring.batch.job.name=commissionCalculationJob"]
     env:
       SPRING_PROFILES_ACTIVE: batch
+      DATASOURCE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_billing
     resources:
       requests:
         cpu: 500m
@@ -118,15 +122,16 @@ jobs:
       name: commission-calc-job
       irsaRoleArn: ""
 
-  - name: premium-processing-job
+  - name: premium-delinquency-job
     program: PRM005B
     schedule: "0 2 * * *"
     image:
-      repository: ghcr.io/pcis/premium-batch
+      repository: ghcr.io/pcis/premium-svc
       tag: "1.0.0"
-    command: ["java", "-jar", "/app/batch.jar", "--spring.batch.job.name=premiumProcessingJob"]
+    command: ["java", "-jar", "/app/app.jar", "--spring.batch.job.name=delinquencyAgingJob"]
     env:
       SPRING_PROFILES_ACTIVE: batch
+      DATASOURCE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_premium
     resources:
       requests:
         cpu: 500m
@@ -148,6 +153,7 @@ jobs:
     command: ["java", "-jar", "/app/batch.jar", "--spring.batch.job.name=policyRenewalJob"]
     env:
       SPRING_PROFILES_ACTIVE: batch
+      DATABASE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_policy
     resources:
       requests:
         cpu: 500m

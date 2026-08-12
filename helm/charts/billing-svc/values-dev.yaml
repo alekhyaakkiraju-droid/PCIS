@@ -9,10 +9,18 @@ podDisruptionBudget:
   enabled: true
   enablePdb: true
   minAvailable: 1
+ingress:
+  enabled: false
+  host: ''
 resources:
   requests:
-    cpu: 50m
-    memory: 128Mi
+    cpu: 100m
+    memory: 512Mi
   limits:
-    cpu: 250m
-    memory: 256Mi
+    cpu: 500m
+    memory: 1Gi
+env:
+  SPRING_PROFILES_ACTIVE: dev
+  DATASOURCE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_billing
+  KEYCLOAK_ISSUER_URI: http://keycloak.pcis-dev.svc.cluster.local/realms/pcis
+  KEYCLOAK_JWK_SET_URI: http://keycloak.pcis-dev.svc.cluster.local/realms/pcis/protocol/openid-connect/certs

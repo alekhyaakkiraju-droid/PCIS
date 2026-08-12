@@ -1,4 +1,4 @@
-# Multi-stage build for PCIS Claims Batch
+# Multi-stage build for PCIS Config Svc
 FROM maven:3.9.9-eclipse-temurin-21 AS build
 WORKDIR /workspace
 
@@ -8,17 +8,17 @@ COPY services services
 COPY docker/scripts/strip-non-pom-sources.sh /tmp/strip-non-pom-sources.sh
 RUN chmod +x /tmp/strip-non-pom-sources.sh && /tmp/strip-non-pom-sources.sh
 
-RUN mvn -q -pl services/claims-batch -am dependency:go-offline
+RUN mvn -q -pl services/config-svc -am dependency:go-offline
 
 COPY shared-libs shared-libs
 COPY services services
-RUN mvn -q -pl services/claims-batch -am package -DskipTests
+RUN mvn -q -pl services/config-svc -am package -DskipTests
 
 FROM gcr.io/distroless/java21-debian12:nonroot@sha256:7e37784d94dccbf5ccb195c73b295f5ad00cd266512dfbac12eb9c3c28f8077d
 WORKDIR /app
 
-COPY --from=build /workspace/services/claims-batch/target/claims-batch-*-exec.jar /app/batch.jar
+COPY --from=build /workspace/services/config-svc/target/config-svc-*.jar /app/app.jar
 
 USER 1000:1000
-EXPOSE 8080
-ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "/app/batch.jar"]
+EXPOSE 8087
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "/app/app.jar"]

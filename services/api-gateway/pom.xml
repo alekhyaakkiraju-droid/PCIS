@@ -20,7 +20,6 @@
     <spring-cloud.version>2025.0.0</spring-cloud.version>
     <testcontainers.version>1.20.6</testcontainers.version>
     <wiremock.version>3.13.1</wiremock.version>
-    <nimbus-jose-jwt.version>10.3</nimbus-jose-jwt.version>
     <jacoco.version>0.8.13</jacoco.version>
   </properties>
 
@@ -93,12 +92,6 @@
       <groupId>com.github.codemonstur</groupId>
       <artifactId>embedded-redis</artifactId>
       <version>1.4.3</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.nimbusds</groupId>
-      <artifactId>nimbus-jose-jwt</artifactId>
-      <version>${nimbus-jose-jwt.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

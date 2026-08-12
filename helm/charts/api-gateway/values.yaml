@@ -22,6 +22,16 @@ serviceAccount:
 istio:
   inject: true
 
+
+ingress:
+  enabled: false
+  className: nginx
+  host: ""
+  path: /
+  pathType: Prefix
+  annotations:
+    kubernetes.io/ingress.class: nginx
+
 env: {}
 envFromConfigMap: false
 
