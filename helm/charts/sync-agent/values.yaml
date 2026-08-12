@@ -1,0 +1,79 @@
+appName: sync-agent
+fullnameOverride: sync-agent
+nameOverride: sync-agent
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/pcis/sync-agent
+  tag: "1.0.0"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+serviceAccount:
+  create: true
+  automount: false
+  name: ""
+
+istio:
+  inject: false
+
+ingress:
+  enabled: false
+  className: nginx
+  host: ""
+  path: /
+  pathType: Prefix
+  annotations:
+    kubernetes.io/ingress.class: nginx
+
+env: {}
+envFromConfigMap: false
+
+probes:
+  liveness:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+  readiness:
+    initialDelaySeconds: 10
+    periodSeconds: 5
+  startup:
+    failureThreshold: 30
+    periodSeconds: 10
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+autoscaling:
+  enabled: false
+  enableHpa: false
+  minReplicas: 1
+  maxReplicas: 1
+  targetCPUUtilizationPercentage: 80
+
+podDisruptionBudget:
+  enabled: false
+  enablePdb: false
+  minAvailable: 1
+
+networkPolicy:
+  enabled: true
+  allowedPeers: []
+
+configMap:
+  enabled: false
+  data: {}
+
+securityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000

@@ -1,0 +1,81 @@
+appName: config-svc
+fullnameOverride: config-svc
+nameOverride: config-svc
+
+replicaCount: 2
+
+image:
+  repository: ghcr.io/pcis/config-svc
+  tag: "1.0.0"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8087
+
+serviceAccount:
+  create: true
+  automount: false
+  name: ""
+
+istio:
+  inject: true
+
+ingress:
+  enabled: false
+  className: nginx
+  host: ""
+  path: /
+  pathType: Prefix
+  annotations:
+    kubernetes.io/ingress.class: nginx
+
+env: {}
+envFromConfigMap: false
+
+probes:
+  liveness:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+  readiness:
+    initialDelaySeconds: 10
+    periodSeconds: 5
+  startup:
+    failureThreshold: 30
+    periodSeconds: 10
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+autoscaling:
+  enabled: true
+  enableHpa: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+podDisruptionBudget:
+  enabled: true
+  enablePdb: true
+  minAvailable: 1
+
+networkPolicy:
+  enabled: true
+  allowedPeers:
+  - api-gateway
+  - authz-svc
+
+configMap:
+  enabled: false
+  data: {}
+
+securityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000

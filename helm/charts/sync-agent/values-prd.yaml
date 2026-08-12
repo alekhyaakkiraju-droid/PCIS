@@ -1,0 +1,10 @@
+replicaCount: 1
+autoscaling:
+  enabled: false
+  enableHpa: false
+podDisruptionBudget:
+  enabled: false
+  enablePdb: false
+ingress:
+  enabled: false
+  host: ''

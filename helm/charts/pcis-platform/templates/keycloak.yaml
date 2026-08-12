@@ -1,0 +1,201 @@
+{{- if .Values.keycloak.enabled }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: keycloak-db-credentials
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "pcis-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: keycloak-db
+type: Opaque
+stringData:
+  POSTGRES_DB: {{ .Values.keycloak.db.database | quote }}
+  POSTGRES_USER: {{ .Values.keycloak.db.username | quote }}
+  POSTGRES_PASSWORD: {{ .Values.keycloak.db.password | quote }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak-db
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "pcis-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: keycloak-db
+spec:
+  type: ClusterIP
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: postgres
+  selector:
+    app.kubernetes.io/component: keycloak-db
+    app.kubernetes.io/name: keycloak-db
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: keycloak-db
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "pcis-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: keycloak-db
+spec:
+  serviceName: keycloak-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: keycloak-db
+      app.kubernetes.io/name: keycloak-db
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: keycloak-db
+        app.kubernetes.io/name: keycloak-db
+        {{- include "pcis-platform.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: postgresql
+          image: {{ .Values.keycloak.db.image }}
+          ports:
+            - name: postgres
+              containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: keycloak-db-credentials
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - {{ .Values.keycloak.db.username }}
+                - -d
+                - {{ .Values.keycloak.db.database }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      {{- if not .Values.keycloak.db.persistence.enabled }}
+      volumes:
+        - name: data
+          emptyDir: {}
+      {{- end }}
+  {{- if .Values.keycloak.db.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.keycloak.db.persistence.size }}
+  {{- end }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: keycloak-admin
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "pcis-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: keycloak
+type: Opaque
+stringData:
+  KEYCLOAK_ADMIN: {{ .Values.keycloak.admin.username | quote }}
+  KEYCLOAK_ADMIN_PASSWORD: {{ .Values.keycloak.admin.password | quote }}
+  KC_DB: postgres
+  KC_DB_URL: jdbc:postgresql://keycloak-db:5432/{{ .Values.keycloak.db.database }}
+  KC_DB_USERNAME: {{ .Values.keycloak.db.username | quote }}
+  KC_DB_PASSWORD: {{ .Values.keycloak.db.password | quote }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.keycloak.serviceName }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "pcis-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: keycloak
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: {{ .Values.keycloak.port }}
+      targetPort: http
+  selector:
+    app.kubernetes.io/component: keycloak
+    app.kubernetes.io/name: {{ .Values.keycloak.serviceName }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.keycloak.serviceName }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "pcis-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: keycloak
+      app.kubernetes.io/name: {{ .Values.keycloak.serviceName }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: keycloak
+        app.kubernetes.io/name: {{ .Values.keycloak.serviceName }}
+        {{- include "pcis-platform.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: keycloak
+          image: {{ .Values.keycloak.image }}
+          args:
+            - start-dev
+            - --import-realm
+          ports:
+            - name: http
+              containerPort: {{ .Values.keycloak.port }}
+          envFrom:
+            - secretRef:
+                name: keycloak-admin
+          env:
+            - name: KC_HEALTH_ENABLED
+              value: "true"
+            - name: KC_METRICS_ENABLED
+              value: "true"
+            - name: KC_HTTP_PORT
+              value: {{ .Values.keycloak.port | quote }}
+            - name: KC_HOSTNAME_STRICT
+              value: "false"
+            - name: KC_HOSTNAME_STRICT_HTTPS
+              value: "false"
+          volumeMounts:
+            {{- if .Values.keycloak.realmImport.enabled }}
+            - name: realm-import
+              mountPath: /opt/keycloak/data/import
+              readOnly: true
+            {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /realms/pcis/.well-known/openid-configuration
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 12
+          resources:
+            {{- toYaml .Values.keycloak.resources | nindent 12 }}
+      volumes:
+        {{- if .Values.keycloak.realmImport.enabled }}
+        - name: realm-import
+          configMap:
+            name: keycloak-realm
+        {{- end }}
+{{- end }}

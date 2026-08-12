@@ -1,0 +1,35 @@
+# Machine-readable deploy layers for PCIS EKS (see ops/bootstrap/README.md)
+layers:
+  - wave: 0
+    name: platform
+    chart: helm/charts/pcis-platform
+    argocd: argocd/applications/pcis-platform-dev.yaml
+    components:
+      - postgresql
+      - redis
+      - keycloak
+      - kafka
+  - wave: 1
+    name: foundation
+    services:
+      - authz-svc
+      - config-svc
+    note: config-svc chart not yet created
+  - wave: 2
+    name: domain
+    services:
+      - customer-svc
+      - policy-svc
+      - claims-svc
+      - billing-svc
+      - premium-svc
+      - audit-svc
+      - reporting-svc
+  - wave: 3
+    name: edge
+    services:
+      - api-gateway
+  - wave: 4
+    name: batch
+    chart: helm/charts/pcis-batch
+    argocd: argocd/applicationsets/pcis-batch.yaml

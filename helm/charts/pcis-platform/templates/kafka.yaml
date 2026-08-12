@@ -1,0 +1,68 @@
+{{- if .Values.kafka.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.kafka.serviceName }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "pcis-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: kafka
+spec:
+  type: ClusterIP
+  ports:
+    - name: kafka
+      port: {{ .Values.kafka.port }}
+      targetPort: kafka
+  selector:
+    app.kubernetes.io/component: kafka
+    app.kubernetes.io/name: {{ .Values.kafka.serviceName }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.kafka.serviceName }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "pcis-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: kafka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: kafka
+      app.kubernetes.io/name: {{ .Values.kafka.serviceName }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: kafka
+        app.kubernetes.io/name: {{ .Values.kafka.serviceName }}
+        {{- include "pcis-platform.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: redpanda
+          image: {{ .Values.kafka.image }}
+          command:
+            - redpanda
+            - start
+            - --kafka-addr
+            - internal://0.0.0.0:{{ .Values.kafka.port }}
+            - --advertise-kafka-addr
+            - internal://{{ .Values.kafka.serviceName }}:{{ .Values.kafka.port }}
+            - --mode
+            - dev-container
+            - --smp
+            - "1"
+            - --memory
+            - 512M
+            - --overprovisioned
+          ports:
+            - name: kafka
+              containerPort: {{ .Values.kafka.port }}
+          readinessProbe:
+            tcpSocket:
+              port: kafka
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.kafka.resources | nindent 12 }}
+{{- end }}

@@ -44,6 +44,8 @@ jobs:
     env:
       SPRING_PROFILES_ACTIVE: batch
       DATABASE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_audit
+      DATABASE_USERNAME: pcis
+      DATABASE_PASSWORD: pcis
     resources:
       requests:
         cpu: 500m
@@ -66,6 +68,8 @@ jobs:
     env:
       SPRING_PROFILES_ACTIVE: batch
       DATASOURCE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_billing
+      DATASOURCE_USERNAME: pcis
+      DATASOURCE_PASSWORD: pcis
     resources:
       requests:
         cpu: 500m
@@ -88,6 +92,8 @@ jobs:
     env:
       SPRING_PROFILES_ACTIVE: batch
       DATABASE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_claims
+      DATABASE_USERNAME: pcis
+      DATABASE_PASSWORD: pcis
     resources:
       requests:
         cpu: 500m
@@ -110,6 +116,8 @@ jobs:
     env:
       SPRING_PROFILES_ACTIVE: batch
       DATASOURCE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_billing
+      DATASOURCE_USERNAME: pcis
+      DATASOURCE_PASSWORD: pcis
     resources:
       requests:
         cpu: 500m
@@ -132,6 +140,8 @@ jobs:
     env:
       SPRING_PROFILES_ACTIVE: batch
       DATASOURCE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_premium
+      DATASOURCE_USERNAME: pcis
+      DATASOURCE_PASSWORD: pcis
     resources:
       requests:
         cpu: 500m
@@ -154,6 +164,8 @@ jobs:
     env:
       SPRING_PROFILES_ACTIVE: batch
       DATABASE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_policy
+      DATABASE_USERNAME: pcis
+      DATABASE_PASSWORD: pcis
     resources:
       requests:
         cpu: 500m

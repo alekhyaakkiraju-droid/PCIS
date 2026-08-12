@@ -24,12 +24,15 @@ spec:
               elements:
                 - service: api-gateway
                 - service: authz-svc
+                - service: config-svc
                 - service: audit-svc
                 - service: customer-svc
                 - service: claims-svc
                 - service: policy-svc
                 - service: premium-svc
                 - service: billing-svc
+                - service: reporting-svc
+                - service: sync-agent
           - list:
               elements:
                 - env: dev
@@ -52,6 +55,7 @@ spec:
         pcis.service: "{{ .service }}"
         pcis.environment: "{{ .env }}"
       annotations:
+        argocd.argoproj.io/sync-wave: "1"
         pcis.governance/sync-mode: "{{ if eq .automated \"true\" }}automated{{ else }}manual{{ end }}"
         {{- if eq .env "prd" }}
         pcis.governance/approval-required: "true"

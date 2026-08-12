@@ -1,0 +1,40 @@
+{{- if .Values.postgresql.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.postgresql.serviceName }}-init
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "pcis-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgresql
+data:
+  01-databases.sql: |
+    -- PCIS platform bootstrap — databases aligned with helm/charts/*/values-dev.yaml
+    CREATE USER {{ .Values.postgresql.appUser.username }} WITH PASSWORD '{{ .Values.postgresql.appUser.password }}' CREATEDB;
+
+    CREATE DATABASE pcis OWNER {{ .Values.postgresql.appUser.username }};
+    CREATE DATABASE pcis_customer OWNER {{ .Values.postgresql.appUser.username }};
+    CREATE DATABASE pcis_authz OWNER {{ .Values.postgresql.appUser.username }};
+    CREATE DATABASE pcis_audit OWNER {{ .Values.postgresql.appUser.username }};
+    CREATE DATABASE pcis_billing OWNER {{ .Values.postgresql.appUser.username }};
+    CREATE DATABASE pcis_claims OWNER {{ .Values.postgresql.appUser.username }};
+    CREATE DATABASE pcis_policy OWNER {{ .Values.postgresql.appUser.username }};
+    CREATE DATABASE pcis_premium OWNER {{ .Values.postgresql.appUser.username }};
+    CREATE DATABASE pcis_config OWNER {{ .Values.postgresql.appUser.username }};
+    CREATE DATABASE pcis_recon OWNER {{ .Values.postgresql.appUser.username }};
+    CREATE DATABASE pcis_sync OWNER {{ .Values.postgresql.appUser.username }};
+    CREATE DATABASE pcis_reporting OWNER {{ .Values.postgresql.appUser.username }};
+
+    GRANT ALL PRIVILEGES ON DATABASE pcis TO {{ .Values.postgresql.appUser.username }};
+    GRANT ALL PRIVILEGES ON DATABASE pcis_customer TO {{ .Values.postgresql.appUser.username }};
+    GRANT ALL PRIVILEGES ON DATABASE pcis_authz TO {{ .Values.postgresql.appUser.username }};
+    GRANT ALL PRIVILEGES ON DATABASE pcis_audit TO {{ .Values.postgresql.appUser.username }};
+    GRANT ALL PRIVILEGES ON DATABASE pcis_billing TO {{ .Values.postgresql.appUser.username }};
+    GRANT ALL PRIVILEGES ON DATABASE pcis_claims TO {{ .Values.postgresql.appUser.username }};
+    GRANT ALL PRIVILEGES ON DATABASE pcis_policy TO {{ .Values.postgresql.appUser.username }};
+    GRANT ALL PRIVILEGES ON DATABASE pcis_premium TO {{ .Values.postgresql.appUser.username }};
+    GRANT ALL PRIVILEGES ON DATABASE pcis_config TO {{ .Values.postgresql.appUser.username }};
+    GRANT ALL PRIVILEGES ON DATABASE pcis_recon TO {{ .Values.postgresql.appUser.username }};
+    GRANT ALL PRIVILEGES ON DATABASE pcis_sync TO {{ .Values.postgresql.appUser.username }};
+    GRANT ALL PRIVILEGES ON DATABASE pcis_reporting TO {{ .Values.postgresql.appUser.username }};
+{{- end }}

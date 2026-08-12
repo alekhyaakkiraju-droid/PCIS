@@ -1,0 +1,24 @@
+replicaCount: 1
+autoscaling:
+  enabled: false
+  enableHpa: false
+podDisruptionBudget:
+  enabled: false
+  enablePdb: false
+ingress:
+  enabled: false
+  host: ''
+resources:
+  requests:
+    cpu: 100m
+    memory: 512Mi
+  limits:
+    cpu: 500m
+    memory: 1Gi
+env:
+  SPRING_PROFILES_ACTIVE: dev
+  DATABASE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_sync
+  DATABASE_USERNAME: pcis
+  DATABASE_PASSWORD: pcis
+  # Disable IBM i polling until SYNC_SOURCE_* credentials are provisioned
+  PCIS_SYNC_ENABLED: "false"

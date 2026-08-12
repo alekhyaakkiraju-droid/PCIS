@@ -1,0 +1,5 @@
+# EKS dev bootstrap — service DNS matches helm/charts/*/values-dev.yaml env vars.
+namespace: pcis-dev
+
+kafka:
+  enabled: true

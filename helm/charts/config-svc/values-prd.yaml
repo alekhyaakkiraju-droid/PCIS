@@ -1,0 +1,13 @@
+replicaCount: 2
+autoscaling:
+  enabled: true
+  enableHpa: true
+  minReplicas: 2
+  maxReplicas: 10
+podDisruptionBudget:
+  enabled: true
+  enablePdb: true
+  minAvailable: 1
+ingress:
+  enabled: false
+  host: ''

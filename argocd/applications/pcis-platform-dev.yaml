@@ -1,0 +1,38 @@
+# PCIS platform bootstrap — Argo CD (sync-wave 0)
+# Deploy before pcis-services and pcis-batch ApplicationSets.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pcis-platform-dev
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: pcis
+    pcis.component: platform
+    pcis.environment: dev
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+    pcis.governance/description: >
+      In-cluster dev platform (PostgreSQL, Redis, Keycloak, Kafka).
+      Must be healthy before microservice sync-wave 1 applications.
+spec:
+  project: pcis
+  source:
+    repoURL: https://github.com/alekhyaakkiraju-droid/PCIS.git
+    targetRevision: main
+    path: helm/charts/pcis-platform
+    helm:
+      releaseName: pcis-platform
+      valueFiles:
+        - values.yaml
+        - values-dev.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: pcis-dev
+  revisionHistoryLimit: 3
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - RespectIgnoreDifferences=true

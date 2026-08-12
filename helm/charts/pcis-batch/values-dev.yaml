@@ -1,4 +1,4 @@
-namespace: pcis-batch-dev
+namespace: pcis-dev
 
 global:
   image:

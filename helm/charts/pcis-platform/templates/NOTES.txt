@@ -1,0 +1,24 @@
+PCIS platform bootstrap installed in namespace {{ .Values.namespace }}.
+
+Components:
+{{- if .Values.postgresql.enabled }}
+  PostgreSQL: {{ .Values.postgresql.serviceName }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.postgresql.port }}
+    App user: {{ .Values.postgresql.appUser.username }} / (see values — dev only)
+{{- end }}
+{{- if .Values.redis.enabled }}
+  Redis:      {{ .Values.redis.serviceName }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.redis.port }}
+{{- end }}
+{{- if .Values.keycloak.enabled }}
+  Keycloak:   http://{{ .Values.keycloak.serviceName }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.keycloak.port }}/realms/pcis
+    Admin:    {{ .Values.keycloak.admin.username }} / (see values — dev only)
+{{- end }}
+{{- if .Values.kafka.enabled }}
+  Kafka:      {{ .Values.kafka.serviceName }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.kafka.port }}
+{{- end }}
+
+Next steps:
+  1. Sync Argo CD ApplicationSets (pcis-services, pcis-batch) — sync-wave 1+
+  2. Run Opsera C2C build pipelines to push service images to ECR
+  3. Verify api-gateway ingress after all services are healthy
+
+See ops/bootstrap/README.md for the full layered deployment guide.

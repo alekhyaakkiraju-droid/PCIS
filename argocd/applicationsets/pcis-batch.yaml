@@ -38,6 +38,7 @@ spec:
         pcis.component: batch
         pcis.environment: "{{ .env }}"
       annotations:
+        argocd.argoproj.io/sync-wave: "2"
         pcis.governance/sync-mode: "{{ if eq .automated \"true\" }}automated{{ else }}manual{{ end }}"
         {{- if eq .env "prd" }}
         pcis.governance/approval-required: "true"
