@@ -11,7 +11,7 @@ podDisruptionBudget:
   minAvailable: 1
 ingress:
   enabled: false
-  host: ""
+  host: ''
 resources:
   requests:
     cpu: 100m
@@ -27,5 +27,5 @@ env:
   DATABASE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_reporting
 image:
   repository: 792373136340.dkr.ecr.us-west-2.amazonaws.com/opsera/pcis-reporting-svc
-  tag: dev-759ed6a-20260812163940-amd64
+  tag: dev-0d175ae-20260812173916-amd64
   pullPolicy: Always
