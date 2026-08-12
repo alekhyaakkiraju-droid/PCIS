@@ -36,7 +36,7 @@ spec:
       labels:
         app.kubernetes.io/component: redis
         app.kubernetes.io/name: {{ .Values.redis.serviceName }}
-        {{- include "pcis-platform.labels" . | nindent 8 }}
+        {{- include "pcis-platform.workloadLabels" . | nindent 8 }}
     spec:
       containers:
         - name: redis

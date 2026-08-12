@@ -32,3 +32,14 @@ app.kubernetes.io/component: platform
 app.kubernetes.io/name: {{ include "pcis-platform.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
+{{/*
+Pod/StatefulSet template labels — must not set name/component (those come from workload selectors).
+*/}}
+{{- define "pcis-platform.workloadLabels" -}}
+helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/part-of: pcis
+{{- end }}

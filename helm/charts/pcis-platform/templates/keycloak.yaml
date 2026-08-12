@@ -51,7 +51,7 @@ spec:
       labels:
         app.kubernetes.io/component: keycloak-db
         app.kubernetes.io/name: keycloak-db
-        {{- include "pcis-platform.labels" . | nindent 8 }}
+        {{- include "pcis-platform.workloadLabels" . | nindent 8 }}
     spec:
       containers:
         - name: postgresql
@@ -152,7 +152,7 @@ spec:
       labels:
         app.kubernetes.io/component: keycloak
         app.kubernetes.io/name: {{ .Values.keycloak.serviceName }}
-        {{- include "pcis-platform.labels" . | nindent 8 }}
+        {{- include "pcis-platform.workloadLabels" . | nindent 8 }}
     spec:
       containers:
         - name: keycloak
