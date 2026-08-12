@@ -50,7 +50,7 @@ spec:
           {{- end }}
           livenessProbe:
             httpGet:
-              path: /actuator/health/liveness
+              path: {{ .Values.probes.liveness.path | default "/actuator/health/readiness" }}
               port: http
             initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds | default 30 }}
             periodSeconds: {{ .Values.probes.liveness.periodSeconds | default 10 }}

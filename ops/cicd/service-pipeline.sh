@@ -49,8 +49,9 @@ IMAGE_TAG="dev-${COMMIT_SHA:0:8}-$(date -u +%Y%m%d%H%M%S)"
 export IMAGE_TAG
 echo "[OPSERA:clone:success:Using ${COMMIT_SHA:0:12} tag=${IMAGE_TAG}]"
 
-echo "[OPSERA:build:running:Building ${APP_NAME} image via ${DOCKERFILE_PATH}]"
-docker build -f "${DOCKERFILE_PATH}" -t "${ECR_REPO}:${IMAGE_TAG}" .
+DOCKER_PLATFORM="${DOCKER_PLATFORM:-linux/amd64}"
+echo "[OPSERA:build:running:Building ${APP_NAME} image via ${DOCKERFILE_PATH} (${DOCKER_PLATFORM})]"
+docker build --platform "${DOCKER_PLATFORM}" -f "${DOCKERFILE_PATH}" -t "${ECR_REPO}:${IMAGE_TAG}" .
 echo "[OPSERA:build:success:Built ${ECR_REPO}:${IMAGE_TAG}]"
 
 echo "[OPSERA:push:running:Push to ${ECR_REGISTRY}]"

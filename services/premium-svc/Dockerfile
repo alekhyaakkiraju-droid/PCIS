@@ -18,6 +18,7 @@ FROM gcr.io/distroless/java21-debian12:nonroot@sha256:7e37784d94dccbf5ccb195c73b
 WORKDIR /app
 
 COPY --from=build /workspace/services/premium-svc/target/premium-svc-*.jar /app/app.jar
+COPY config/pcis-data-classification.yaml /app/config/pcis-data-classification.yaml
 
 USER 1000:1000
 EXPOSE 8083

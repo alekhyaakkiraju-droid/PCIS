@@ -3,7 +3,7 @@ namespace: pcis-dev
 
 # Kafka optional for dev; enable after reporting-svc is deployed.
 kafka:
-  enabled: false
+  enabled: true
 
 keycloak:
   resources:

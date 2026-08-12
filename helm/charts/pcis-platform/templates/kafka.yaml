@@ -42,14 +42,15 @@ spec:
         - name: redpanda
           image: {{ .Values.kafka.image }}
           command:
+            - rpk
             - redpanda
             - start
+            - --mode
+            - dev-container
             - --kafka-addr
             - internal://0.0.0.0:{{ .Values.kafka.port }}
             - --advertise-kafka-addr
             - internal://{{ .Values.kafka.serviceName }}:{{ .Values.kafka.port }}
-            - --mode
-            - dev-container
             - --smp
             - "1"
             - --memory

@@ -10,7 +10,7 @@ metadata:
 data:
   01-databases.sql: |
     -- PCIS platform bootstrap — databases aligned with helm/charts/*/values-dev.yaml
-    CREATE USER {{ .Values.postgresql.appUser.username }} WITH PASSWORD '{{ .Values.postgresql.appUser.password }}' CREATEDB;
+    CREATE USER {{ .Values.postgresql.appUser.username }} WITH PASSWORD '{{ .Values.postgresql.appUser.password }}' CREATEDB CREATEROLE;
 
     CREATE DATABASE pcis OWNER {{ .Values.postgresql.appUser.username }};
     CREATE DATABASE pcis_customer OWNER {{ .Values.postgresql.appUser.username }};

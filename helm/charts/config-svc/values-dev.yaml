@@ -21,7 +21,8 @@ resources:
     memory: 1Gi
 env:
   SPRING_PROFILES_ACTIVE: dev
+  SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_config
+  SPRING_DATASOURCE_USERNAME: pcis
+  SPRING_DATASOURCE_PASSWORD: pcis
   DATABASE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_config
-  DATABASE_USERNAME: pcis
-  DATABASE_PASSWORD: pcis
   OIDC_ISSUER_URI: http://keycloak.pcis-dev.svc.cluster.local/realms/pcis

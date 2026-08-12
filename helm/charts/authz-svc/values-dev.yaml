@@ -25,6 +25,9 @@ env:
   DATABASE_USERNAME: pcis
   DATABASE_PASSWORD: pcis
   OIDC_ISSUER_URI: http://keycloak.pcis-dev.svc.cluster.local/realms/pcis
+  OTEL_SDK_DISABLED: "true"
+  SPRING_AUTOCONFIGURE_EXCLUDE: io.opentelemetry.instrumentation.spring.autoconfigure.OpenTelemetryAutoConfiguration
+  PCIS_CLASSIFICATION_DRIFT_DETECTION_ENABLED: "false"
 istio:
   inject: false
 probes:

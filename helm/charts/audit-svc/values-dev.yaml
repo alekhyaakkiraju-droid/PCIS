@@ -24,5 +24,5 @@ env:
   DATABASE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_audit
   DATABASE_USERNAME: pcis
   DATABASE_PASSWORD: pcis
-  KEYCLOAK_ISSUER_URI: http://keycloak.pcis-dev.svc.cluster.local/realms/pcis
-  KEYCLOAK_JWK_SET_URI: http://keycloak.pcis-dev.svc.cluster.local/realms/pcis/protocol/openid-connect/certs
+  SPRING_AUTOCONFIGURE_EXCLUDE: io.opentelemetry.instrumentation.spring.autoconfigure.OpenTelemetryAutoConfiguration,com.pcis.masking.PiiMaskingAutoConfiguration
+  SPRING_MAIN_ALLOW_BEAN_DEFINITION_OVERRIDING: "false"

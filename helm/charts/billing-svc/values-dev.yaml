@@ -21,6 +21,10 @@ resources:
     memory: 1Gi
 env:
   SPRING_PROFILES_ACTIVE: dev
+  SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_billing
+  SPRING_DATASOURCE_USERNAME: pcis
+  SPRING_DATASOURCE_PASSWORD: pcis
+  SPRING_FLYWAY_ENABLED: "false"
   DATASOURCE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_billing
   DATASOURCE_USERNAME: pcis
   DATASOURCE_PASSWORD: pcis
