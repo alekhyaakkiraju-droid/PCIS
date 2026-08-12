@@ -84,9 +84,6 @@ spec:
         namespace: "{{ .namespace }}"
       revisionHistoryLimit: 5
       syncPolicy:
-        automated:
-          prune: {{ eq .automated "true" }}
-          selfHeal: {{ eq .automated "true" }}
         syncOptions:
           - CreateNamespace=false
           - RespectIgnoreDifferences=true
