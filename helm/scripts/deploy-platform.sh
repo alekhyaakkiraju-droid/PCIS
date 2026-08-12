@@ -9,9 +9,11 @@ RELEASE="${3:-pcis-platform}"
 log() { echo "[deploy-platform] $*"; }
 fail() {
   log "FAILED: $*"
-  log "Pods in ${NAMESPACE}:"
-  kubectl get pods -n "${NAMESPACE}" -o wide || true
-  for pod in $(kubectl get pods -n "${NAMESPACE}" -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
+  log "Platform pods in ${NAMESPACE}:"
+  kubectl get pods -n "${NAMESPACE}" -l 'app.kubernetes.io/part-of=pcis,app.kubernetes.io/component=platform' -o wide 2>/dev/null \
+    || kubectl get pods -n "${NAMESPACE}" -o wide || true
+  for pod in $(kubectl get pods -n "${NAMESPACE}" -o jsonpath='{.items[*].metadata.name}' 2>/dev/null \
+    | tr ' ' '\n' | grep -E '^(postgresql|redis|keycloak)' || true); do
     log "--- describe ${pod} ---"
     kubectl describe pod "${pod}" -n "${NAMESPACE}" | tail -30 || true
     log "--- logs ${pod} (last 40 lines) ---"
