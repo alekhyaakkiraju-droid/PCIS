@@ -24,6 +24,12 @@ pcis:
     loader-enabled: false
   outbox:
     relay-enabled: false
+  batch:
+    oauth2:
+      token-uri: http://localhost:8180/realms/pcis/protocol/openid-connect/token
+      client-id: batch-billing
+      client-secret-ref: local-dev
+      client-secret: CHANGE_ME_BATCH_BILLING_CLIENT_SECRET
 
 management:
   endpoint:

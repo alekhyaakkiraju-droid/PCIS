@@ -19,7 +19,15 @@ export type NavSection = {
 export const NAV_SECTIONS: NavSection[] = [
   {
     title: 'Platform',
-    items: [{ to: '/', label: 'Dashboard', menuOption: 'HOME', roles: [] }],
+    items: [
+      {
+        to: '/batch',
+        label: 'Batch Jobs',
+        menuOption: 'BAT',
+        badge: '1',
+        roles: [],
+      },
+    ],
   },
   {
     title: 'Operations',
@@ -69,13 +77,6 @@ export const NAV_SECTIONS: NavSection[] = [
     title: 'Control',
     items: [
       {
-        to: '/batch',
-        label: 'Batch Operations',
-        menuOption: 'BAT',
-        badge: '1',
-        roles: ['COMPLIANCE', 'CLAIMS_SUPERVISOR', 'BATCH_SVC'],
-      },
-      {
         to: '/admin',
         label: 'Admin & Compliance',
         menuOption: 'ADM',
@@ -88,13 +89,13 @@ export const NAV_SECTIONS: NavSection[] = [
 export const ALL_NAV_ITEMS: NavLink[] = NAV_SECTIONS.flatMap((section) => section.items)
 
 export const ROUTE_TITLES: Record<string, string> = {
-  '/': 'Operations Dashboard',
+  '/dashboard': 'Operations Dashboard',
   '/design-system': 'Design System',
   '/claims/fnol': 'Claim FNOL Intake',
   '/claims': 'Claim Inquiry',
   '/claims/payments': 'Claim Payment & Authority Approval',
   '/customers': 'Customer 360',
-  '/policies': 'Policy Issuance & Premium Breakdown',
+  '/policies': 'Policies',
   '/billing': 'Billing Generation & Parallel-Run Reconciliation',
   '/batch': 'Batch Operations Console',
   '/admin': 'Admin — Tunables, Classification & Audit Retention',
@@ -129,6 +130,7 @@ function resolveNavItem(pathname: string): NavLink | undefined {
 }
 
 export function isRouteAllowedForRoles(pathname: string, roles: PcisRole[]): boolean {
+  if (roles.includes('ADMIN')) return true
   const item = resolveNavItem(pathname)
   if (!item || item.roles.length === 0) return true
   return item.roles.some((role) => roles.includes(role))

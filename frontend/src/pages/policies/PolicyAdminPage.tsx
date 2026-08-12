@@ -1,14 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+import { useSearchParams } from 'react-router'
 import {
   policyApi,
   type Policy,
   type PolicyCancelRequest,
   type PolicyEndorseRequest,
 } from '@/api/policy-api'
+import { customerApi } from '@/api/customer-api'
 import { BlueprintCard, Button, DataTable, Input, Modal, MoneyDisplay, Skeleton, Alert } from '@/components/ui'
 
-type PolicyMode = 'create' | 'endorse' | 'inquiry'
+type PolicyMode = 'create' | 'inquiry'
 
 const COVERAGES = [
   { name: 'Dwelling (Cov A)', limit: '$350,000', deductible: '$1,000', premium: '$1,420.00', mandatory: true },
@@ -16,12 +18,25 @@ const COVERAGES = [
   { name: 'Liability (Cov E)', limit: '$300,000', deductible: '—', premium: '$140.00', mandatory: true },
 ]
 
+const DRAFT_QUOTE_KEY = 'pcis.policy.draftQuote'
+const DEFAULT_CUST_ID = 19284
+
 export function PolicyAdminPage() {
   const queryClient = useQueryClient()
-  const [mode, setMode] = useState<PolicyMode>('create')
+  const [searchParams] = useSearchParams()
+  const custIdParam = Number.parseInt(searchParams.get('custId') ?? '', 10)
+  const customerId = Number.isFinite(custIdParam) && custIdParam > 0 ? custIdParam : DEFAULT_CUST_ID
+  const highlightPolicy = searchParams.get('highlightPolicy') ?? undefined
+  const [mode, setMode] = useState<PolicyMode>(searchParams.get('mode') === 'inquiry' ? 'inquiry' : 'create')
   const [rated, setRated] = useState(false)
   const [endorseTarget, setEndorseTarget] = useState<Policy | null>(null)
   const [cancelTarget, setCancelTarget] = useState<Policy | null>(null)
+
+  const customerQuery = useQuery({
+    queryKey: ['customer', customerId, 'label'],
+    queryFn: () => customerApi.getById(customerId),
+    enabled: searchParams.has('custId'),
+  })
 
   const policiesQuery = useQuery({
     queryKey: ['policies'],
@@ -31,7 +46,7 @@ export function PolicyAdminPage() {
   const issueMutation = useMutation({
     mutationFn: () =>
       policyApi.create({
-        customerId: 19284,
+        customerId,
         agentId: 'AGT00412',
         policyType: 'HO-3',
         annualPremium: 2140.0,
@@ -50,31 +65,33 @@ export function PolicyAdminPage() {
     },
   })
   const [issuedPolicy, setIssuedPolicy] = useState(false)
+  const [quoteSavedAt, setQuoteSavedAt] = useState<string | null>(null)
+
+  const handleSaveQuote = () => {
+    const snapshot = { coverages: COVERAGES, rated, savedAt: new Date().toISOString() }
+    localStorage.setItem(DRAFT_QUOTE_KEY, JSON.stringify(snapshot))
+    setQuoteSavedAt(snapshot.savedAt)
+  }
 
   return (
     <section aria-labelledby="policies-heading">
-      <h1 id="policies-heading">Issue policy — new business quote</h1>
+      <h1 id="policies-heading">Policies</h1>
       <p className="wf-page-lede">
-        Rate coverages, review underwriting alerts, and issue atomically — snapshot persisted for audit.
+        {mode === 'inquiry'
+          ? 'Look up existing policies, endorse coverage, or cancel — snapshot persisted for audit.'
+          : 'Rate coverages, review underwriting alerts, and issue atomically — snapshot persisted for audit.'}
       </p>
 
       <div className="seg-control" role="radiogroup" aria-label="Policy mode">
-        {(['create', 'endorse', 'inquiry'] as PolicyMode[]).map((m) => (
-          <label key={m}>
-            <input type="radio" name="policyMode" checked={mode === m} onChange={() => setMode(m)} />
-            {m.charAt(0).toUpperCase() + m.slice(1)}
-          </label>
-        ))}
+        <label>
+          <input type="radio" name="policyMode" checked={mode === 'create'} onChange={() => setMode('create')} />
+          Create
+        </label>
+        <label>
+          <input type="radio" name="policyMode" checked={mode === 'inquiry'} onChange={() => setMode('inquiry')} />
+          Endorse & Inquiry
+        </label>
       </div>
-
-      <BlueprintCard style={{ marginBottom: 'var(--pcis-space-4)' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--pcis-space-4)' }}>
-          <Input label="Customer" name="customer" value="Marta Field · CUS-0019284" readOnly />
-          <Input label="Agent" name="agent" value="R. Okafor · AGT-00412" readOnly />
-          <Input label="Term" name="term" value="2027-01-01 → 2028-01-01" readOnly />
-          <Input label="Policy type" name="policyType" value="Homeowners HO-3" readOnly />
-        </div>
-      </BlueprintCard>
 
       {mode === 'inquiry' ? (
         <BlueprintCard kicker="Policy inquiry">
@@ -104,11 +121,27 @@ export function PolicyAdminPage() {
                 },
               ]}
               getRowId={(r) => r.policyNumber}
+              highlightRowId={highlightPolicy}
               emptyMessage="No policies found."
             />
           )}
         </BlueprintCard>
       ) : (
+        <div>
+          <BlueprintCard style={{ marginBottom: 'var(--pcis-space-4)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--pcis-space-4)' }}>
+              <Input
+                label="Customer"
+                name="customer"
+                value={customerQuery.data ? `${customerQuery.data.custName} · CUS-${String(customerId).padStart(7, '0')}` : ''}
+                placeholder="Not selected"
+                readOnly
+              />
+              <Input label="Agent" name="agent" value="" placeholder="Not selected" readOnly />
+              <Input label="Term" name="term" value="" placeholder="Not set" readOnly />
+              <Input label="Policy type" name="policyType" value="" placeholder="Not set" readOnly />
+            </div>
+          </BlueprintCard>
         <div className="page-grid-split">
           <div>
             <h2 style={{ fontSize: 'var(--pcis-font-size-sm)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Coverages</h2>
@@ -160,6 +193,7 @@ export function PolicyAdminPage() {
             )}
           </BlueprintCard>
         </div>
+        </div>
       )}
 
       {mode !== 'inquiry' ? (
@@ -167,12 +201,14 @@ export function PolicyAdminPage() {
           <span style={{ fontSize: 'var(--pcis-font-size-sm)', color: 'var(--pcis-color-text-muted)' }}>
             {issuedPolicy
               ? 'Policy issued'
-              : rated
-                ? 'Rated and eligible for issue — snapshot RTG-8817342 persisted'
-                : 'Rate coverages before issuing'}
+              : quoteSavedAt
+                ? `Quote saved locally at ${new Date(quoteSavedAt).toLocaleTimeString()}`
+                : rated
+                  ? 'Rated and eligible for issue — snapshot RTG-8817342 persisted'
+                  : 'Rate coverages before issuing'}
           </span>
           <div style={{ display: 'flex', gap: 'var(--pcis-space-2)' }}>
-            <Button variant="secondary">Save quote</Button>
+            <Button variant="secondary" onClick={handleSaveQuote}>Save quote</Button>
             <Button
               variant="primary"
               disabled={!rated || issuedPolicy}

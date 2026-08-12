@@ -14,7 +14,21 @@ export type PcisPermission =
   | 'batch:write'
   | 'admin:read'
 
+const ALL_PERMISSIONS: PcisPermission[] = [
+  'claims:read',
+  'claims:write',
+  'claims:approve',
+  'customer:read',
+  'customer:write',
+  'billing:read',
+  'billing:write',
+  'batch:read',
+  'batch:write',
+  'admin:read',
+]
+
 const ROLE_PERMISSIONS: Record<PcisRole, PcisPermission[]> = {
+  ADMIN: ALL_PERMISSIONS,
   CLAIMS_ADJUSTER: ['claims:read', 'claims:write'],
   CLAIMS_SUPERVISOR: [
     'claims:read',
@@ -45,6 +59,7 @@ export function permissionsForRoles(roles: PcisRole[]): Set<PcisPermission> {
 }
 
 export function hasAnyRole(roles: PcisRole[], required: PcisRole[]): boolean {
+  if (roles.includes('ADMIN')) return true
   if (required.length === 0) return true
   return required.some((role) => roles.includes(role))
 }

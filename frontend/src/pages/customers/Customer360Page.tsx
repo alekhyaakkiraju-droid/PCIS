@@ -10,6 +10,7 @@ import policiesFixture from '../../../fixtures/customer-360/policies.json'
 import profileFixture from '../../../fixtures/customer-360/profile.json'
 import profile19284Fixture from '../../../fixtures/customer-360/profile-19284.json'
 import { customerApi } from '@/api/customer-api'
+import { formatClaimNbr } from '@/api/claims-fixture-fallback'
 import { shouldUseCustomerFixtureFallback } from '@/api/customer-fixture-fallback'
 import type {
   AuditEvent,
@@ -313,7 +314,15 @@ function PoliciesTab({ custId }: { custId: number }) {
           aria-label="Customer policies"
           rows={data.items}
           columns={[
-            { id: 'policyId', label: 'Policy', accessor: (r) => r.policyId, sortable: true },
+            {
+              id: 'policyId',
+              label: 'Policy',
+              accessor: (r) => r.policyId,
+              sortable: true,
+              render: (r) => (
+                <Link to={`/policies?mode=inquiry&highlightPolicy=${encodeURIComponent(r.policyId)}`}>{r.policyId}</Link>
+              ),
+            },
             { id: 'policyType', label: 'Type', accessor: (r) => r.policyType, sortable: true },
             { id: 'status', label: 'Status', accessor: (r) => r.status, sortable: true },
             {
@@ -397,7 +406,15 @@ function ClaimsTab({ custId }: { custId: number }) {
           aria-label="Customer claims"
           rows={data.items}
           columns={[
-            { id: 'claimId', label: 'Claim', accessor: (r) => r.claimId, sortable: true },
+            {
+              id: 'claimId',
+              label: 'Claim',
+              accessor: (r) => r.claimId,
+              sortable: true,
+              render: (r) => (
+                <Link to={`/claims?claimNbr=${encodeURIComponent(formatClaimNbr(r.claimId))}`}>{formatClaimNbr(r.claimId)}</Link>
+              ),
+            },
             { id: 'status', label: 'Status', accessor: (r) => r.status, sortable: true },
             {
               id: 'reserveAmount',
@@ -427,7 +444,11 @@ function AuditTab({ custId }: { custId: number }) {
   return (
     <TabPanel loading={isLoading} error={error}>
       {data ? (
-        <DataTable
+        <>
+          <p style={{ fontSize: 'var(--pcis-font-size-xs)', color: 'var(--pcis-color-text-muted)', marginBottom: 'var(--pcis-space-2)' }}>
+            Demo data — audit-svc has no per-customer read endpoint yet, so this tab is not wired to a live log.
+          </p>
+          <DataTable
           aria-label="Customer audit trail"
           rows={data}
           columns={[
@@ -438,7 +459,8 @@ function AuditTab({ custId }: { custId: number }) {
           ]}
           getRowId={(r) => r.id}
           emptyMessage="No audit events."
-        />
+          />
+        </>
       ) : null}
     </TabPanel>
   )
@@ -454,6 +476,13 @@ export function Customer360Page({ customerId }: Customer360PageProps) {
   const maskEmail = maskAll
   const maskPhone = maskAll
   const [unmaskOpen, setUnmaskOpen] = useState(false)
+  const [unmaskReason, setUnmaskReason] = useState<string | null>(null)
+
+  const duplicateCheckQuery = useQuery({
+    queryKey: ['customer', customerId, 'duplicate-check'],
+    queryFn: () => customerApi.duplicateCheck(customerId),
+    retry: false,
+  })
 
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ['customer360', customerId, 'profile-header'],
@@ -516,8 +545,9 @@ export function Customer360Page({ customerId }: Customer360PageProps) {
       <UnmaskModal
         open={unmaskOpen}
         onClose={() => setUnmaskOpen(false)}
-        onConfirm={() => {
+        onConfirm={(justification) => {
           setMaskAll(false)
+          setUnmaskReason(justification)
           setUnmaskOpen(false)
         }}
       />
@@ -531,13 +561,13 @@ export function Customer360Page({ customerId }: Customer360PageProps) {
               {profileLoading ? '…' : (profile?.custName ?? 'Customer 360')}
             </h1>
             <div style={{ display: 'flex', gap: 'var(--pcis-space-2)', alignItems: 'center', marginTop: 'var(--pcis-space-2)' }}>
-              <Badge status="Active">Active</Badge>
-              <Badge status="Denied">Restricted</Badge>
+              <Badge status="Active">{profile?.custStatus === 'A' ? 'Active' : profile?.custStatus === 'I' ? 'Inactive' : profile?.custStatus === 'S' ? 'Suspended' : '—'}</Badge>
+              <Badge status="Denied" title="CUSTOMER_T is classified Restricted tier — Tax ID masked to last 4 digits">Restricted</Badge>
             </div>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 'var(--pcis-space-2)' }}>
-          <Link to="/policies">
+          <Link to={`/policies?custId=${customerId}`}>
             <Button variant="ghost">New quote</Button>
           </Link>
           <Button
@@ -569,9 +599,11 @@ export function Customer360Page({ customerId }: Customer360PageProps) {
         {updateMutation.error ? <p role="alert">Update failed.</p> : null}
       </Modal>
 
-      {customerId === 19284 ? (
+      {duplicateCheckQuery.data?.duplicateFound && duplicateCheckQuery.data.existingCustomer ? (
         <Alert variant="warning" title="Possible duplicate tax ID" role="alert">
-          Blocking step for new record creation — review candidate CUS-0019284 (Marta Field).
+          Blocking step for new record creation — review candidate CUS-
+          {String(duplicateCheckQuery.data.existingCustomer.custId).padStart(7, '0')} (
+          {duplicateCheckQuery.data.existingCustomer.custName}).
         </Alert>
       ) : null}
 
@@ -591,11 +623,16 @@ export function Customer360Page({ customerId }: Customer360PageProps) {
         />
         Unmask restricted fields
       </label>
+      {!maskAll && unmaskReason ? (
+        <p style={{ fontSize: 'var(--pcis-font-size-xs)', color: 'var(--pcis-color-text-muted)', marginTop: -8, marginBottom: 'var(--pcis-space-4)' }}>
+          Unmasked — reason logged for this session: "{unmaskReason}"
+        </p>
+      ) : null}
 
       <Tabs items={tabs} aria-label="Customer 360 sections" defaultTabId="profile" />
 
       <Alert variant="info" title="Classification notice">
-        Restricted-tier values are masked in profile views. Unmasking is itself an audited read event.
+        Restricted-tier values are masked in profile views. Unmasking requires a recorded justification.
       </Alert>
     </section>
   )

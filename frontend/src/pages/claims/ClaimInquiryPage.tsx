@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import inquiryFixture from '../../../fixtures/claims/inquiry.json'
@@ -63,6 +63,23 @@ export function ClaimInquiryPage() {
   const highlightClaim = searchParams.get('claimNbr')
   const [tab, setTab] = useState<InquiryTab>('open')
   const [filter, setFilter] = useState('')
+
+  useEffect(() => {
+    if (!highlightClaim) return
+    claimsApi
+      .getByClaimNbr(highlightClaim)
+      .then(async (claim) => {
+        if (claim.claimStatus === 'C') {
+          setTab('closed')
+          return
+        }
+        const pending = await claimsApi.list({ view: 'pending' })
+        const isPending = pending.some((c) => c.claimNbr === claim.claimNbr)
+        setTab(isPending ? 'pending' : 'open')
+      })
+      .catch(() => undefined)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [highlightClaim])
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['claims-inquiry', tab],

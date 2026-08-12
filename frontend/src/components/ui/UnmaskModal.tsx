@@ -48,7 +48,7 @@ export function UnmaskModal({
       }
     >
       <p style={{ fontSize: 'var(--pcis-font-size-sm)', marginBottom: 'var(--pcis-space-4)' }}>
-        Viewing the full {fieldLabel} requires a recorded justification. This action is itself audited.
+        Viewing the full {fieldLabel} requires a recorded justification.
       </p>
       <Input
         label="Justification"

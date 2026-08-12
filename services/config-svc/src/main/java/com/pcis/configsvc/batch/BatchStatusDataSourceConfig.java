@@ -26,12 +26,20 @@ public class BatchStatusDataSourceConfig {
       @Value(
               "${pcis.batch-status.policy-db-url:jdbc:postgresql://localhost:5434/pcis_policy_batch}")
           String policyDbUrl,
+      @Value("${pcis.batch-status.billing-db-url:jdbc:postgresql://localhost:5434/pcis_billing}")
+          String billingDbUrl,
+      @Value(
+              "${pcis.batch-status.reconciliation-db-url:jdbc:postgresql://localhost:5434/pcis_recon}")
+          String reconciliationDbUrl,
       @Value("${pcis.batch-status.db-username:pcis}") String username,
       @Value("${pcis.batch-status.db-password:pcis}") String password) {
     Map<String, JdbcTemplate> templates = new LinkedHashMap<>();
     templates.put("audit", new JdbcTemplate(dataSource(auditDbUrl, username, password)));
     templates.put("claims", new JdbcTemplate(dataSource(claimsDbUrl, username, password)));
     templates.put("policy", new JdbcTemplate(dataSource(policyDbUrl, username, password)));
+    templates.put("billing", new JdbcTemplate(dataSource(billingDbUrl, username, password)));
+    templates.put(
+        "reconciliation", new JdbcTemplate(dataSource(reconciliationDbUrl, username, password)));
     return new BatchStatusJdbcTemplates(templates);
   }
 

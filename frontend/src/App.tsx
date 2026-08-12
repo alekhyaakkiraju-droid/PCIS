@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Route, Routes } from 'react-router'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
 import { AuthProvider } from './auth/AuthContext'
 import { DemoRoleProvider } from './demo/demo-role'
 import { ThemeProvider } from './theme/ThemeProvider'
@@ -60,7 +60,8 @@ export default function App() {
                   </ProtectedRoute>
                 }
               >
-                <Route index element={<DashboardPage />} />
+                <Route index element={<Navigate to="/batch" replace />} />
+                <Route path="dashboard" element={<DashboardPage />} />
                 <Route path="design-system" element={<DesignSystemPage />} />
                 <Route path="customers" element={<CustomersPage />} />
                 <Route path="customers/:customerId" element={<CustomersPage />} />

@@ -11,6 +11,7 @@ public record BatchJobRunResponse(
     Instant endTime,
     String status,
     String exitCode,
+    String exitMessage,
     long readCount,
     long writeCount,
     long skipCount,

@@ -7,6 +7,8 @@ export type PcisRole =
   | 'FINANCE'
   | 'COMPLIANCE'
   | 'BATCH_SVC'
+  /** Demo-only all-access role — bypasses nav/route gating in the frontend. Not a real Keycloak role. */
+  | 'ADMIN'
 
 export type SessionUser = {
   sub: string

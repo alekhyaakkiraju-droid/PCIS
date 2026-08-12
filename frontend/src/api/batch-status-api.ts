@@ -17,6 +17,7 @@ export type BatchJobRun = {
   endTime: string | null
   status: string
   exitCode: string | null
+  exitMessage: string | null
   readCount: number
   writeCount: number
   skipCount: number

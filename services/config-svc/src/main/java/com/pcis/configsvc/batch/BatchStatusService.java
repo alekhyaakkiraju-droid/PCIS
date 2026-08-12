@@ -20,13 +20,14 @@ public class BatchStatusService {
   private static final String JOB_QUERY =
       """
       SELECT ji.job_name, je.job_execution_id, je.start_time, je.end_time, je.status, je.exit_code,
+             je.exit_message,
              COALESCE(SUM(se.read_count), 0) AS read_count,
              COALESCE(SUM(se.write_count), 0) AS write_count,
              COALESCE(SUM(se.read_skip_count + se.write_skip_count + se.process_skip_count), 0) AS skip_count
       FROM batch_job_instance ji
       JOIN batch_job_execution je ON je.job_instance_id = ji.job_instance_id
       LEFT JOIN batch_step_execution se ON se.job_execution_id = je.job_execution_id
-      GROUP BY ji.job_name, je.job_execution_id, je.start_time, je.end_time, je.status, je.exit_code
+      GROUP BY ji.job_name, je.job_execution_id, je.start_time, je.end_time, je.status, je.exit_code, je.exit_message
       ORDER BY je.start_time DESC
       """;
 
@@ -62,6 +63,8 @@ public class BatchStatusService {
     return all;
   }
 
+  private static final int EXIT_MESSAGE_MAX_LENGTH = 2000;
+
   private RowMapper<BatchJobRunResponse> jobRowMapper(String domain, JdbcTemplate jdbcTemplate) {
     return (rs, rowNum) -> {
       long jobExecutionId = rs.getLong("job_execution_id");
@@ -75,11 +78,19 @@ public class BatchStatusService {
           toInstant(rs.getTimestamp("end_time")),
           rs.getString("status"),
           rs.getString("exit_code"),
+          truncate(rs.getString("exit_message")),
           rs.getLong("read_count"),
           rs.getLong("write_count"),
           rs.getLong("skip_count"),
           steps);
     };
+  }
+
+  private static String truncate(String value) {
+    if (value == null || value.length() <= EXIT_MESSAGE_MAX_LENGTH) {
+      return value;
+    }
+    return value.substring(0, EXIT_MESSAGE_MAX_LENGTH) + "… (truncated)";
   }
 
   private RowMapper<BatchJobRunResponse.BatchStepResponse> stepRowMapper() {

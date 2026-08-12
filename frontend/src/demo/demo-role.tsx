@@ -17,6 +17,7 @@ export type DemoPersona = {
 
 /** Wireframe personas from PCIS Modernization UI.dc.html */
 export const DEMO_PERSONAS: DemoPersona[] = [
+  { role: 'ADMIN', label: 'Admin (All Access)', displayName: 'A. Root', initials: 'AR' },
   { role: 'CLAIMS_ADJUSTER', label: 'Claims Adjuster', displayName: 'K. Alvarez', initials: 'KA' },
   { role: 'CLAIMS_SUPERVISOR', label: 'Claims Supervisor', displayName: 'M. Kowalski', initials: 'MK' },
   { role: 'CSR', label: 'CSR', displayName: 'J. Reyes', initials: 'JR' },
