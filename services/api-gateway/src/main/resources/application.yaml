@@ -6,8 +6,9 @@ spring:
     name: api-gateway
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
+      # PCIS_* avoids K8s service-link env collision (REDIS_PORT=tcp://...)
+      host: ${PCIS_REDIS_HOST:localhost}
+      port: ${PCIS_REDIS_PORT:6379}
   security:
     oauth2:
       resourceserver:

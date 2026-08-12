@@ -23,8 +23,8 @@ env:
   SPRING_PROFILES_ACTIVE: dev
   KEYCLOAK_ISSUER_URI: http://keycloak.pcis-dev.svc.cluster.local/realms/pcis
   KEYCLOAK_JWK_SET_URI: http://keycloak.pcis-dev.svc.cluster.local/realms/pcis/protocol/openid-connect/certs
-  SPRING_DATA_REDIS_HOST: redis.pcis-dev.svc.cluster.local
-  SPRING_DATA_REDIS_PORT: "6379"
+  PCIS_REDIS_HOST: redis.pcis-dev.svc.cluster.local
+  PCIS_REDIS_PORT: "6379"
 istio:
   inject: false
 probes:

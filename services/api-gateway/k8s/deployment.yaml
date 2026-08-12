@@ -51,9 +51,9 @@ spec:
               value: "http://keycloak.pcis.svc.cluster.local/realms/pcis"
             - name: KEYCLOAK_JWK_SET_URI
               value: "http://keycloak.pcis.svc.cluster.local/realms/pcis/protocol/openid-connect/certs"
-            - name: REDIS_HOST
+            - name: PCIS_REDIS_HOST
               value: "redis.pcis.svc.cluster.local"
-            - name: REDIS_PORT
+            - name: PCIS_REDIS_PORT
               value: "6379"
           livenessProbe:
             httpGet:
