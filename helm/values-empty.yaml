@@ -1,0 +1,2 @@
+# No-op overlay for tst/prd ApplicationSet valueFiles merge (dev uses values-dev-shared.yaml).
+replicaCount: 1
