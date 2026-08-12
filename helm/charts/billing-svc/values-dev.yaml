@@ -24,7 +24,7 @@ env:
   SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_billing
   SPRING_DATASOURCE_USERNAME: pcis
   SPRING_DATASOURCE_PASSWORD: pcis
-  SPRING_FLYWAY_ENABLED: "false"
+  SPRING_FLYWAY_ENABLED: 'false'
   DATASOURCE_URL: jdbc:postgresql://postgresql.pcis-dev.svc.cluster.local:5432/pcis_billing
   DATASOURCE_USERNAME: pcis
   DATASOURCE_PASSWORD: pcis
@@ -32,5 +32,5 @@ env:
   KEYCLOAK_JWK_SET_URI: http://keycloak.pcis-dev.svc.cluster.local/realms/pcis/protocol/openid-connect/certs
 image:
   repository: 792373136340.dkr.ecr.us-west-2.amazonaws.com/opsera/pcis-billing-svc
-  tag: dev-759ed6a-20260812163940-amd64
+  tag: dev-0d175ae-20260812173904-amd64
   pullPolicy: Always
