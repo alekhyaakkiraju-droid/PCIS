@@ -22,3 +22,7 @@ env:
   DATABASE_PASSWORD: pcis
   # Disable IBM i polling until SYNC_SOURCE_* credentials are provisioned
   PCIS_SYNC_ENABLED: "false"
+image:
+  repository: 792373136340.dkr.ecr.us-west-2.amazonaws.com/opsera/pcis-sync-agent
+  tag: dev-759ed6a-20260812163940-amd64
+  pullPolicy: Always

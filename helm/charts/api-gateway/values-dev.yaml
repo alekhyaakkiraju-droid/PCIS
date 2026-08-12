@@ -34,3 +34,7 @@ probes:
   readiness:
     initialDelaySeconds: 20
     periodSeconds: 10
+image:
+  repository: 792373136340.dkr.ecr.us-west-2.amazonaws.com/opsera/pcis-api-gateway
+  tag: dev-759ed6a-20260812163940-amd64
+  pullPolicy: Always
